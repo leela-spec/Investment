@@ -1,0 +1,16 @@
+{
+  "created_at": "2026-02-14T23:29:34.770825Z",
+  "counts": {
+    "03_extract/process.jsonl": 44,
+    "03_extract/indicators.jsonl": 34,
+    "03_extract/rules.jsonl": 126,
+    "04_playbook/modules": 9
+  },
+  "notes": [
+    "Saved artifacts exactly as produced in chat in this segment.",
+    "Some rule IDs marked needs_verification=true were explicitly tagged as such during extraction.",
+    "No attempt was made to rebuild composite indicators (e.g., Fear & Greed).",
+    "Merged missing chat-transcript rules and module SENTIMENT_POSITIONING from Everything from this chat.md; no modifications to existing items.",
+    "Merged missing indicators and process items from chat_transcript.md (Everything from this chat.md)."
+  ]
+}
