@@ -4,9 +4,10 @@
     "03_extract/process.jsonl": 44,
     "03_extract/indicators.jsonl": 34,
     "03_extract/rules.jsonl": 126,
-    "04_playbook/modules": 9
+    "04_playbook/modules": 10
   },
   "notes": [
+    "2026-07-19: corrected module count 9 -> 10 (TRAILING_STOP_POLICIES.md was added after the previous manifest snapshot); verified via scripts/qa_repo.py.",
     "Saved artifacts exactly as produced in chat in this segment.",
     "Some rule IDs marked needs_verification=true were explicitly tagged as such during extraction.",
     "No attempt was made to rebuild composite indicators (e.g., Fear & Greed).",

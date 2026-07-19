@@ -14,3 +14,5 @@ Local-first, token-efficient artifacts extracted from a seminar PDF into:
 - `00_runbook/extraction_process.md` — the extraction runbook
 - `03_extract/` — indicators/rules/process JSONL
 - `04_playbook/modules/` — compact rules modules (Markdown)
+- `05_blueprint/00_MASTER_PLAN.md` — macro implementation plan (vision, validated stack, feature ranking, phases)
+- `05_blueprint/meso/C1…C9` — meso plans per cluster (decisions, steps, definition of done)
