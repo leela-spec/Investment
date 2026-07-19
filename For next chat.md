@@ -1,3 +1,5 @@
+> ⚠️ **SUPERSEDED (2026-07-19):** current status, plan and next steps live in [`PROJECT_STATE.md`](PROJECT_STATE.md). This document is kept as historical context; its "next actions" are outdated (reconciliation + TRAILING_STOP_POLICIES are done; planning phase is complete).
+
 According to a document from 2026-02-14, here is a **handover-grade status report** of what we did, what decisions are locked, what files exist, what is missing, and what to do next. (I cross-checked the **actual project files present** + the consolidated chat transcript file you uploaded.)
 
 ---

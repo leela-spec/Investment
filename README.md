@@ -1,5 +1,7 @@
 # ipos_playbook_repo
 
+> **New session? Start with [`PROJECT_STATE.md`](PROJECT_STATE.md)** — the index: status, active plan, next steps, decision log, file map.
+
 Local-first, token-efficient artifacts extracted from a seminar PDF into:
 - Playbook modules (`04_playbook/modules/*.md`)
 - Structured JSONL extracts (`03_extract/*.jsonl`)
