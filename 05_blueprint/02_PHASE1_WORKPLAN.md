@@ -52,6 +52,8 @@ Add `data/` (except `.gitkeep`), `.env`, `*.duckdb`, `__pycache__`, `.venv` to `
 
 ## Step B — The "golden 20" registry (`configs/registry.yaml`)
 
+> **Free-source policy (locked 2026-07-23; see `01_DECISION_ANALYSIS.md` amendment log).** IPOS uses **only free, established data sources**; paid data is future work. Two tiers: **Tier 1 keyless** (Stooq — runs live with zero setup once `stooq.com` is allowlisted) and **Tier 2 free-with-key** (FRED — `FRED_API_KEY`, a manual free-account signup deferred to a human/CLI operator). With no key, FRED series degrade gracefully and the system runs on Tier-1 + archive. To run live in Claude Code on the web: environment → **Network access = Custom** → allow `stooq.com` (and `api.stlouisfed.org` once a FRED key exists).
+
 Highest-reliability first: 12 FRED (one key) + 8 Stooq (no key). Directionality is relative to "risk-on / supportive". Verify each locator on first pull; anything flaky drops to `status: deferred` and is replaced from the Phase-3 pool — do not block the skeleton on one bad ticker. Mark unverified tickers `needs_verification: true` (repo convention).
 
 | # | series_id | name | source (locator) | module_id | asset_class | higher_is_better | scoring | notes |

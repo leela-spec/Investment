@@ -5,7 +5,7 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-07-19 · **Updated by:** planning session (blueprint optimization) · **Branch of record:** `main`
+**Last updated:** 2026-07-23 · **Updated by:** implementation session (Phase 0+1 walking skeleton) · **Branch of record:** `main` (work branch: `claude/i-project-continuation-4dwjhx`)
 
 ---
 
@@ -18,22 +18,30 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | Workstream | Status |
 |---|---|
 | **B — Knowledge extraction** (PDF → modules + JSONL) | ✅ **DONE & QA-verified** (204/204 IDs reconciled; 10 modules; 34 indicators, 126 rules, 44 process steps; `scripts/qa_repo.py` green) |
-| **A — Implementation planning** | ✅ **DONE** (this session): macro master plan + 9 meso plans + decision analysis + research archive |
-| **A — Implementation code** | ❌ **NOT STARTED** — zero code exists. This is the current frontier. |
+| **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
+| **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
+| **A — Phase 2+ (core value)** | ❌ **NOT STARTED** — regime classifier, contradictions engine, z-score confidence, static HTML report, LLM narration, Task Scheduler. This is the current frontier. |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
-**Current phase:** ready to start **Phase 0 (scaffold) + Phase 1 (walking skeleton, ~20 golden indicators)**.
+**Current phase:** **Phase 2 (core value)**. Phase 1 walking skeleton is complete and testable end-to-end offline.
+
+**Data-source policy (locked 2026-07-23):** free, established sources only; paid = future. **Tier 1 keyless** (Stooq) runs live with zero setup; **Tier 2 free-with-key** (FRED, `FRED_API_KEY`) is operator-provided and degrades gracefully when absent. Full rationale: `01_DECISION_ANALYSIS.md` amendment log.
+
+**How to run:**
+- Offline demo/tests (no network, no key): `uv sync --extra dev`; `uv run pytest -q`; `uv run ipos-init`; `uv run ipos-weekly --as-of 2026-07-17 --seed-offline` → `data/exports/snapshots/2026-07-17/{snapshot.json,report.md}`.
+- Live (Claude Code on the web): set environment **Network access = Custom**, allow `stooq.com` (and `api.stlouisfed.org` once a FRED key exists in env `FRED_API_KEY`), then `uv run ipos-weekly`. Live pulls overwrite the synthetic seed automatically.
+- Backfill max OAS history early (needs network + FRED key): `uv run ipos-backfill`.
 
 ## 3. What happens next? (in order — do not reorder without recording why)
 
 > **Concrete build spec for steps 1–3 below:** [`05_blueprint/02_PHASE1_WORKPLAN.md`](05_blueprint/02_PHASE1_WORKPLAN.md) — exact scaffold, the golden-20 indicator list with source tickers, file-creation order, and Definition of Done.
 
-1. **Phase 0:** `ipos/` package scaffold, uv toolchain, pydantic config loading, pytest wiring → meso plan `C1`, steps 1–2.
-2. **URGENT within Phase 1:** seed the raw archive (`scripts/backfill_seed.py`) — FRED truncated ICE BofA OAS history to a rolling 3-year window in Apr 2026; every week of delay loses a week of history permanently → `C2`, step 3.
-3. **Phase 1 (walking skeleton):** registry (~20 FRED/Stooq indicators) → DuckDB init → pull → weekly canonical → percentile/band scores → module aggregation → `snapshot.json` → deterministic `report.md`. Exit test: one command, idempotent, green → `C1`–`C3`, `C6` (partial), `C8` (CLI only).
-4. **Phase 2 (core value):** z-score+confidence, contradictions engine, regime classifier, static HTML report, playbook retrieval + LLM narration, Task Scheduler → `C3`–`C8`.
-5. **Phase 3:** expand to 60 indicators, scrapes, golden-snapshot tests, hardening → `C2`, `C9`.
-6. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
+1. ✅ **Phase 0 (DONE):** `ipos/` package scaffold, uv toolchain, pydantic config loading, pytest wiring → `C1` steps 1–2.
+2. ✅ **Phase 1 (DONE):** registry (golden-20) → DuckDB init → pull (FRED/Stooq/manual_csv + archive + fallback) → weekly canonical → percentile/band/zscore scores + confidence → module aggregation + stance + risk budget → `snapshot.json`/`snapshot.min.json` → deterministic `report.md`; idempotent (byte-identical), degrades offline, 29 tests green → `C1`–`C3`, `C6` (partial), `C8` (CLI+fail-safe).
+   - ⏳ **Operator action (deferred, not blocking):** run `scripts/backfill_seed.py` (`uv run ipos-backfill`) on a networked machine **with a FRED key** to archive max ICE BofA OAS history before further 3-year-window truncation. Cannot run in a keyless/offline sandbox — the script reports unreachable series and does not fabricate data.
+3. **→ Phase 2 (core value) — CURRENT FRONTIER:** z-score confidence composite (base done; expand quality/coherence), contradictions engine (YAML predicates), regime classifier (CHOPPY/TRENDY/MOMENTUM) + `risk_scaler`, static HTML report, playbook retrieval + LLM narration ($0 default), Task Scheduler registration → `C3`–`C8`.
+4. **Phase 3:** expand to 60 indicators (Tier-1 keyless first, then FRED), scrapes, pandera schemas, golden-snapshot tests, hardening → `C2`, `C9`.
+5. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 
@@ -67,7 +75,11 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `logs/` | Extraction QA report + transcript copy |
 | `For next chat.md` | **Superseded** old handover (2026-02-14) — historical context only |
 | `Everything from this chat.md` | Extraction transcript (source of truth for extraction; not the blueprint chat) |
-| *(future)* `ipos/`, `configs/`, `data/`, `tests/` | Implementation — will be created in Phase 0/1 per meso plans |
+| `ipos/` | **Implementation package** (Phase 0/1): `config/` (pydantic models + loader), `warehouse/` (DuckDB DDL + db), `etl/` (connectors + archive + fallback + fixtures), `transforms/` (canonical SQL + scoring), `aggregate/`, `export/` (snapshot + report), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py` |
+| `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml` — the single source of truth, validated at load |
+| `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe) — 29 tests, no live calls, green in ~18s |
+| `data/` | gitignored runtime: `warehouse.duckdb`, `archive/` (append-only Parquet), `inbox/`, `exports/snapshots/<friday>/` |
+| `pyproject.toml` / `uv.lock` | uv toolchain + entry points (`ipos-init/pull/score/weekly/doctor/backfill`) |
 
 ## 6. Session protocol (how any future chat resumes work)
 

@@ -1,0 +1,19 @@
+# --- IPOS runtime data (append-only archive & warehouse live outside git) ---
+data/
+!data/.gitkeep
+!data/**/.gitkeep
+
+# --- secrets ---
+.env
+
+# --- python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.ruff_cache/
+
+# --- duckdb ---
+*.duckdb
+*.duckdb.wal

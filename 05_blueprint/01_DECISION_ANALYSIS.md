@@ -110,3 +110,30 @@
 | 3 | Silent scoring drift when tuning | Medium | High (destroys year-over-year comparability) | scoring_version + params_json freeze + golden snapshots | Golden diff fails → intentional bump or revert |
 | 4 | Regime classifier mis-labels (hardest component) | Medium | Medium (wrong risk_scaler) | Synthetic-path tests, hysteresis, UNCERTAIN-priority defensive default, confidence gate <40 | Persistent mislabels → simplify to MA/ATR-only classifier v0 until tuned |
 | 5 | Windows machine off / task rot | Medium | Low-Med | Missed-start catch-up, idempotent runs, doctor staleness alarm, report age banner | Repeated misses → move schedule to a time the machine is reliably on |
+
+---
+
+## Amendment log (plan-repair; newest first)
+
+Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
+
+### 2026-07-23 — Phase 1 walking skeleton built; free-source policy sharpened; scoring-math fixes
+
+**Context:** first implementation session. Built the full walking skeleton (`ipos/` package, configs, DuckDB warehouse, ETL, transforms, scoring, aggregation, snapshot+report, CLI, tests). Ran in a sandbox with **no network to data hosts and no FRED key**.
+
+1. **Free-data-source policy — refined and made explicit (extends D5, does not change it).**
+   IPOS uses **only free, established data sources**; paid APIs / payment models are **out of scope and explicitly deferred to future development**. Within "free" we now distinguish two tiers, because it changes what can be run live with zero setup:
+   - **Tier 1 — keyless free** (no account, no key): **Stooq** (equities, FX, gold/copper, market 10y). These run live the moment `stooq.com` is on the environment allowlist — the zero-setup Phase-1 path.
+   - **Tier 2 — free-but-registration-keyed:** **FRED** (`FRED_API_KEY`, free account). Remains the designed backbone (rates/curve/credit/liquidity/vol). The key is **operator-provided**; obtaining it is a manual account signup (email verification) that an automated web agent cannot and should not perform — deferred to a human/CLI operator. Until a key exists, FRED series **degrade gracefully** (missing/stale → lower confidence, run continues) and the system stays fully functional on Tier-1 + archive.
+   - **Switch trigger unchanged** (D5): a *critical* series unavailable free for >4 weeks → single cheapest paid source for that category only. No paid source enters before that trigger fires.
+   *Reason:* the user directed that first stages rely only on free established sources and that anything else is future work; and that account/key creation is a risky outward-facing op to defer. This aligns with the $0 constraint and the fail-degraded principle.
+
+2. **Z-score→0–100 mapping corrected (refines C3 decision 3).** Adopted `score = 50·(tanh(z/k)+1)`, clipped [0,100], inverted for `higher_is_better=false`. The Blueprint's prose `50+50·(z'+1)/2` yields [50,100] and its pseudocode `50+25z` yields [25,75] — neither is centered/range-safe. The adopted form is centered at 50 and range-safe, matching the evident intent. *Reason:* correctness + testability (hand-computed fixtures in `tests/test_scoring.py`).
+
+3. **Feature/scoring math in vectorized pandas, not window-function SQL (refines C3 decision 1 & MASTER_PLAN A6).** `canonical_weekly` stays SQL (DuckDB ASOF join). Rolling percentile-of-current-value-within-its-own-window is awkward in SQL and the data is tiny; pandas rolling is fast, deterministic, and trivially hand-verifiable. *Reason:* simplicity + testable determinism. Revisit if golden-snapshot/perf needs demand SQL in Phase 2/3.
+
+4. **`pandera` deferred to Phase 3 (refines D7).** Phase-1 validation is lightweight pandas (`ipos/etl/validators.py`: shape, dtype, monotonic dates, per-asset-class sanity ranges). *Reason:* pandera earns its dependency weight when many heterogeneous scrape sources arrive (Phase 3), not for the golden-20.
+
+5. **Aggregation consolidated into one module.** C1's `aggregate/{modules,stance,risk_budget}.py` are implemented as one cohesive `ipos/aggregate/modules.py` (module scores + stance vector + risk budget). *Reason:* they share one weighted-blend pass; splitting adds indirection without benefit. Purely structural; no behavioral change.
+
+6. **Deterministic synthetic fixtures for offline runs/tests (`ipos/etl/fixtures.py`).** Clearly labelled NOT real market data; exists only so the pipeline runs and tests pass with no network (the offline-resilience DoD) and so tests make **zero live calls**. Live pulls (Tier-1/Tier-2) archive real data with a later `pull_date`, which the fallback executor prefers automatically. *Reason:* the sandbox has no data-host network; this keeps the DoD demonstrable without fabricating "real" numbers.

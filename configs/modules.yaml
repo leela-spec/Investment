@@ -1,0 +1,44 @@
+# Module definitions. Each module owns one stance dimension (tilt target).
+# playbook_refs point at 04_playbook/modules/*.md (module_ids, not filenames).
+# Equal weights in Phase 1; tune in Phase 2.
+
+modules:
+  - module_id: EquityRisk
+    name: "Equity risk appetite"
+    stance_dim: equity
+    playbook_refs: [MARKET_CONDITIONS, SENTIMENT_POSITIONING]
+
+  - module_id: RatesLiquidity
+    name: "Rates & liquidity conditions"
+    stance_dim: duration
+    playbook_refs: []
+
+  - module_id: GrowthRisk
+    name: "Growth / recession risk (curve)"
+    stance_dim: growth
+    playbook_refs: []
+
+  - module_id: Credit
+    name: "Credit spreads"
+    stance_dim: credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+
+  - module_id: Liquidity
+    name: "Central-bank liquidity"
+    stance_dim: liquidity
+    playbook_refs: []
+
+  - module_id: FX
+    name: "US dollar / FX"
+    stance_dim: usd
+    playbook_refs: []
+
+  - module_id: Commodities
+    name: "Commodities"
+    stance_dim: commodities
+    playbook_refs: []
+
+  - module_id: Fundamentals
+    name: "Macro fundamentals / sentiment surveys"
+    stance_dim: fundamentals
+    playbook_refs: []

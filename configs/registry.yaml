@@ -1,0 +1,258 @@
+# IPOS indicator registry — the single source of truth (registry-driven; D2->D3).
+# Golden-20 walking-skeleton set: 12 FRED (one key) + 8 Stooq (no key).
+# `higher_is_better` is relative to "risk-on / supportive".
+# `sources` is an ordered fallback chain (C2). `extract_ref` is provenance
+# back to 03_extract/indicators.jsonl. Band scores encode directionality
+# directly (the band table IS the mapping), so band indicators do not invert.
+#
+# Curve bands seed from rules.jsonl (<0 -> 20 ... >=1.0 -> 90).
+
+indicators:
+  # ---- 12 FRED ----
+  - series_id: T10Y2Y
+    name: "10y-2y Treasury curve"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T10Y2Y}
+    higher_is_better: true
+    scoring_method: band
+    scoring_params:
+      bands:
+        - {upper: 0.0, score: 20}    # x < 0  (inverted)
+        - {upper: 0.5, score: 45}    # [0, 0.5)
+        - {upper: 1.0, score: 70}    # [0.5, 1.0)
+        - {upper: null, score: 90}   # >= 1.0
+    module_id: GrowthRisk
+    critical: true
+    extract_ref: rates_yield_curve_us_10y_minus_2y_t10y2y
+
+  - series_id: T10Y3M
+    name: "10y-3m Treasury curve"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T10Y3M}
+    higher_is_better: true
+    scoring_method: band
+    scoring_params:
+      bands:
+        - {upper: 0.0, score: 20}
+        - {upper: 0.5, score: 45}
+        - {upper: 1.0, score: 70}
+        - {upper: null, score: 90}
+    module_id: GrowthRisk
+    extract_ref: rates_yield_curve_us_10y_minus_3m
+
+  - series_id: DGS10
+    name: "10y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS10}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+
+  - series_id: NFCI
+    name: "Chicago Fed National Financial Conditions Index"
+    asset_class: Rates
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: NFCI}
+    higher_is_better: false   # negative = loose = supportive
+    scoring_method: zscore
+    module_id: RatesLiquidity
+
+  - series_id: DTWEXBGS
+    name: "Trade-weighted USD (broad)"
+    asset_class: FX
+    frequency: D
+    unit: index
+    sources:
+      - {type: fred, locator: DTWEXBGS}
+    higher_is_better: false   # strong USD = risk-off
+    scoring_method: percentile
+    module_id: FX
+
+  - series_id: HY_OAS
+    name: "US High Yield OAS"
+    asset_class: Credit
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLH0A0HYM2}
+      - {type: manual_csv, locator: "hy_oas*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+    critical: true
+    playbook_refs: [SENTIMENT_POSITIONING]
+
+  - series_id: IG_OAS
+    name: "US Investment Grade OAS"
+    asset_class: Credit
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLC0A0CM}
+      - {type: manual_csv, locator: "ig_oas*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+
+  - series_id: VIXCLS
+    name: "CBOE VIX"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: fred, locator: VIXCLS}
+      - {type: stooq, locator: "^vix"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: EquityRisk
+
+  - series_id: WALCL
+    name: "Fed balance sheet (total assets)"
+    asset_class: Rates
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: WALCL}
+    higher_is_better: true    # QE/QT proxy
+    scoring_method: zscore
+    module_id: Liquidity
+    extract_ref: liquidity_fed_balance_sheet_total_assets_walcl
+
+  - series_id: UMCSENT
+    name: "UMich consumer sentiment"
+    asset_class: Equity
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: UMCSENT}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+    extract_ref: macro_consumer_sentiment_university_of_michigan
+
+  - series_id: WTI
+    name: "WTI crude oil"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: fred, locator: DCOILWTICO}
+      - {type: stooq, locator: "cl.f"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+
+  - series_id: DFF
+    name: "Effective Fed Funds rate"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DFF}
+    higher_is_better: false   # policy tightness
+    scoring_method: zscore
+    module_id: RatesLiquidity
+
+  # ---- 8 Stooq ----
+  - series_id: SPX
+    name: "S&P 500"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^spx"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    critical: true
+    playbook_refs: [MARKET_CONDITIONS]
+
+  - series_id: NDX
+    name: "Nasdaq 100"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^ndx"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+
+  - series_id: RUT
+    name: "Russell 2000"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^rut"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+
+  - series_id: DAX
+    name: "DAX"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^dax"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+
+  - series_id: GOLD
+    name: "Gold (spot)"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: stooq, locator: "xauusd"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+
+  - series_id: COPPER
+    name: "Copper futures"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: stooq, locator: "hg.f"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+    needs_verification: true
+
+  - series_id: EURUSD
+    name: "EUR/USD"
+    asset_class: FX
+    frequency: D
+    unit: rate
+    sources:
+      - {type: stooq, locator: "eurusd"}
+    higher_is_better: true    # USD inverse cross-check
+    scoring_method: percentile
+    module_id: FX
+
+  - series_id: US10Y_STOOQ
+    name: "US 10y yield (market, Stooq)"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: stooq, locator: "10usy.b"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+    needs_verification: true

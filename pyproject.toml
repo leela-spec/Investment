@@ -1,0 +1,40 @@
+[project]
+name = "ipos"
+version = "0.1.0"
+description = "Investment Process OS — local-first weekly macro scoring engine (code computes, LLM narrates)"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "duckdb>=1.1",
+    "pydantic>=2.6",
+    "pyyaml>=6.0",
+    "pandas>=2.1",
+    "jinja2>=3.1",
+    "jsonschema>=4.21",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+]
+
+[project.scripts]
+ipos = "ipos.cli:main"
+ipos-init = "ipos.cli:cmd_init"
+ipos-pull = "ipos.cli:cmd_pull"
+ipos-score = "ipos.cli:cmd_score"
+ipos-weekly = "ipos.cli:cmd_weekly"
+ipos-doctor = "ipos.cli:cmd_doctor"
+ipos-backfill = "ipos.cli:cmd_backfill"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["ipos"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

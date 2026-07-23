@@ -1,0 +1,43 @@
+# Intra-module indicator weights (each block sums to 1.0) and inter-module
+# risk-budget weights (sum to 1.0). Equal weights in Phase 1; tune in Phase 2.
+
+module_indicator_weights:
+  GrowthRisk:
+    T10Y2Y: 0.5
+    T10Y3M: 0.5
+  RatesLiquidity:
+    DGS10: 0.25
+    NFCI: 0.25
+    DFF: 0.25
+    US10Y_STOOQ: 0.25
+  FX:
+    DTWEXBGS: 0.5
+    EURUSD: 0.5
+  Credit:
+    HY_OAS: 0.5
+    IG_OAS: 0.5
+  EquityRisk:
+    VIXCLS: 0.2
+    SPX: 0.2
+    NDX: 0.2
+    RUT: 0.2
+    DAX: 0.2
+  Liquidity:
+    WALCL: 1.0
+  Fundamentals:
+    UMCSENT: 1.0
+  Commodities:
+    WTI: 0.34
+    GOLD: 0.33
+    COPPER: 0.33
+
+# Overall risk budget = weighted blend of module scores (equal in Phase 1).
+risk_budget_weights:
+  EquityRisk: 0.125
+  RatesLiquidity: 0.125
+  GrowthRisk: 0.125
+  Credit: 0.125
+  Liquidity: 0.125
+  FX: 0.125
+  Commodities: 0.125
+  Fundamentals: 0.125
