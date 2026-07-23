@@ -8,6 +8,7 @@ import datetime as dt
 import pytest
 
 import ipos.etl.base as etl_base
+from ipos.aggregate.contradictions import evaluate as evaluate_contradictions
 from ipos.aggregate.modules import aggregate
 from ipos.config.load import load_registry
 from ipos.etl.fixtures import SEED_ANCHOR, generate_series
@@ -57,4 +58,5 @@ def populated_db(tmp_path, monkeypatch):
         build_canonical(con, SEED_ANCHOR)
         compute(con, reg, SEED_ANCHOR)
         aggregate(con, reg, SEED_ANCHOR)
+        evaluate_contradictions(con, SEED_ANCHOR)
     return db, reg

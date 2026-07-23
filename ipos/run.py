@@ -19,6 +19,7 @@ from pathlib import Path
 
 import duckdb
 
+from ipos.aggregate.contradictions import evaluate as evaluate_contradictions
 from ipos.aggregate.modules import aggregate
 from ipos.config.load import load_registry
 from ipos.config.models import Registry
@@ -120,6 +121,15 @@ def run_weekly(
         agg = aggregate(con, reg, aod)
         result.stages["aggregate"] = agg
         _log_stage(con, run_id, aod, "aggregate", "OK", t0, rows_out=agg.get("modules"))
+
+        # --- stage: contradictions ---
+        t0 = dt.datetime.now()
+        hits = evaluate_contradictions(con, aod)
+        result.stages["contradictions"] = {
+            "n": len(hits), "high": sum(1 for h in hits if h["severity"] == "high"),
+        }
+        _log_stage(con, run_id, aod, "contradictions", "OK", t0, rows_out=len(hits),
+                   detail=f"{[h['id'] for h in hits]}")
 
         # --- stage: export ---
         t0 = dt.datetime.now()

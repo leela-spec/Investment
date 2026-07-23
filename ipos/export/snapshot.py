@@ -103,6 +103,19 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
     movers.sort(key=lambda m: (-abs(m["delta_score_1w"]), m["id"]))
     top_movers = movers[:8]
 
+    # contradictions (written by the engine into log_contradiction)
+    contradictions = []
+    for cid, sev, summary, details in con.execute(
+        "SELECT contradiction_id, severity, summary, details_json "
+        "FROM log_contradiction WHERE as_of_date = ? ORDER BY "
+        "CASE severity WHEN 'high' THEN 0 WHEN 'med' THEN 1 ELSE 2 END, contradiction_id",
+        [as_of],
+    ).fetchall():
+        contradictions.append({
+            "id": cid, "severity": sev, "summary": summary,
+            "details": json.loads(details) if details else {},
+        })
+
     stale_series = sorted(i["id"] for i in indicators if i["stale"])
     missing_series = sorted(
         e.series_id for e in registry.active()
@@ -129,7 +142,7 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             }
             for m in modules
         ],
-        "contradictions": [],  # Phase 2 engine
+        "contradictions": contradictions,
         "top_movers": top_movers,
         "indicators": indicators,
         "data_quality": {
@@ -141,7 +154,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         },
         "flags": {
             "degraded": len(missing_series) > 0 or len(stale_series) > 0,
-            "has_contradictions": False,
+            "has_contradictions": len(contradictions) > 0,
+            "n_high_severity": sum(1 for c in contradictions if c["severity"] == "high"),
         },
     }
     return snapshot

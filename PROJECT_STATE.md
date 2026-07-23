@@ -20,7 +20,7 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | **B — Knowledge extraction** (PDF → modules + JSONL) | ✅ **DONE & QA-verified** (204/204 IDs reconciled; 10 modules; 34 indicators, 126 rules, 44 process steps; `scripts/qa_repo.py` green) |
 | **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
 | **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
-| **A — Phase 2+ (core value)** | ❌ **NOT STARTED** — regime classifier, contradictions engine, z-score confidence, static HTML report, LLM narration, Task Scheduler. This is the current frontier. |
+| **A — Phase 2 (core value)** | 🚧 **IN PROGRESS** — ✅ contradictions engine (YAML predicates + safe AST evaluator, wired into snapshot/report), ✅ golden-snapshot regression harness. ⬜ regime classifier + risk_scaler, static HTML report, LLM narration, Task Scheduler. |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
 **Current phase:** **Phase 2 (core value)**. Phase 1 walking skeleton is complete and testable end-to-end offline.
@@ -39,7 +39,10 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 1. ✅ **Phase 0 (DONE):** `ipos/` package scaffold, uv toolchain, pydantic config loading, pytest wiring → `C1` steps 1–2.
 2. ✅ **Phase 1 (DONE):** registry (golden-20) → DuckDB init → pull (FRED/Stooq/manual_csv + archive + fallback) → weekly canonical → percentile/band/zscore scores + confidence → module aggregation + stance + risk budget → `snapshot.json`/`snapshot.min.json` → deterministic `report.md`; idempotent (byte-identical), degrades offline, 29 tests green → `C1`–`C3`, `C6` (partial), `C8` (CLI+fail-safe).
    - ⏳ **Operator action (deferred, not blocking):** run `scripts/backfill_seed.py` (`uv run ipos-backfill`) on a networked machine **with a FRED key** to archive max ICE BofA OAS history before further 3-year-window truncation. Cannot run in a keyless/offline sandbox — the script reports unreachable series and does not fabricate data.
-3. **→ Phase 2 (core value) — CURRENT FRONTIER:** z-score confidence composite (base done; expand quality/coherence), contradictions engine (YAML predicates), regime classifier (CHOPPY/TRENDY/MOMENTUM) + `risk_scaler`, static HTML report, playbook retrieval + LLM narration ($0 default), Task Scheduler registration → `C3`–`C8`.
+3. **→ Phase 2 (core value) — IN PROGRESS:**
+   - ✅ **Contradictions engine** (`configs/contradictions.yaml` + `ipos/aggregate/contradictions.py`): safe AST predicate evaluator (no `eval`), 9 seed predicates over golden-20 modules, writes `log_contradiction`, surfaced in snapshot + report.
+   - ✅ **Golden-snapshot regression harness** (`ipos/golden.py`, `scripts/update_golden.py`, `tests/test_golden.py`, `tests/golden/`): byte-exact guard against silent scoring drift; intentional updates via `update_golden.py` + `scoring_version` bump.
+   - ⬜ **Next:** regime classifier (CHOPPY/TRENDY/MOMENTUM) + `risk_scaler`; static HTML report; playbook retrieval + LLM narration ($0 default, needs a provider); Task Scheduler registration → `C4`, `C6`–`C8`.
 4. **Phase 3:** expand to 60 indicators (Tier-1 keyless first, then FRED), scrapes, pandera schemas, golden-snapshot tests, hardening → `C2`, `C9`.
 5. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
 

@@ -1,0 +1,59 @@
+# Contradictions engine predicates (C4 decision 5). Evaluated over the week's
+# module/indicator scores + regime by a safe AST evaluator (no eval).
+#
+# DSL helpers: module('X'), module_conf('X'), module_spread('X'),
+# indicator('Y'), regime(). Scores are 0-100 (higher = more risk-on/supportive
+# for that module). Severity: low | med | high.
+#
+# Seeded from the Blueprint's canonical macro contradictions + the Playbook
+# modules' "Contradictions to Watch" sections, restricted to the golden-20
+# modules (EquityRisk, RatesLiquidity, GrowthRisk, Credit, Liquidity, FX,
+# Commodities, Fundamentals). Regime-based predicates arrive with the Phase-2
+# classifier; until then regime() is null and those simply don't fire.
+
+contradictions:
+  - id: EQ_vs_CREDIT
+    severity: high
+    summary: "Equities risk-on while credit spreads signal stress (stocks up, credit warning)."
+    when: "module('EquityRisk') >= 70 and module('Credit') <= 40"
+
+  - id: EQ_vs_RATES
+    severity: med
+    summary: "Equities risk-on while rates/liquidity conditions look tight."
+    when: "module('EquityRisk') >= 70 and module('RatesLiquidity') <= 35"
+
+  - id: EQ_vs_GROWTH
+    severity: med
+    summary: "Equities risk-on while the yield curve signals elevated recession risk."
+    when: "module('EquityRisk') >= 70 and module('GrowthRisk') <= 30"
+
+  - id: COMMODITIES_vs_GROWTH
+    severity: low
+    summary: "Cyclical commodities strong while the curve signals weak growth."
+    when: "module('Commodities') >= 70 and module('GrowthRisk') <= 30"
+
+  - id: LIQUIDITY_vs_CREDIT
+    severity: med
+    summary: "Central-bank liquidity supportive while credit spreads signal stress."
+    when: "module('Liquidity') >= 65 and module('Credit') <= 35"
+
+  - id: EQ_vs_FUNDAMENTALS
+    severity: low
+    summary: "Equities risk-on while consumer/macro fundamentals are weak."
+    when: "module('EquityRisk') >= 70 and module('Fundamentals') <= 30"
+
+  - id: BROAD_RISKON_CREDIT_LAG
+    severity: high
+    summary: "Broad risk-on (equities + commodities) but credit not confirming."
+    when: "module('EquityRisk') >= 65 and module('Commodities') >= 60 and module('Credit') <= 45"
+
+  # intra-module conflict (Blueprint "mixed signal"): members far apart
+  - id: EQUITY_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the equity-risk module (members strongly disagree)."
+    when: "module_spread('EquityRisk') >= 60"
+
+  - id: RATES_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the rates/liquidity module (members strongly disagree)."
+    when: "module_spread('RatesLiquidity') >= 60"
