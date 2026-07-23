@@ -1,6 +1,6 @@
 # ipos_playbook_repo
 
-> **New session? Start with [`PROJECT_STATE.md`](PROJECT_STATE.md)** — the index: status, active plan, next steps, decision log, file map.
+> **New AI agent? Start with [`HANDOVER.md`](HANDOVER.md), then [`PROJECT_STATE.md`](PROJECT_STATE.md)** — the entry contract and the living index (status, active plan, next steps, decision log, file map).
 
 Local-first, token-efficient artifacts extracted from a seminar PDF into:
 - Playbook modules (`04_playbook/modules/*.md`)

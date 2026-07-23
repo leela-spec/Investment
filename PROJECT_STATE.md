@@ -1,6 +1,7 @@
 # PROJECT_STATE — IPOS (Investment Process OS)
 
-> **READ THIS FIRST.** This file is the single entry point for any new session (human or AI).
+> **READ THIS FIRST** (a brand-new AI agent should read [`HANDOVER.md`](HANDOVER.md) first, then this).
+> This file is the single entry point for any new session (human or AI).
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
@@ -24,6 +25,8 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 **Current phase:** ready to start **Phase 0 (scaffold) + Phase 1 (walking skeleton, ~20 golden indicators)**.
 
 ## 3. What happens next? (in order — do not reorder without recording why)
+
+> **Concrete build spec for steps 1–3 below:** [`05_blueprint/02_PHASE1_WORKPLAN.md`](05_blueprint/02_PHASE1_WORKPLAN.md) — exact scaffold, the golden-20 indicator list with source tickers, file-creation order, and Definition of Done.
 
 1. **Phase 0:** `ipos/` package scaffold, uv toolchain, pydantic config loading, pytest wiring → meso plan `C1`, steps 1–2.
 2. **URGENT within Phase 1:** seed the raw archive (`scripts/backfill_seed.py`) — FRED truncated ICE BofA OAS history to a rolling 3-year window in Apr 2026; every week of delay loses a week of history permanently → `C2`, step 3.
@@ -49,9 +52,11 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 
 | Path | What it is |
 |---|---|
+| `HANDOVER.md` | **First read for a brand-new AI agent** — entry contract, rules of engagement, how to disagree with the plan |
 | `PROJECT_STATE.md` | **This file — the index. Start here.** |
 | `05_blueprint/00_MASTER_PLAN.md` | Macro plan: vision, constraints, principles, validated architecture, feature ranking, 5 phases, risks |
 | `05_blueprint/01_DECISION_ANALYSIS.md` | Risk/benefit/cost/performance per decision, **alternatives + switch triggers**, risk register |
+| `05_blueprint/02_PHASE1_WORKPLAN.md` | Concrete next-build spec: scaffold, golden-20 indicators + tickers, build order, Definition of Done |
 | `05_blueprint/meso/C1…C9_*.md` | Per-cluster implementation plans (options → decision → steps → Definition of Done) |
 | `05_blueprint/research/2026-07-19_*.md` | Archived evidence: transcript digest, free data sources, stack validation, LLM token patterns |
 | `Automated Investment Playbook.md` | The original full Blueprint (deliverables 1–9: stack, schema DDL, scoring math, prompts, mock MVP) |
