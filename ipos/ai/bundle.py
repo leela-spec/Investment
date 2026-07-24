@@ -30,9 +30,35 @@ def _system_prompt() -> str:
     return SYSTEM_PROMPT_PATH.read_text(encoding="utf-8") if SYSTEM_PROMPT_PATH.exists() else ""
 
 
+def _truncate_at_h2(text: str, cap_tokens: int) -> str:
+    """Keep a module's front matter + as many H2 (`## `) sections as fit the
+    cap, so a large module contributes its highest-priority sections instead of
+    being dropped whole (WS-B fix for SENTIMENT_POSITIONING)."""
+    lines = text.splitlines(keepends=True)
+    out: list[str] = []
+    used = 0
+    truncated = False
+    for line in lines:
+        t = est_tokens(line)
+        if used + t > cap_tokens and line.startswith("## "):
+            truncated = True
+            break
+        if used + t > cap_tokens:
+            truncated = True
+            break
+        out.append(line)
+        used += t
+    body = "".join(out).rstrip()
+    if truncated:
+        body += "\n\n_[excerpt truncated to fit token budget]_"
+    return body
+
+
 def build_playbook_excerpt(snapshot: dict, registry: Registry, cap_tokens: int) -> tuple[str, list[str]]:
-    """Concatenate surfaced Playbook modules in priority order, stopping before
-    the token cap (whole-module granularity). Returns (text, included_ids)."""
+    """Concatenate surfaced Playbook modules in priority order under the token
+    cap. A module too large to fit whole is truncated at an H2 boundary rather
+    than dropped, so the most-relevant module always contributes something.
+    Returns (text, included_ids)."""
     refs = surfaced_playbook_refs(snapshot, registry)
     parts: list[str] = []
     included: list[str] = []
@@ -41,13 +67,18 @@ def build_playbook_excerpt(snapshot: dict, registry: Registry, cap_tokens: int) 
         text = load_module_text(mid)
         if not text:
             continue
-        block = f"\n\n### Playbook module: {mid}\n{text}"
-        t = est_tokens(block)
-        if used + t > cap_tokens:
-            continue  # skip modules that would blow the cap (priority-ordered)
+        remaining = cap_tokens - used
+        if remaining < 150:  # not enough room for a meaningful excerpt
+            break
+        header = f"\n\n### Playbook module: {mid}\n"
+        header_t = est_tokens(header)
+        body = text
+        if est_tokens(header + text) > remaining:
+            body = _truncate_at_h2(text, remaining - header_t)
+        block = header + body
         parts.append(block)
         included.append(mid)
-        used += t
+        used += est_tokens(block)
     return "".join(parts).strip(), included
 
 

@@ -6,10 +6,10 @@ module_indicator_weights:
     T10Y2Y: 0.5
     T10Y3M: 0.5
   RatesLiquidity:
-    DGS10: 0.25
-    NFCI: 0.25
-    DFF: 0.25
-    US10Y_STOOQ: 0.25
+    DGS10: 0.4
+    NFCI: 0.3
+    DFF: 0.3
+    US10Y_STOOQ: 0.0   # displayed cross-check of DGS10 (same variable); 0 weight avoids double-counting
   FX:
     DTWEXBGS: 0.5
     EURUSD: 0.5

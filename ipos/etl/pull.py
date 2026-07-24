@@ -78,6 +78,59 @@ def upsert_observations(
     return len(df)
 
 
+def pull_ohlc(
+    con: duckdb.DuckDBPyConnection,
+    registry: Registry,
+    benchmarks: list[str],
+    *,
+    as_of: dt.date,
+    ingested_at: dt.datetime,
+    connectors: dict | None = None,
+) -> dict:
+    """Populate fact_ohlc for the given benchmark series from their Stooq source
+    (the only OHLC-capable connector). Best-effort and never fatal: on failure
+    or when no Stooq source exists, the regime classifier falls back to
+    close-only. Returns {series_id: rows}."""
+    from ipos.etl import stooq  # local import
+
+    conns = connectors if connectors is not None else CONNECTORS
+    stooq_ohlc = conns.get("stooq_ohlc") or (stooq.pull_ohlc if "stooq" in conns else None)
+    out: dict[str, int] = {}
+    if stooq_ohlc is None:
+        return out
+    for sid in benchmarks:
+        try:
+            entry = registry.by_id(sid)
+        except KeyError:
+            continue
+        src = next((s for s in entry.sources if s.type == "stooq"), None)
+        if src is None:
+            continue
+        try:
+            df = stooq_ohlc(entry, src, None, as_of)
+        except Exception:
+            continue
+        if df is None or df.empty:
+            continue
+        df = df.copy()
+        df["obs_date"] = pd.to_datetime(df["obs_date"]).dt.date
+        df["series_id"] = sid
+        df["vintage_id"] = f"{sid}@{as_of.isoformat()}"
+        df["ingested_at"] = ingested_at
+        con.register("ohlc_df", df)
+        con.execute(
+            """
+            INSERT OR REPLACE INTO fact_ohlc
+              (series_id, obs_date, open, high, low, close, vintage_id, ingested_at)
+            SELECT series_id, obs_date::DATE, open, high, low, close, vintage_id, ingested_at
+            FROM ohlc_df
+            """
+        )
+        con.unregister("ohlc_df")
+        out[sid] = len(df)
+    return out
+
+
 def pull_all(
     con: duckdb.DuckDBPyConnection,
     registry: Registry,

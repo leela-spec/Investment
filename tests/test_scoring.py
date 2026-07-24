@@ -102,6 +102,30 @@ def test_band_monotonic_non_decreasing():
 
 # --- idempotency of the full transform pass ---------------------------------
 
+def test_vectorized_matches_scalar_scoring():
+    """The production path (ipos/transforms/run.py) computes percentile/zscore
+    with vectorized numpy; assert it equals the unit-tested scalar functions on
+    random windows so the two implementations cannot silently diverge (WS-B)."""
+    import numpy as np
+
+    rng = np.random.default_rng(12345)
+    for _ in range(200):
+        n = int(rng.integers(2, 160))
+        w = rng.normal(0, 1, n).cumsum() + 100.0
+        for hib in (True, False):
+            # percentile — production: mean(w <= w[-1]) * 100, inverted if not hib
+            raw_pct = float(np.mean(w <= w[-1]) * 100.0)
+            prod_pct = raw_pct if hib else 100.0 - raw_pct
+            assert percentile_score(list(w), hib) == pytest.approx(prod_pct, abs=1e-9)
+
+            # zscore — production: 50*(tanh(z/k)+1) clipped, inverted if not hib
+            mu = float(np.mean(w)); sd = float(np.std(w))
+            z = (w[-1] - mu) / sd if sd > 0 else 0.0
+            s = min(100.0, max(0.0, 50.0 * (math.tanh(z / 2.0) + 1.0)))
+            prod_z = s if hib else 100.0 - s
+            assert zscore_score(list(w), hib, k=2.0) == pytest.approx(prod_z, abs=1e-9)
+
+
 def test_transform_idempotent(tmp_path, monkeypatch):
     import ipos.etl.base as base
     from ipos.config.load import load_registry

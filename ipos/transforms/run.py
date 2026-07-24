@@ -121,11 +121,14 @@ def compute(
             score = v.apply(lambda x: band_score(x, bands))
             lookback = None
 
-        # --- staleness ---
+        # --- staleness (ratio drives graded confidence quality) ---
         age = (g["as_of_date"] - g["obs_date"]).dt.days
+        staleness_ratio = (age / lag_allow).clip(lower=0.0)
         stale = age > lag_allow
         if series_id in forced_stale:
-            stale = stale | (weeks == as_of)
+            forced = weeks == as_of
+            stale = stale | forced
+            staleness_ratio = staleness_ratio.where(~forced, staleness_ratio.clip(lower=2.0))
 
         score_frames.append(pd.DataFrame({
             "series_id": series_id,
@@ -134,6 +137,7 @@ def compute(
             "method": entry.scoring_method,
             "lookback": lookback,
             "stale": stale,
+            "staleness_ratio": staleness_ratio.round(4),
             "module_id": entry.module_id,
         }))
 
@@ -188,27 +192,36 @@ def compute(
 
 
 def _confidence(scores_df: pd.DataFrame, defaults) -> pd.DataFrame:
-    """Composite confidence = 0.45*quality + 0.35*stability + 0.20*coherence."""
+    """Confidence = quality + stability (coherence off by default — see
+    ConfidenceWeights). quality is a GRADED staleness score; stability rewards
+    low recent score-volatility with a configurable scale."""
     w = defaults.confidence_weights
+    scale = defaults.stability_scale
     df = scores_df.sort_values(["series_id", "as_of_date"]).copy()
 
-    # quality: freshness (stale => heavy penalty). Missingness/revision-instability
-    # are Phase-3 refinements (recorded in the decision log).
-    df["quality"] = df["stale"].map(lambda s: 40.0 if s else 100.0)
+    # quality: 100 while fresh (staleness_ratio <= 1), degrading as data ages
+    # past its allowed lag; floored at 20 (never zero — the value still exists).
+    df["quality"] = (100.0 - 55.0 * (df["staleness_ratio"] - 1.0).clip(lower=0.0)).clip(20.0, 100.0)
 
     # stability: low volatility of recent score changes => high stability.
     def _stab(group: pd.Series) -> pd.Series:
         vol = group.diff().rolling(window=8, min_periods=2).std().fillna(0.0)
-        return (100.0 * np.exp(-vol / 10.0)).clip(0, 100)
+        return (100.0 * np.exp(-vol / scale)).clip(0, 100)
     df["stability"] = df.groupby("series_id")["score"].transform(_stab)
 
-    # coherence: agreement with same-module neighbours that week.
-    module_mean = df.groupby(["as_of_date", "module_id"])["score"].transform("mean")
-    module_size = df.groupby(["as_of_date", "module_id"])["score"].transform("size")
-    coherence = (100.0 - (df["score"] - module_mean).abs()).clip(0, 100)
-    df["coherence"] = coherence.where(module_size > 1, 100.0)
+    # coherence: retained for optional use but weighted 0 by default (would
+    # double-count the contradictions engine). Only computed if it has weight.
+    if w.coherence > 0:
+        module_mean = df.groupby(["as_of_date", "module_id"])["score"].transform("mean")
+        module_size = df.groupby(["as_of_date", "module_id"])["score"].transform("size")
+        coherence = (100.0 - (df["score"] - module_mean).abs()).clip(0, 100)
+        df["coherence"] = coherence.where(module_size > 1, 50.0)
+    else:
+        df["coherence"] = 0.0
 
+    total_w = w.quality + w.stability + w.coherence
     df["confidence"] = (
-        w.quality * df["quality"] + w.stability * df["stability"] + w.coherence * df["coherence"]
+        (w.quality * df["quality"] + w.stability * df["stability"]
+         + w.coherence * df["coherence"]) / total_w
     ).clip(0, 100).round(6)
     return df

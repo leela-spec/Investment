@@ -114,9 +114,12 @@ class Weights(BaseModel):
 class ConfidenceWeights(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    quality: float = 0.45
-    stability: float = 0.35
-    coherence: float = 0.20
+    # Coherence defaulted to 0: intra-module disagreement is what the
+    # contradictions engine treats as *signal*, so scoring it into confidence
+    # double-counts. Confidence = data quality + signal stability.
+    quality: float = 0.60
+    stability: float = 0.40
+    coherence: float = 0.0
 
 
 class ScoringDefaults(BaseModel):
@@ -127,6 +130,7 @@ class ScoringDefaults(BaseModel):
     zscore_lookback_weeks: int = 104
     zscore_k: float = 2.0
     trend_slope_weeks: int = 5
+    stability_scale: float = 10.0  # score-points of recent volatility that halve-ish stability
     confidence_weights: ConfidenceWeights = Field(default_factory=ConfidenceWeights)
     # a canonical weekly value older than this many days is flagged stale
     staleness_days: dict[str, int] = Field(

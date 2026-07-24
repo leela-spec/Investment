@@ -6,11 +6,15 @@ percentile_lookback_weeks: 156
 zscore_lookback_weeks: 104
 zscore_k: 2.0
 trend_slope_weeks: 5
+stability_scale: 10.0   # recent score-volatility (points) that meaningfully lowers stability
 
+# Confidence = data quality + signal stability. Coherence is 0 by design:
+# intra-module disagreement is the contradictions engine's job, so scoring it
+# here would double-count (WS-B fix).
 confidence_weights:
-  quality: 0.45
-  stability: 0.35
-  coherence: 0.20
+  quality: 0.60
+  stability: 0.40
+  coherence: 0.0
 
 # A canonical weekly value older than this many days (relative to as_of_date)
 # is flagged stale -> confidence hit (C3), degraded run (C8).

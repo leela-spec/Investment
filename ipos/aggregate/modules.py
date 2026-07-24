@@ -123,11 +123,3 @@ def aggregate(
         "regime": regime_label,
         "confidence": round(overall_conf, 6),
     }
-
-
-def stance_vector(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> dict[str, float]:
-    rows = con.execute(
-        "SELECT stance_dim, stance_value FROM agg_module WHERE as_of_date = ? ORDER BY stance_dim",
-        [as_of],
-    ).fetchall()
-    return {dim: round(val, 6) for dim, val in rows}

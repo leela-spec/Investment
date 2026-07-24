@@ -26,7 +26,7 @@ from ipos.ai.bundle import narrate, write_bundle
 from ipos.ai.provider import load_ai_config
 from ipos.config.load import load_registry
 from ipos.config.models import Registry
-from ipos.etl.pull import pull_all
+from ipos.etl.pull import pull_all, pull_ohlc
 from ipos.export.report import write_report
 from ipos.export.snapshot import build_snapshot, validate, write_snapshot
 from ipos.report.html import write_html
@@ -122,7 +122,16 @@ def run_weekly(
         result.stages["score"] = summ
         _log_stage(con, run_id, aod, "score", "OK", t0, rows_out=summ.get("rows"))
 
-        # --- stage: regime (governor; close-only MVP on the benchmark) ---
+        # --- stage: OHLC for the regime benchmark (best-effort; enables real
+        #     ATR/range. Skipped for synthetic/offline -> close-only fallback) ---
+        if not seed_offline:
+            try:
+                pull_ohlc(con, reg, [REGIME_BENCHMARK], as_of=aod,
+                          ingested_at=ingested, connectors=connectors)
+            except Exception as exc:  # never fatal
+                log.warning("OHLC pull skipped: %s", exc)
+
+        # --- stage: regime (governor; real ATR/range when OHLC present) ---
         t0 = dt.datetime.now()
         regime = classify_from_db(con, REGIME_BENCHMARK, aod)
         result.stages["regime"] = {
@@ -154,6 +163,9 @@ def run_weekly(
         # --- AI layer (last mile): bundle always written ($0 manual path);
         #     interpretation attached only if a live provider is configured ---
         ai_cfg = load_ai_config()
+        # record which playbook modules the week surfaces (C5 auditability)
+        from ipos.ai.playbook import surfaced_playbook_refs
+        snap["playbook_selection"] = surfaced_playbook_refs(snap, reg)
         narration = narrate(snap, reg, ai_cfg)
         if narration:
             snap.update(narration)  # interpretation + interpretation_meta
