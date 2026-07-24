@@ -131,9 +131,12 @@ th { color: var(--muted); font-weight: 600; }
 .rm-now { fill: #b2182b; stroke: #fff; stroke-width: 1; }
 .foot { color: var(--muted); font-size: 12px; margin-top: 28px; }
 @media (prefers-color-scheme: dark) {
-  :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; }
-  .gauge { background:#2a2c31; } .tilt { background:#2a2c31; }
+  :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31; }
 }
+/* viewer's explicit theme toggle wins over the OS media query, both directions */
+:root[data-theme="dark"] { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31; }
+:root[data-theme="light"] { --bg:#ffffff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2; --card:#f7f7f8; --track:#ececec; }
+.gauge { background: var(--track, #ececec); } .tilt { background: var(--track, #f0f0f0); }
 """
 
 _TEMPLATE = """<!doctype html>
