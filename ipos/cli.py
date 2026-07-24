@@ -80,7 +80,6 @@ def cmd_pull(argv: list[str] | None = None) -> int:
     import datetime as _dt
 
     from ipos.config.load import load_registry
-    from ipos.etl.fixtures import seed_archive
     from ipos.etl.pull import pull_all
     from ipos.run import last_friday
     from ipos.warehouse.db import connect, init_db
@@ -88,10 +87,9 @@ def cmd_pull(argv: list[str] | None = None) -> int:
     reg = load_registry()
     aod = _parse_as_of(args.as_of) or last_friday()
     init_db(reg, args.db)
-    if args.seed_offline:
-        seed_archive(reg)
     with connect(args.db) as con:
-        reports = pull_all(con, reg, as_of=aod, ingested_at=_dt.datetime.now())
+        reports = pull_all(con, reg, as_of=aod, ingested_at=_dt.datetime.now(),
+                           synthetic=args.seed_offline)
     missing = [r.series_id for r in reports if r.missing]
     stale = [r.series_id for r in reports if r.stale and not r.missing]
     print(f"ipos-pull {aod}: {len(reports)} series, "

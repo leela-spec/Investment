@@ -16,6 +16,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: T10Y2Y}
+      - {type: dbnomics, locator: FRED/T10Y2Y}
     higher_is_better: true
     scoring_method: band
     scoring_params:
@@ -35,6 +36,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: T10Y3M}
+      - {type: dbnomics, locator: FRED/T10Y3M}
     higher_is_better: true
     scoring_method: band
     scoring_params:
@@ -53,6 +55,8 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: DGS10}
+      - {type: dbnomics, locator: FRED/DGS10}
+      - {type: ustreasury, locator: BC_10YEAR}
     higher_is_better: false
     scoring_method: zscore
     module_id: RatesLiquidity
@@ -64,6 +68,7 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: NFCI}
+      - {type: dbnomics, locator: FRED/NFCI}
     higher_is_better: false   # negative = loose = supportive
     scoring_method: zscore
     module_id: RatesLiquidity
@@ -75,6 +80,7 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: DTWEXBGS}
+      - {type: dbnomics, locator: FRED/DTWEXBGS}
     higher_is_better: false   # strong USD = risk-off
     scoring_method: percentile
     module_id: FX
@@ -86,6 +92,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: BAMLH0A0HYM2}
+      - {type: dbnomics, locator: FRED/BAMLH0A0HYM2}
       - {type: manual_csv, locator: "hy_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile
@@ -100,6 +107,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: BAMLC0A0CM}
+      - {type: dbnomics, locator: FRED/BAMLC0A0CM}
       - {type: manual_csv, locator: "ig_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile
@@ -112,6 +120,7 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: VIXCLS}
+      - {type: dbnomics, locator: FRED/VIXCLS}
       - {type: stooq, locator: "^vix"}
     higher_is_better: false
     scoring_method: percentile
@@ -124,6 +133,7 @@ indicators:
     unit: usd_millions
     sources:
       - {type: fred, locator: WALCL}
+      - {type: dbnomics, locator: FRED/WALCL}
     higher_is_better: true    # QE/QT proxy
     scoring_method: zscore
     module_id: Liquidity
@@ -136,6 +146,7 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: UMCSENT}
+      - {type: dbnomics, locator: FRED/UMCSENT}
     higher_is_better: true
     scoring_method: percentile
     module_id: Fundamentals
@@ -148,6 +159,7 @@ indicators:
     unit: usd
     sources:
       - {type: fred, locator: DCOILWTICO}
+      - {type: dbnomics, locator: FRED/DCOILWTICO}
       - {type: stooq, locator: "cl.f"}
     higher_is_better: true
     scoring_method: percentile
@@ -160,6 +172,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: DFF}
+      - {type: dbnomics, locator: FRED/DFF}
     higher_is_better: false   # policy tightness
     scoring_method: zscore
     module_id: RatesLiquidity
@@ -172,6 +185,8 @@ indicators:
     unit: index
     sources:
       - {type: stooq, locator: "^spx"}
+      - {type: stooq, locator: "spy.us"}
+      - {type: dbnomics, locator: FRED/SP500}
     higher_is_better: true
     scoring_method: percentile
     module_id: EquityRisk

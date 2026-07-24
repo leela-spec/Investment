@@ -13,7 +13,7 @@ import duckdb
 import pandas as pd
 
 from ipos.config.models import RegistryEntry, Registry
-from ipos.etl import fred, manual_csv, stooq
+from ipos.etl import dbnomics, fred, manual_csv, stooq, ustreasury
 from ipos.etl.base import PullResult, run_fallback
 from ipos.etl.validators import ValidationError, validate_observations
 
@@ -21,6 +21,8 @@ CONNECTORS = {
     "fred": fred.pull,
     "stooq": stooq.pull,
     "manual_csv": manual_csv.pull,
+    "dbnomics": dbnomics.pull,
+    "ustreasury": ustreasury.pull,
 }
 
 
@@ -34,6 +36,7 @@ class SeriesPullReport:
     stale: bool
     error: str | None
     warnings: list[str]
+    synthetic: bool = False
 
     @property
     def missing(self) -> bool:
@@ -83,18 +86,31 @@ def pull_all(
     ingested_at: dt.datetime,
     pull_date: dt.date | None = None,
     connectors: dict | None = None,
+    synthetic: bool = False,
 ) -> list[SeriesPullReport]:
     """Pull, validate, and load every active indicator. Idempotent: the
     vintage_id for a given (as_of, series) is stable so re-runs upsert in
-    place rather than accumulating rows."""
+    place rather than accumulating rows.
+
+    If ``synthetic=True`` (the --seed-offline demo path), observations are
+    generated locally and tagged with a ``synthetic@`` vintage; nothing is
+    written to or read from the real archive, so synthetic values can never be
+    served as real (WS-A trust fix)."""
+    from ipos.etl.fixtures import synthetic_connector  # local import avoids cycle
+
     conns = connectors if connectors is not None else CONNECTORS
     pd_date = pull_date or as_of
     reports: list[SeriesPullReport] = []
 
     for entry in registry.active():
-        result = run_fallback(
-            entry, conns, start=None, end=as_of, pull_date=pd_date
-        )
+        if synthetic:
+            df = synthetic_connector(entry)
+            result = PullResult(series_id=entry.series_id, df=df,
+                                 source_type="synthetic")
+        else:
+            result = run_fallback(
+                entry, conns, start=None, end=as_of, pull_date=pd_date
+            )
         warnings: list[str] = []
         if result.ok:
             try:
@@ -108,8 +124,11 @@ def pull_all(
                 )
 
         # deterministic vintage: archive-replays and re-runs of the same week
-        # must produce identical observation rows.
-        vintage_id = f"{entry.series_id}@{as_of.isoformat()}"
+        # must produce identical observation rows. Synthetic data carries a
+        # 'synthetic@' vintage so it is self-identifying downstream and can
+        # never be mistaken for real data.
+        prefix = "synthetic@" if synthetic else ""
+        vintage_id = f"{prefix}{entry.series_id}@{as_of.isoformat()}"
         n = upsert_observations(con, entry, result, ingested_at, vintage_id)
 
         reports.append(
@@ -122,6 +141,7 @@ def pull_all(
                 stale=result.stale,
                 error=result.error,
                 warnings=warnings,
+                synthetic=synthetic,
             )
         )
     return reports

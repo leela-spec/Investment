@@ -18,8 +18,7 @@ import hashlib
 import numpy as np
 import pandas as pd
 
-from ipos.config.models import Registry, RegistryEntry
-from ipos.etl.base import archive_write
+from ipos.config.models import RegistryEntry
 
 SEED_ANCHOR = dt.date(2026, 7, 17)  # a Friday
 WEEKS = 220
@@ -78,12 +77,10 @@ def generate_series(entry: RegistryEntry, weeks: int = WEEKS) -> pd.DataFrame:
     return df
 
 
-def seed_archive(registry: Registry, *, pull_date: dt.date = SEED_ANCHOR) -> int:
-    """Write synthetic parquet into ``data/archive`` for every active series so
-    the offline fallback executor can replay it. Returns count written."""
-    n = 0
-    for entry in registry.active():
-        df = generate_series(entry)
-        archive_write(entry.sources[0].type, entry.series_id, df, pull_date)
-        n += 1
-    return n
+def synthetic_connector(entry: RegistryEntry, source=None, start=None, end=None):
+    """Connector-shaped wrapper around ``generate_series`` for the --seed-offline
+    path. It is NEVER wired into a registry entry's source chain; the run stage
+    routes to it explicitly, and its observations are tagged with a
+    ``synthetic@`` vintage so they can never masquerade as real data or be
+    replayed from the archive (nothing synthetic is written to data/archive)."""
+    return generate_series(entry)

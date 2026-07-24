@@ -16,7 +16,10 @@ from ipos.export.snapshot import EXPORTS_DIR
 
 _TEMPLATE = """# IPOS Weekly Report — {{ as_of }}
 
-_Scoring version {{ scoring_version }} · schema {{ schema_version }} · code computes, LLM narrates (narration disabled in Phase 1)._
+_Scoring version {{ scoring_version }} · schema {{ schema_version }} · code computes, LLM narrates._
+{% if flags.synthetic_data %}
+> 🧪 **SYNTHETIC DEMO DATA** (`--seed-offline`) — does NOT reflect real markets; for illustration only.
+{% endif %}
 
 ## Overall
 - **Risk budget:** {{ "%.1f"|format(overall.risk_budget) }} / 100

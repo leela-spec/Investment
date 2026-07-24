@@ -18,7 +18,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 ScoringMethod = Literal["percentile", "zscore", "band"]
 Frequency = Literal["D", "W", "M"]
-SourceType = Literal["fred", "stooq", "manual_csv"]
+SourceType = Literal["fred", "stooq", "manual_csv", "dbnomics", "ustreasury", "synthetic"]
 Status = Literal["active", "deferred"]
 
 

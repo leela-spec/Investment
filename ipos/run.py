@@ -26,7 +26,6 @@ from ipos.ai.bundle import narrate, write_bundle
 from ipos.ai.provider import load_ai_config
 from ipos.config.load import load_registry
 from ipos.config.models import Registry
-from ipos.etl.fixtures import seed_archive
 from ipos.etl.pull import pull_all
 from ipos.export.report import write_report
 from ipos.export.snapshot import build_snapshot, validate, write_snapshot
@@ -50,6 +49,7 @@ def last_friday(today: dt.date | None = None) -> dt.date:
 class RunResult:
     as_of: dt.date
     status: str                      # OK | DEGRADED | FAILED_ATTEMPT
+    synthetic: bool = False
     stages: dict = field(default_factory=dict)
     critical_missing: list[str] = field(default_factory=list)
     stale: list[str] = field(default_factory=list)
@@ -83,15 +83,15 @@ def run_weekly(
     ingested = ingested_at or dt.datetime.now()
 
     init_db(reg, db_path)
-    if seed_offline:
-        seed_archive(reg)
 
     result = RunResult(as_of=aod, status="OK")
 
     with connect(db_path) as con:
-        # --- stage: pull ---
+        # --- stage: pull (synthetic path under --seed-offline, tagged & flagged) ---
         t0 = dt.datetime.now()
-        reports = pull_all(con, reg, as_of=aod, ingested_at=ingested, connectors=connectors)
+        reports = pull_all(con, reg, as_of=aod, ingested_at=ingested,
+                           connectors=connectors, synthetic=seed_offline)
+        result.synthetic = any(r.synthetic for r in reports)
         result.stale = sorted(r.series_id for r in reports if r.stale and not r.missing)
         result.missing = sorted(r.series_id for r in reports if r.missing)
         result.critical_missing = sorted(r.series_id for r in reports if r.missing and r.critical)

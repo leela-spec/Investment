@@ -80,14 +80,20 @@ def test_critical_missing_preserves_last_good(env, monkeypatch):
     assert ("FAILED_ATTEMPT",) in rows
 
 
-def test_offline_seeded_run_is_degraded_not_crash(env, monkeypatch):
-    # the real DoD offline path: seed archive, no connectors reach live -> the
-    # run degrades (stale flags) but still produces a valid snapshot.
+def test_offline_seeded_run_is_synthetic_not_crash(env, monkeypatch):
+    # --seed-offline routes to the synthetic path: a clean, valid snapshot that
+    # is clearly flagged synthetic (never presented as real) — no crash, no
+    # archive writes.
     tmp, db, reg, exports = env
     monkeypatch.setattr(etl_base, "ARCHIVE_ROOT", tmp / "archiveC")
-    conns_dead = {"fred": _fake_dead, "stooq": _fake_dead, "manual_csv": _fake_dead}
-    res = run_weekly(as_of=AS_OF, db_path=db, registry=reg, connectors=conns_dead,
+    res = run_weekly(as_of=AS_OF, db_path=db, registry=reg,
                      seed_offline=True, ingested_at=dt.datetime(2026, 7, 18, 8, 0, 0))
-    assert res.status == "DEGRADED"
-    assert len(res.stale) == 20 and not res.missing
-    assert (exports / AS_OF.isoformat() / "snapshot.json").exists()
+    assert res.status == "OK"
+    assert res.synthetic is True and not res.missing
+    snap_path = exports / AS_OF.isoformat() / "snapshot.json"
+    assert snap_path.exists()
+    import json
+    snap = json.loads(snap_path.read_text())
+    assert snap["flags"]["synthetic_data"] is True
+    # nothing synthetic leaked into the real archive tree
+    assert not (tmp / "archiveC").exists() or not any((tmp / "archiveC").rglob("*.parquet"))

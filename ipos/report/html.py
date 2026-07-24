@@ -89,6 +89,8 @@ _TEMPLATE = """<!doctype html>
 <h1>IPOS Weekly Report</h1>
 <div class="sub">as of <strong>{{ as_of }}</strong> · scoring v{{ s.scoring_version }} · schema v{{ s.schema_version }} · code computes, LLM narrates</div>
 
+{% if s.flags.synthetic_data %}<div class="banner warn">🧪 <strong>SYNTHETIC DEMO DATA</strong> — this report was generated with <code>--seed-offline</code> and does NOT reflect real markets. For illustration only.</div>
+{% endif %}
 {% if s.flags.degraded %}<div class="banner warn">⚠️ Degraded run — {{ s.data_quality.n_stale }} stale, {{ s.data_quality.n_missing }} missing series. Serving best-available data.</div>
 {% else %}<div class="banner ok">✓ All {{ s.data_quality.n_indicators }} indicators fresh.</div>{% endif %}
 

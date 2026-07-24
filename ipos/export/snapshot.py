@@ -117,6 +117,14 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "details": json.loads(details) if details else {},
         })
 
+    # synthetic-data detection: any canonical value backed by a synthetic
+    # vintage means the run used --seed-offline demo data, never real.
+    synthetic_data = con.execute(
+        "SELECT count(*) FROM fact_weekly WHERE as_of_date <= ? "
+        "AND vintage_id LIKE 'synthetic@%'",
+        [as_of],
+    ).fetchone()[0] > 0
+
     stale_series = sorted(i["id"] for i in indicators if i["stale"])
     missing_series = sorted(
         e.series_id for e in registry.active()
@@ -162,6 +170,7 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "degraded": len(missing_series) > 0 or len(stale_series) > 0,
             "has_contradictions": len(contradictions) > 0,
             "n_high_severity": sum(1 for c in contradictions if c["severity"] == "high"),
+            "synthetic_data": synthetic_data,
         },
     }
     return snapshot
