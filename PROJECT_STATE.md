@@ -20,10 +20,10 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | **B — Knowledge extraction** (PDF → modules + JSONL) | ✅ **DONE & QA-verified** (204/204 IDs reconciled; 10 modules; 34 indicators, 126 rules, 44 process steps; `scripts/qa_repo.py` green) |
 | **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
 | **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
-| **A — Phase 2 (core value)** | 🚧 **IN PROGRESS** — ✅ contradictions engine (YAML predicates + safe AST evaluator, wired into snapshot/report), ✅ golden-snapshot regression harness. ⬜ regime classifier + risk_scaler, static HTML report, LLM narration, Task Scheduler. |
+| **A — Phase 2 (core value)** | 🚧 **MOSTLY DONE** — ✅ contradictions engine, ✅ golden-snapshot harness, ✅ regime classifier (close-only MVP) + risk_scaler + policy selectors, ✅ static self-contained HTML report, ✅ LLM narration scaffolding ($0 `none`/`manual`, token-budgeted prompt bundle). ⬜ live LLM providers (need key/network — deferred), ⬜ Task Scheduler registration (Windows-only). 52 tests green in ~23s. |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
-**Current phase:** **Phase 2 (core value)**. Phase 1 walking skeleton is complete and testable end-to-end offline.
+**Current phase:** **Phase 2 (core value) — mostly complete**. Skeleton + contradictions + regime governor + static HTML report + AI scaffolding all done and testable end-to-end offline. Remaining Phase 2 items (live LLM provider, Windows Task Scheduler) need external setup; then Phase 3 (widen to 60 indicators).
 
 **Data-source policy (locked 2026-07-23):** free, established sources only; paid = future. **Tier 1 keyless** (Stooq) runs live with zero setup; **Tier 2 free-with-key** (FRED, `FRED_API_KEY`) is operator-provided and degrades gracefully when absent. Full rationale: `01_DECISION_ANALYSIS.md` amendment log.
 
@@ -42,7 +42,11 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 3. **→ Phase 2 (core value) — IN PROGRESS:**
    - ✅ **Contradictions engine** (`configs/contradictions.yaml` + `ipos/aggregate/contradictions.py`): safe AST predicate evaluator (no `eval`), 9 seed predicates over golden-20 modules, writes `log_contradiction`, surfaced in snapshot + report.
    - ✅ **Golden-snapshot regression harness** (`ipos/golden.py`, `scripts/update_golden.py`, `tests/test_golden.py`, `tests/golden/`): byte-exact guard against silent scoring drift; intentional updates via `update_golden.py` + `scoring_version` bump.
-   - ⬜ **Next:** regime classifier (CHOPPY/TRENDY/MOMENTUM) + `risk_scaler`; static HTML report; playbook retrieval + LLM narration ($0 default, needs a provider); Task Scheduler registration → `C4`, `C6`–`C8`.
+   - ✅ **Regime classifier** (`ipos/aggregate/regime.py`, migration `002`): close-only MVP of MARKET_CONDITIONS (CHOPPY/TRENDY/MOMENTUM/UNCERTAIN) + confidence + hysteresis + `risk_scaler` (scales risk budget) + policy selectors; in snapshot + report.
+   - ✅ **Static HTML report** (`ipos/report/`): self-contained (inline CSS/SVG, no CDN), gauges + stance bars + contradiction cards + module/indicator tables + 26-week score heatmap; `report.html` per week + stable `latest.html`.
+   - ✅ **LLM narration scaffolding** (`ipos/ai/`, `prompts/`, `configs/ai.yaml`): provider interface + `none`/`manual` ($0), deterministic playbook retrieval (no RAG), token-budgeted `prompt_bundle.md` for manual paste; report appends an Interpretation section when a live provider is configured.
+   - ⬜ **Remaining Phase 2 (need external setup):** a live LLM provider (key + network; or use the manual bundle at $0); Windows Task Scheduler registration script (Windows-only).
+   - ⬜ **Then Phase 3:** widen to 60 indicators (Tier-1 keyless first), pandera, scrapes, vintage handling → `C2`, `C9`.
 4. **Phase 3:** expand to 60 indicators (Tier-1 keyless first, then FRED), scrapes, pandera schemas, golden-snapshot tests, hardening → `C2`, `C9`.
 5. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
 
@@ -78,9 +82,10 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `logs/` | Extraction QA report + transcript copy |
 | `For next chat.md` | **Superseded** old handover (2026-02-14) — historical context only |
 | `Everything from this chat.md` | Extraction transcript (source of truth for extraction; not the blueprint chat) |
-| `ipos/` | **Implementation package** (Phase 0/1): `config/` (pydantic models + loader), `warehouse/` (DuckDB DDL + db), `etl/` (connectors + archive + fallback + fixtures), `transforms/` (canonical SQL + scoring), `aggregate/`, `export/` (snapshot + report), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py` |
-| `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml` — the single source of truth, validated at load |
-| `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe) — 29 tests, no live calls, green in ~18s |
+| `ipos/` | **Implementation package**: `config/` (pydantic + loader), `warehouse/` (DuckDB DDL + migrations + db), `etl/` (connectors + archive + fallback + fixtures), `transforms/` (canonical SQL + scoring), `aggregate/` (modules/stance/risk-budget + `regime.py` + `contradictions.py`), `export/` (snapshot + md report), `report/` (self-contained HTML), `ai/` (provider + playbook retrieval + prompt bundle), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py`, `golden.py` |
+| `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml`, `contradictions.yaml`, `ai.yaml` — single source of truth, validated at load |
+| `prompts/` | `weekly_checkup.md` — frozen, versioned LLM system contract |
+| `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe, contradictions, golden, regime, report-html, ai) — 52 tests, no live calls, green in ~23s; `tests/golden/` holds the regression snapshot |
 | `data/` | gitignored runtime: `warehouse.duckdb`, `archive/` (append-only Parquet), `inbox/`, `exports/snapshots/<friday>/` |
 | `pyproject.toml` / `uv.lock` | uv toolchain + entry points (`ipos-init/pull/score/weekly/doctor/backfill`) |
 

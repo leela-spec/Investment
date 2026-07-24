@@ -1,0 +1,189 @@
+"""Static, self-contained weekly HTML report (C7).
+
+Renders every section from the snapshot + a short score history for the
+heatmap, into one file with inline CSS. No network, no JS library — opens
+offline by double-click. Written alongside the snapshot and copied to a stable
+``data/exports/latest.html``.
+"""
+
+from __future__ import annotations
+
+import datetime as dt
+import html as _html
+from pathlib import Path
+
+import duckdb
+from jinja2 import Environment
+
+from ipos.export.snapshot import EXPORTS_DIR
+from ipos.report.charts import gauge_html, score_color, text_on, tilt_bar_html
+
+HEATMAP_WEEKS = 26
+
+
+def _score_history(con: duckdb.DuckDBPyConnection, as_of: dt.date, weeks: int):
+    start = as_of - dt.timedelta(weeks=weeks - 1)
+    rows = con.execute(
+        """
+        SELECT s.series_id, s.as_of_date, s.score_0_100
+        FROM fact_score s JOIN dim_series d USING (series_id)
+        WHERE s.as_of_date BETWEEN ? AND ? AND d.enabled
+        ORDER BY s.series_id, s.as_of_date
+        """,
+        [start, as_of],
+    ).fetchall()
+    week_set = sorted({r[1] for r in rows})
+    by_series: dict[str, dict] = {}
+    for sid, wk, score in rows:
+        by_series.setdefault(sid, {})[wk] = score
+    return week_set, by_series
+
+
+_CSS = """
+:root { --bg:#ffffff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2; --card:#f7f7f8; }
+* { box-sizing: border-box; }
+body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+  color: var(--fg); background: var(--bg); margin: 0; padding: 24px; line-height: 1.45; }
+.wrap { max-width: 1080px; margin: 0 auto; }
+h1 { font-size: 22px; margin: 0 0 2px; } h2 { font-size: 16px; margin: 28px 0 8px;
+  border-bottom: 2px solid var(--line); padding-bottom: 4px; }
+.sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+.kpis { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; }
+.kpi { min-width: 220px; } .kpi .label { font-size: 12px; color: var(--muted); }
+.kpi .val { font-size: 26px; font-weight: 600; }
+.gauge { position: relative; height: 12px; background: #ececec; border-radius: 6px; margin-top: 6px; }
+.gauge-fill { position:absolute; left:0; top:0; height:100%; border-radius:6px 0 0 6px; }
+.gauge-marker { position:absolute; top:-3px; width:2px; height:18px; background:#111; }
+.banner { padding: 8px 12px; border-radius: 6px; font-size: 13px; margin: 10px 0; }
+.banner.warn { background:#fff4e5; border:1px solid #ffd8a8; }
+.banner.ok { background:#eaf6ec; border:1px solid #b7e0c0; }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--line); }
+th { color: var(--muted); font-weight: 600; }
+.num { text-align: right; font-variant-numeric: tabular-nums; }
+.tilt { position: relative; height: 14px; background:#f0f0f0; border-radius:3px; width:200px; }
+.tilt-center { position:absolute; left:50%; top:0; width:1px; height:100%; background:#999; }
+.tilt-fill { position:absolute; top:0; height:100%; }
+.cards { display:flex; flex-direction:column; gap:8px; }
+.card { border-left: 4px solid #ccc; background: var(--card); padding: 8px 12px; border-radius: 4px; }
+.card.high { border-color:#b2182b; } .card.med { border-color:#e08214; } .card.low { border-color:#999; }
+.card .sev { font-size:11px; text-transform:uppercase; color:var(--muted); }
+.pill { display:inline-block; padding:2px 8px; border-radius: 10px; font-size:12px; font-weight:600; }
+.hm { overflow-x:auto; } .hm table { width:auto; } .hm td { padding:0; }
+.hm .cell { width:16px; height:16px; } .hm .rowlab { padding:2px 6px; font-size:12px; white-space:nowrap; }
+.legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; }
+.legend .sw { width:16px; height:12px; display:inline-block; border-radius:2px; }
+.foot { color: var(--muted); font-size: 12px; margin-top: 28px; }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; }
+  .gauge { background:#2a2c31; } .tilt { background:#2a2c31; }
+}
+"""
+
+_TEMPLATE = """<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IPOS Weekly — {{ as_of }}</title>
+<style>{{ css }}</style></head>
+<body><div class="wrap">
+<h1>IPOS Weekly Report</h1>
+<div class="sub">as of <strong>{{ as_of }}</strong> · scoring v{{ s.scoring_version }} · schema v{{ s.schema_version }} · code computes, LLM narrates</div>
+
+{% if s.flags.degraded %}<div class="banner warn">⚠️ Degraded run — {{ s.data_quality.n_stale }} stale, {{ s.data_quality.n_missing }} missing series. Serving best-available data.</div>
+{% else %}<div class="banner ok">✓ All {{ s.data_quality.n_indicators }} indicators fresh.</div>{% endif %}
+
+<div class="kpis">
+  <div class="kpi"><div class="label">Risk budget</div><div class="val">{{ "%.1f"|format(s.overall.risk_budget) }}</div>{{ gauge(s.overall.risk_budget)|safe }}</div>
+  <div class="kpi"><div class="label">Confidence</div><div class="val">{{ "%.1f"|format(s.overall.confidence) }}</div>{{ gauge(s.overall.confidence)|safe }}</div>
+  <div class="kpi"><div class="label">Regime</div><div class="val">{{ s.regime.label or "n/a" }}</div>
+    <div class="sub">{% if s.regime.confidence is not none %}conf {{ "%.0f"|format(s.regime.confidence) }} · scaler {{ s.regime.risk_scaler }}{% endif %}</div></div>
+</div>
+{% if s.regime.policy_selectors %}<div class="sub">Policy — size <strong>{{ s.regime.policy_selectors.position_size }}</strong> · entry <strong>{{ s.regime.policy_selectors.entry_style }}</strong> · trail <strong>{{ s.regime.policy_selectors.trailing_stop }}</strong> · stop <strong>{{ s.regime.policy_selectors.initial_stop }}</strong></div>{% endif %}
+
+<h2>Stance vector</h2>
+<table><tbody>
+{% for dim, val in stance %}<tr><td>{{ dim }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td></tr>
+{% endfor %}</tbody></table>
+
+<h2>Contradictions</h2>
+{% if s.contradictions %}<div class="cards">
+{% for c in s.contradictions %}<div class="card {{ c.severity }}"><div class="sev">{{ c.severity }}</div>{{ c.summary }}
+{% if c.details %}<div class="sub">{% for k, v in c.details.items() %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}</div>
+{% endfor %}</div>{% else %}<div class="sub">None flagged this week.</div>{% endif %}
+
+<h2>Top movers <span class="sub">(Δscore vs prior week)</span></h2>
+{% if s.top_movers %}<table><thead><tr><th>Indicator</th><th class="num">Δscore 1w</th></tr></thead><tbody>
+{% for m in s.top_movers %}<tr><td>{{ m.id }}</td><td class="num">{{ "%+.1f"|format(m.delta_score_1w) }}</td></tr>
+{% endfor %}</tbody></table>{% else %}<div class="sub">No prior week for comparison.</div>{% endif %}
+
+<h2>Modules</h2>
+<table><thead><tr><th>Module</th><th class="num">Score</th><th>Tilt</th><th class="num">Confidence</th></tr></thead><tbody>
+{% for m in modules %}<tr><td>{{ m.module }}</td>
+  <td class="num"><span class="pill" style="background:{{ color(m.score) }};color:{{ txt(color(m.score)) }}">{{ "%.1f"|format(m.score) }}</span></td>
+  <td>{{ tilt(m.tilt)|safe }}</td><td class="num">{{ "%.1f"|format(m.confidence) }}</td></tr>
+{% endfor %}</tbody></table>
+
+<h2>Indicators</h2>
+<table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
+{% for i in indicators %}<tr id="{{ i.id }}"><td>{{ i.id }}</td><td>{{ i.module }}</td>
+  <td class="num">{{ i.value }}</td><td class="num">{{ "%+.4g"|format(i.delta_1w) if i.delta_1w is not none else "—" }}</td>
+  <td>{{ i.trend }}</td>
+  <td class="num"><span class="pill" style="background:{{ color(i.score) }};color:{{ txt(color(i.score)) }}">{{ "%.1f"|format(i.score) }}</span></td>
+  <td class="num">{{ "%.0f"|format(i.confidence) }}</td><td>{{ "yes" if i.stale else "" }}</td></tr>
+{% endfor %}</tbody></table>
+
+<h2>Score heatmap <span class="sub">(last {{ weeks|length }} weeks)</span></h2>
+<div class="hm"><table><tbody>
+{% for sid in heat_series %}<tr><td class="rowlab">{{ sid }}</td>
+{% for wk in weeks %}<td><div class="cell" title="{{ sid }} {{ wk }}: {{ heat[sid].get(wk) }}" style="background:{{ color(heat[sid].get(wk)) }}"></div></td>{% endfor %}
+</tr>{% endfor %}
+</tbody></table></div>
+<div class="legend"><span>0</span><span class="sw" style="background:{{ color(0) }}"></span><span class="sw" style="background:{{ color(50) }}"></span><span class="sw" style="background:{{ color(100) }}"></span><span>100</span></div>
+
+<h2>Interpretation</h2>
+{% if s.interpretation %}<div>{{ s.interpretation|e|replace("\n", "<br>")|safe }}</div>
+<div class="sub">Narrated by {{ s.interpretation_meta.provider }} · prompt v{{ s.interpretation_meta.prompt_version }}</div>
+{% else %}<div class="sub">LLM narration disabled (provider: none). The report above is fully computed by code; enable a provider in configs/ai.yaml to append an interpretation.</div>{% endif %}
+
+<div class="foot">IPOS — local-first weekly macro process. Deterministic artifact; re-runs are byte-identical for a fixed as_of.</div>
+</div></body></html>
+"""
+
+
+def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) -> str:
+    weeks, heat = _score_history(con, as_of, HEATMAP_WEEKS)
+    heat_series = sorted(heat.keys())
+    env = Environment(autoescape=False, keep_trailing_newline=True)
+    tmpl = env.from_string(_TEMPLATE)
+    return tmpl.render(
+        css=_CSS,
+        as_of=snapshot["as_of"],
+        s=snapshot,
+        stance=sorted(snapshot["overall"]["stance_vector"].items()),
+        modules=sorted(snapshot["modules"], key=lambda m: m["module"]),
+        indicators=snapshot["indicators"],
+        weeks=weeks,
+        heat=heat,
+        heat_series=heat_series,
+        gauge=gauge_html,
+        tilt=tilt_bar_html,
+        color=score_color,
+        txt=text_on,
+        esc=_html.escape,
+    )
+
+
+def write_html(
+    con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date,
+    base_dir: Path | None = None,
+) -> dict:
+    base = base_dir or EXPORTS_DIR
+    out_dir = base / as_of.isoformat()
+    out_dir.mkdir(parents=True, exist_ok=True)
+    content = render_html(con, snapshot, as_of)
+    report_html = out_dir / "report.html"
+    report_html.write_text(content, encoding="utf-8")
+    latest = base.parent / "latest.html"
+    latest.parent.mkdir(parents=True, exist_ok=True)
+    latest.write_text(content, encoding="utf-8")
+    return {"report_html": str(report_html), "latest_html": str(latest)}

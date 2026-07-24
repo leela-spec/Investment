@@ -39,12 +39,13 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
     defaults = registry.defaults
 
     overall = con.execute(
-        "SELECT risk_budget_0_100, confidence_0_100, regime_label, risk_scaler "
-        "FROM agg_regime WHERE as_of_date = ?",
+        "SELECT risk_budget_0_100, confidence_0_100, regime_label, risk_scaler, "
+        "regime_confidence, policy_json FROM agg_regime WHERE as_of_date = ?",
         [as_of],
     ).fetchone()
     if overall is None:
         raise ValueError(f"no aggregate row for {as_of}; run aggregate first")
+    regime_policy = json.loads(overall[5]) if overall[5] else None
 
     modules = con.execute(
         "SELECT module_id, stance_dim, module_score, module_confidence, stance_value "
@@ -132,7 +133,12 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "risk_scaler": _r(overall[3]),
             "stance_vector": stance_vector,
         },
-        "regime": {"label": overall[2], "risk_scaler": _r(overall[3])},
+        "regime": {
+            "label": overall[2],
+            "confidence": _r(overall[4]),
+            "risk_scaler": _r(overall[3]),
+            "policy_selectors": regime_policy,
+        },
         "modules": [
             {
                 "module": m[0],

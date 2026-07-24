@@ -21,16 +21,22 @@ import duckdb
 
 from ipos.aggregate.contradictions import evaluate as evaluate_contradictions
 from ipos.aggregate.modules import aggregate
+from ipos.aggregate.regime import classify_from_db
+from ipos.ai.bundle import narrate, write_bundle
+from ipos.ai.provider import load_ai_config
 from ipos.config.load import load_registry
 from ipos.config.models import Registry
 from ipos.etl.fixtures import seed_archive
 from ipos.etl.pull import pull_all
 from ipos.export.report import write_report
 from ipos.export.snapshot import build_snapshot, validate, write_snapshot
+from ipos.report.html import write_html
 from ipos.transforms.run import build_canonical, compute
 from ipos.warehouse.db import connect, init_db
 
 log = logging.getLogger("ipos.run")
+
+REGIME_BENCHMARK = "SPX"  # benchmark series for the regime classifier (C4)
 
 
 def last_friday(today: dt.date | None = None) -> dt.date:
@@ -116,9 +122,19 @@ def run_weekly(
         result.stages["score"] = summ
         _log_stage(con, run_id, aod, "score", "OK", t0, rows_out=summ.get("rows"))
 
-        # --- stage: aggregate ---
+        # --- stage: regime (governor; close-only MVP on the benchmark) ---
         t0 = dt.datetime.now()
-        agg = aggregate(con, reg, aod)
+        regime = classify_from_db(con, REGIME_BENCHMARK, aod)
+        result.stages["regime"] = {
+            "label": regime.label, "confidence": regime.confidence,
+            "risk_scaler": regime.risk_scaler,
+        }
+        _log_stage(con, run_id, aod, "regime", "OK", t0,
+                   detail=f"{regime.label} conf={regime.confidence} scaler={regime.risk_scaler}")
+
+        # --- stage: aggregate (applies regime risk_scaler) ---
+        t0 = dt.datetime.now()
+        agg = aggregate(con, reg, aod, regime=regime)
         result.stages["aggregate"] = agg
         _log_stage(con, run_id, aod, "aggregate", "OK", t0, rows_out=agg.get("modules"))
 
@@ -134,9 +150,20 @@ def run_weekly(
         # --- stage: export ---
         t0 = dt.datetime.now()
         snap = build_snapshot(con, reg, aod)
+
+        # --- AI layer (last mile): bundle always written ($0 manual path);
+        #     interpretation attached only if a live provider is configured ---
+        ai_cfg = load_ai_config()
+        narration = narrate(snap, reg, ai_cfg)
+        if narration:
+            snap.update(narration)  # interpretation + interpretation_meta
+        result.stages["ai"] = {"provider": ai_cfg.provider, "narrated": bool(narration)}
+
         validate(snap)
         paths = write_snapshot(snap, aod)
+        paths.update(write_bundle(snap, reg, ai_cfg, aod))
         paths["report"] = write_report(snap, aod)
+        paths.update(write_html(con, snap, aod))
         result.paths = paths
         _log_stage(con, run_id, aod, "export", "OK", t0, detail=str(paths))
 

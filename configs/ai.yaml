@@ -1,0 +1,20 @@
+# AI narration layer (C6). Prime directive: code computes, LLM narrates — the
+# system is fully functional with provider: none.
+#
+# provider ladder ($0-first): none | manual | gemini | anthropic | ollama
+#   none    -> no narration; the deterministic report is complete on its own.
+#   manual  -> writes prompt_bundle.md for one-click paste into a Claude/ChatGPT
+#              subscription (0 EUR marginal, frontier quality). No API call.
+#   gemini/anthropic/ollama -> live providers (Phase-2 live; need a key/network,
+#              deferred). prompt_bundle.md is always written regardless.
+
+provider: none
+model: null
+prompt_version: "1.0"
+
+# hard token caps (enforced by the bundle trimmer; token ~= chars/4)
+budgets:
+  system: 600
+  playbook: 3000
+  snapshot: 4000
+  output: 1800

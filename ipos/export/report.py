@@ -21,7 +21,8 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 ## Overall
 - **Risk budget:** {{ "%.1f"|format(overall.risk_budget) }} / 100
 - **Confidence:** {{ "%.1f"|format(overall.confidence) }} / 100
-- **Regime:** {{ regime.label or "n/a (Phase 2)" }}{% if flags.degraded %}
+- **Regime:** {{ regime.label or "n/a" }}{% if regime.confidence is not none %} (confidence {{ "%.0f"|format(regime.confidence) }}, risk_scaler {{ regime.risk_scaler }}){% endif %}{% if regime.policy_selectors %}
+  - _Policy:_ size {{ regime.policy_selectors.position_size }} · entry {{ regime.policy_selectors.entry_style }} · trail {{ regime.policy_selectors.trailing_stop }} · stop {{ regime.policy_selectors.initial_stop }}{% endif %}{% if flags.degraded %}
 - ⚠️ **Degraded run:** {{ data_quality.n_stale }} stale, {{ data_quality.n_missing }} missing series{% endif %}
 
 ### Stance vector

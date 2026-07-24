@@ -13,6 +13,7 @@ import json
 
 import duckdb
 
+from ipos.aggregate.regime import RegimeResult
 from ipos.config.models import Registry
 
 
@@ -21,7 +22,12 @@ def _tilt(module_score: float) -> float:
     return max(-1.0, min(1.0, (module_score - 50.0) / 50.0))
 
 
-def aggregate(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt.date) -> dict:
+def aggregate(
+    con: duckdb.DuckDBPyConnection,
+    registry: Registry,
+    as_of: dt.date,
+    regime: RegimeResult | None = None,
+) -> dict:
     weights = registry.weights
     modules = registry.modules
 
@@ -81,25 +87,40 @@ def aggregate(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt.date
         sum(w * module_conf[m] for m, w in covered.items()) / total_rb_w
         if total_rb_w > 0 else 0.0
     )
-    risk_scaler = 1.0  # Phase 2 regime classifier sets this
+    # regime scaler (1.0 placeholder if the classifier didn't run)
+    risk_scaler = regime.risk_scaler if regime else 1.0
+    regime_label = regime.label if regime else None
+    regime_conf = regime.confidence if regime else None
+    policy = regime.policy if regime else None
+    scaled_risk_budget = risk_budget * risk_scaler
 
     con.execute("DELETE FROM agg_regime WHERE as_of_date = ?", [as_of])
     con.execute(
         """
         INSERT OR REPLACE INTO agg_regime
           (as_of_date, risk_budget_0_100, confidence_0_100, regime_label,
-           risk_scaler, params_json)
-        VALUES (?, ?, ?, ?, ?, ?)
+           risk_scaler, regime_confidence, policy_json, params_json)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         [
-            as_of, round(risk_budget * risk_scaler, 6), round(overall_conf, 6),
-            None, risk_scaler, json.dumps({"risk_budget_weights": covered}, sort_keys=True),
+            as_of, round(scaled_risk_budget, 6), round(overall_conf, 6),
+            regime_label, risk_scaler, regime_conf,
+            json.dumps(policy, sort_keys=True) if policy else None,
+            json.dumps({
+                "risk_budget_weights": covered,
+                "base_risk_budget": round(risk_budget, 6),
+                "risk_scaler": risk_scaler,
+                "regime_features": regime.features if regime else None,
+            }, sort_keys=True),
         ],
     )
 
     return {
         "modules": len(module_scores),
-        "risk_budget": round(risk_budget, 6),
+        "risk_budget": round(scaled_risk_budget, 6),
+        "base_risk_budget": round(risk_budget, 6),
+        "risk_scaler": risk_scaler,
+        "regime": regime_label,
         "confidence": round(overall_conf, 6),
     }
 

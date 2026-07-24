@@ -16,7 +16,7 @@ def test_init_creates_schema_and_syncs(tmp_path):
     reg = load_registry()
     db = tmp_path / "w.duckdb"
     report = init_db(reg, db)
-    assert report["migrations_applied"] == ["001_init.sql"]
+    assert "001_init.sql" in report["migrations_applied"]
     assert report["dim_series_synced"] == 20
 
     with connect(db, read_only=True) as con:
