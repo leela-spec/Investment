@@ -123,12 +123,14 @@ def cmd_weekly(argv: list[str] | None = None) -> int:
     _load_dotenv()
     p = argparse.ArgumentParser(prog="ipos-weekly", description="Full weekly run (pull->score->aggregate->export).")
     _common(p)
+    p.add_argument("--provider", help="AI narration provider override: none|manual|file|anthropic")
     args = p.parse_args(argv)
     _setup_logging(args.verbose)
     from ipos.run import run_weekly
 
     res = run_weekly(
-        as_of=_parse_as_of(args.as_of), db_path=args.db, seed_offline=args.seed_offline
+        as_of=_parse_as_of(args.as_of), db_path=args.db, seed_offline=args.seed_offline,
+        ai_provider=args.provider,
     )
     print(f"ipos-weekly {res.as_of}: status={res.status}")
     if res.status == "FAILED_ATTEMPT":

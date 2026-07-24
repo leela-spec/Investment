@@ -68,14 +68,61 @@ class ManualProvider:
         return None
 
 
+class AnthropicProvider:
+    """Live narration via the Claude API (api.anthropic.com — allowlisted).
+
+    Requires an operator-provided ``ANTHROPIC_API_KEY`` (this is a paid API, so
+    it stays opt-in and off by default). Weekly cost is a few cents; structured,
+    temperature-0, pinned model. If the call fails the caller keeps the
+    deterministic report (fail-degraded)."""
+
+    name = "anthropic"
+    URL = "https://api.anthropic.com/v1/messages"
+
+    def __init__(self, config: "AIConfig"):
+        self.model = config.model or "claude-haiku-4-5-20251001"
+        self.max_tokens = int((config.budget or {}).get("output", 1800))
+
+    def narrate(self, system: str, user: str) -> str | None:
+        import os
+
+        import requests
+
+        key = os.environ.get("ANTHROPIC_API_KEY")
+        if not key:
+            raise RuntimeError("ANTHROPIC_API_KEY not set (provider: anthropic)")
+        resp = requests.post(
+            self.URL,
+            headers={
+                "x-api-key": key,
+                "anthropic-version": "2023-06-01",
+                "content-type": "application/json",
+            },
+            json={
+                "model": self.model,
+                "max_tokens": self.max_tokens,
+                "temperature": 0,
+                "system": system,
+                "messages": [{"role": "user", "content": user}],
+            },
+            timeout=60,
+        )
+        resp.raise_for_status()
+        blocks = resp.json().get("content", [])
+        text = "".join(b.get("text", "") for b in blocks if b.get("type") == "text")
+        return text.strip() or None
+
+
 def get_provider(config: AIConfig) -> Provider:
     if config.provider in ("none", None):
         return NoneProvider()
     if config.provider == "manual":
         return ManualProvider()
+    if config.provider == "anthropic":
+        return AnthropicProvider(config)
     raise NotImplementedError(
-        f"provider '{config.provider}' is a live provider (needs an API key + "
-        f"network egress) and is deferred. Use provider: none or manual, and "
-        f"paste data/exports/snapshots/<week>/prompt_bundle.md into your "
-        f"Claude/ChatGPT subscription for the $0 narration path."
+        f"provider '{config.provider}' is not implemented. Use: none | manual "
+        f"(write prompt_bundle.md for $0 subscription paste) | file (drop a "
+        f"narration.md) | anthropic (operator ANTHROPIC_API_KEY). gemini/ollama "
+        f"are deferred."
     )

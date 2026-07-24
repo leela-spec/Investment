@@ -91,12 +91,18 @@ body { font-family: -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-seri
 h1 { font-size: 22px; margin: 0 0 2px; } h2 { font-size: 16px; margin: 28px 0 8px;
   border-bottom: 2px solid var(--line); padding-bottom: 4px; }
 .sub { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
-.kpis { display: flex; gap: 24px; flex-wrap: wrap; margin: 12px 0; }
-.kpi { min-width: 220px; } .kpi .label { font-size: 12px; color: var(--muted); }
-.kpi .val { font-size: 26px; font-weight: 600; }
-.gauge { position: relative; height: 12px; background: #ececec; border-radius: 6px; margin-top: 6px; }
-.gauge-fill { position:absolute; left:0; top:0; height:100%; border-radius:6px 0 0 6px; }
-.gauge-marker { position:absolute; top:-3px; width:2px; height:18px; background:#111; }
+.kpis { display: flex; gap: 16px; flex-wrap: wrap; margin: 14px 0 6px; }
+.kpi { flex:1 1 220px; min-width: 200px; background: var(--card); border:1px solid var(--line);
+  border-radius: 10px; padding: 12px 14px; }
+.kpi.hero { flex: 2 1 300px; }
+.kpi .label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.kpi .val { font-size: 30px; font-weight: 700; line-height: 1.1; margin-top: 2px; }
+.kpi.hero .val { font-size: 44px; }
+.kpi .val small { font-size: 15px; font-weight: 500; color: var(--muted); }
+.gauge { position: relative; height: 14px; background: #ececec; border-radius: 7px; margin-top: 10px; overflow: hidden; }
+.gauge-fill { position:absolute; left:0; top:0; height:100%; border-radius:7px 0 0 7px; }
+.gauge-marker { position:absolute; top:-2px; width:2px; height:18px; background:var(--fg); }
+.gauge-tick { position:absolute; top:0; width:1px; height:100%; background:rgba(0,0,0,.18); }
 .banner { padding: 8px 12px; border-radius: 6px; font-size: 13px; margin: 10px 0; }
 .banner.warn { background:#fff4e5; border:1px solid #ffd8a8; }
 .banner.ok { background:#eaf6ec; border:1px solid #b7e0c0; }
@@ -113,7 +119,9 @@ th { color: var(--muted); font-weight: 600; }
 .card .sev { font-size:11px; text-transform:uppercase; color:var(--muted); }
 .pill { display:inline-block; padding:2px 8px; border-radius: 10px; font-size:12px; font-weight:600; }
 .hm { overflow-x:auto; } .hm table { width:auto; } .hm td { padding:0; }
-.hm .cell { width:16px; height:16px; } .hm .rowlab { padding:2px 6px; font-size:12px; white-space:nowrap; }
+.hm .cell { width:16px; height:16px; transition: outline .05s; } .hm .rowlab { padding:2px 6px; font-size:12px; white-space:nowrap; }
+.hm .cell:hover { outline: 2px solid var(--fg); outline-offset: -1px; position: relative; z-index: 2; }
+.rm-quad { fill: var(--muted); font-size: 10px; opacity: .55; font-style: italic; }
 .legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; }
 .legend .sw { width:16px; height:12px; display:inline-block; border-radius:2px; }
 .spark { vertical-align: middle; } .spark-na { color: var(--muted); }
@@ -143,10 +151,11 @@ _TEMPLATE = """<!doctype html>
 {% else %}<div class="banner ok">✓ All {{ s.data_quality.n_indicators }} indicators fresh.</div>{% endif %}
 
 <div class="kpis">
-  <div class="kpi"><div class="label">Risk budget</div><div class="val">{{ "%.1f"|format(s.overall.risk_budget) }}</div>{{ gauge(s.overall.risk_budget)|safe }}</div>
-  <div class="kpi"><div class="label">Confidence</div><div class="val">{{ "%.1f"|format(s.overall.confidence) }}</div>{{ gauge(s.overall.confidence)|safe }}</div>
+  <div class="kpi hero"><div class="label">Risk budget</div><div class="val">{{ "%.1f"|format(s.overall.risk_budget) }}<small> / 100</small></div>{{ gauge(s.overall.risk_budget)|safe }}
+    <div class="sub">how much risk the process supports this week</div></div>
+  <div class="kpi"><div class="label">Confidence</div><div class="val">{{ "%.1f"|format(s.overall.confidence) }}<small> / 100</small></div>{{ gauge(s.overall.confidence)|safe }}</div>
   <div class="kpi"><div class="label">Regime</div><div class="val">{{ s.regime.label or "n/a" }}</div>
-    <div class="sub">{% if s.regime.confidence is not none %}conf {{ "%.0f"|format(s.regime.confidence) }} · scaler {{ s.regime.risk_scaler }}{% endif %}</div></div>
+    <div class="sub">{% if s.regime.confidence is not none %}conf {{ "%.0f"|format(s.regime.confidence) }} · risk ×{{ s.regime.risk_scaler }}{% endif %}</div></div>
 </div>
 {% if s.regime.policy_selectors %}<div class="sub">Policy — size <strong>{{ s.regime.policy_selectors.position_size }}</strong> · entry <strong>{{ s.regime.policy_selectors.entry_style }}</strong> · trail <strong>{{ s.regime.policy_selectors.trailing_stop }}</strong> · stop <strong>{{ s.regime.policy_selectors.initial_stop }}</strong></div>{% endif %}
 
@@ -201,7 +210,7 @@ _TEMPLATE = """<!doctype html>
 {% for wk in weeks %}<td><div class="cell" title="{{ sid }} {{ wk }}: {{ heat[sid].get(wk) }}" style="background:{{ color(heat[sid].get(wk)) }}"></div></td>{% endfor %}
 </tr>{% endfor %}
 </tbody></table></div>
-<div class="legend"><span>0</span><span class="sw" style="background:{{ color(0) }}"></span><span class="sw" style="background:{{ color(50) }}"></span><span class="sw" style="background:{{ color(100) }}"></span><span>100</span></div>
+<div class="legend"><span>0 weak</span><span class="sw" style="background:{{ color(0) }}"></span><span class="sw" style="background:{{ color(25) }}"></span><span class="sw" style="background:{{ color(50) }}"></span><span class="sw" style="background:{{ color(75) }}"></span><span class="sw" style="background:{{ color(100) }}"></span><span>100 strong</span> · <span>colorblind-safe (RdBu)</span></div>
 
 <h2>Interpretation</h2>
 {% if s.interpretation %}<div>{{ s.interpretation|e|replace("\n", "<br>")|safe }}</div>

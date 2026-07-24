@@ -79,3 +79,40 @@ def test_live_provider_interpretation_flows_to_report(populated_db, as_of, monke
 def test_est_tokens():
     assert est_tokens("abcd") == 1
     assert est_tokens("") == 0
+
+
+def test_file_provider_reads_dropped_narration(populated_db, as_of, tmp_path):
+    snap, reg = _snapshot(populated_db, as_of)
+    d = tmp_path / as_of.isoformat()
+    d.mkdir(parents=True)
+    (d / "narration.md").write_text("Situation: test narration.", encoding="utf-8")
+    out = narrate(snap, reg, AIConfig(provider="file"), as_of=as_of, base_dir=tmp_path)
+    assert out is not None
+    assert out["interpretation"] == "Situation: test narration."
+    assert "file" in out["interpretation_meta"]["provider"]
+    # absent file -> no narration, no crash
+    assert narrate(snap, reg, AIConfig(provider="file"), as_of=as_of,
+                   base_dir=tmp_path / "empty") is None
+
+
+def test_anthropic_provider_posts_and_parses(populated_db, as_of, monkeypatch):
+    snap, reg = _snapshot(populated_db, as_of)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    captured = {}
+
+    class Resp:
+        def raise_for_status(self): pass
+        def json(self):
+            return {"content": [{"type": "text", "text": "Situation: live narration."}]}
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        captured["url"] = url
+        captured["model"] = json["model"]
+        captured["key"] = headers["x-api-key"]
+        return Resp()
+
+    monkeypatch.setattr("requests.post", fake_post)
+    out = narrate(snap, reg, AIConfig(provider="anthropic", model="claude-haiku-4-5-20251001"))
+    assert out["interpretation"] == "Situation: live narration."
+    assert captured["url"].endswith("/v1/messages")
+    assert captured["key"] == "test-key"

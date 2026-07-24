@@ -19,14 +19,16 @@ def _lerp(a: float, b: float, t: float) -> float:
 
 
 def score_color(score: float | None) -> str:
-    """Map a 0-100 score to a hex color: 0 red -> 50 grey -> 100 green."""
+    """Map a 0-100 score to a CVD-SAFE diverging hex: 0 red -> 50 grey -> 100
+    blue (ColorBrewer RdBu). Red↔green FAILs the palette validator (deuteranope
+    ΔE 2.5); red↔blue PASSes light & dark (ΔE 21/17). Low = risk-off/weak,
+    high = supportive/strong."""
     if score is None:
         return "#eeeeee"
     s = max(0.0, min(100.0, float(score)))
-    # anchor colors (luminance-separated for color-blind legibility)
-    low = (178, 24, 43)     # red
-    mid = (222, 222, 222)   # grey
-    high = (27, 120, 55)    # green
+    low = (178, 24, 43)     # red  #b2182b
+    mid = (230, 230, 230)   # neutral grey
+    high = (33, 102, 172)   # blue #2166ac
     if s <= 50:
         t = s / 50.0
         rgb = tuple(_lerp(low[i], mid[i], t) for i in range(3))
@@ -46,12 +48,16 @@ def text_on(color_hex: str) -> str:
 
 
 def gauge_html(value: float, *, vmin: float = 0, vmax: float = 100) -> str:
-    """A horizontal 0-100 track with a marker at `value`, colored by score."""
+    """A bullet gauge: a 0-100 track with faint qualitative zone dividers at
+    20/50/80, a score-colored measure fill, and a marker at `value`."""
     pct = max(0.0, min(100.0, (value - vmin) / (vmax - vmin) * 100))
     color = score_color(value)
+    ticks = "".join(
+        f'<div class="gauge-tick" style="left:{t}%"></div>' for t in (20, 50, 80)
+    )
     return (
-        f'<div class="gauge"><div class="gauge-fill" style="width:{pct:.1f}%;'
-        f'background:{color}"></div>'
+        f'<div class="gauge">{ticks}'
+        f'<div class="gauge-fill" style="width:{pct:.1f}%;background:{color}"></div>'
         f'<div class="gauge-marker" style="left:{pct:.1f}%"></div></div>'
     )
 
@@ -97,12 +103,23 @@ def regime_map_svg(points, *, w: int = 320, h: int = 240) -> str:
     pad = 26
     def sx(x): return pad + (x + 1) / 2 * (w - 2 * pad)
     def sy(y): return (h - pad) - (y + 1) / 2 * (h - 2 * pad)
+    # named macro quadrants (growth × inflation) — interpretive anchors
+    quad = [
+        (sx(0.5), sy(0.55), "Reflation"),     # growth+ inflation+
+        (sx(-0.5), sy(0.55), "Stagflation"),  # growth- inflation+
+        (sx(0.5), sy(-0.6), "Goldilocks"),    # growth+ inflation-
+        (sx(-0.5), sy(-0.6), "Deflation"),    # growth- inflation-
+    ]
     parts = [
         f'<svg class="regime-map" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+    ]
+    for qx, qy, lab in quad:
+        parts.append(f'<text x="{qx:.1f}" y="{qy:.1f}" class="rm-quad" text-anchor="middle">{lab}</text>')
+    parts += [
         f'<line x1="{sx(0):.1f}" y1="{pad}" x2="{sx(0):.1f}" y2="{h-pad}" class="rm-axis"/>',
         f'<line x1="{pad}" y1="{sy(0):.1f}" x2="{w-pad}" y2="{sy(0):.1f}" class="rm-axis"/>',
-        f'<text x="{w-pad}" y="{sy(0)-4:.1f}" class="rm-lab" text-anchor="end">growth +</text>',
-        f'<text x="{sx(0)+4:.1f}" y="{pad+8}" class="rm-lab">inflation +</text>',
+        f'<text x="{w-pad}" y="{sy(0)-4:.1f}" class="rm-lab" text-anchor="end">growth →</text>',
+        f'<text x="{sx(0)+4:.1f}" y="{pad+8}" class="rm-lab">inflation ↑</text>',
     ]
     pts = [p for p in points if p is not None]
     if len(pts) >= 2:

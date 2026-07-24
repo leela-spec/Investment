@@ -76,6 +76,7 @@ def run_weekly(
     connectors: dict | None = None,
     seed_offline: bool = False,
     ingested_at: dt.datetime | None = None,
+    ai_provider: str | None = None,
 ) -> RunResult:
     reg = registry or load_registry()
     aod = as_of or last_friday()
@@ -163,10 +164,16 @@ def run_weekly(
         # --- AI layer (last mile): bundle always written ($0 manual path);
         #     interpretation attached only if a live provider is configured ---
         ai_cfg = load_ai_config()
+        if ai_provider:  # CLI/caller override
+            ai_cfg.provider = ai_provider
         # record which playbook modules the week surfaces (C5 auditability)
         from ipos.ai.playbook import surfaced_playbook_refs
         snap["playbook_selection"] = surfaced_playbook_refs(snap, reg)
-        narration = narrate(snap, reg, ai_cfg)
+        narration = None
+        try:  # AI is the last mile — a provider failure never breaks the report
+            narration = narrate(snap, reg, ai_cfg, as_of=aod)
+        except Exception as exc:
+            log.warning("narration skipped (%s): %s", ai_cfg.provider, exc)
         if narration:
             snap.update(narration)  # interpretation + interpretation_meta
         result.stages["ai"] = {"provider": ai_cfg.provider, "narrated": bool(narration)}

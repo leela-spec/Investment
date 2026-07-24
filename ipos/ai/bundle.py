@@ -131,10 +131,32 @@ def write_bundle(
     return {"prompt_bundle": str(path), "meta": meta}
 
 
-def narrate(snapshot: dict, registry: Registry, config: AIConfig) -> dict | None:
-    """Call the configured provider. Returns {interpretation, meta} or None
-    (provider: none/manual make no call). Attaching to the snapshot is the
-    caller's choice."""
+def narrate(
+    snapshot: dict, registry: Registry, config: AIConfig,
+    as_of: dt.date | None = None, base_dir: Path | None = None,
+) -> dict | None:
+    """Produce the weekly interpretation. Returns {interpretation,
+    interpretation_meta} or None.
+
+    Providers: none/manual -> None; file -> read a dropped
+    ``narration.md`` (the $0 subscription/manual path — an LLM authored it
+    outside the run); anthropic -> live Claude API call. Attaching to the
+    snapshot is the caller's choice."""
+    if config.provider == "file":
+        if as_of is None:
+            return None
+        path = (base_dir or EXPORTS_DIR) / as_of.isoformat() / "narration.md"
+        if not path.exists():
+            return None
+        text = path.read_text(encoding="utf-8").strip()
+        if not text:
+            return None
+        return {
+            "interpretation": text,
+            "interpretation_meta": {"provider": "file (manual/subscription)",
+                                    "prompt_version": config.prompt_version, "model": None},
+        }
+
     provider = get_provider(config)
     user, meta = build_user_message(snapshot, registry, config.budget)
     text = provider.narrate(_system_prompt(), user)
