@@ -16,9 +16,18 @@ import duckdb
 from jinja2 import Environment
 
 from ipos.export.snapshot import EXPORTS_DIR
-from ipos.report.charts import gauge_html, score_color, text_on, tilt_bar_html
+from ipos.report.charts import (
+    gauge_html,
+    regime_map_svg,
+    score_color,
+    sparkline_svg,
+    text_on,
+    tilt_bar_html,
+)
 
-HEATMAP_WEEKS = 26
+HEATMAP_WEEKS = 52
+SPARK_WEEKS = 52
+REGIME_TRAIL_WEEKS = 26
 
 
 def _score_history(con: duckdb.DuckDBPyConnection, as_of: dt.date, weeks: int):
@@ -37,6 +46,40 @@ def _score_history(con: duckdb.DuckDBPyConnection, as_of: dt.date, weeks: int):
     for sid, wk, score in rows:
         by_series.setdefault(sid, {})[wk] = score
     return week_set, by_series
+
+
+def _module_score_history(con, as_of, weeks):
+    start = as_of - dt.timedelta(weeks=weeks - 1)
+    rows = con.execute(
+        "SELECT module_id, as_of_date, module_score FROM agg_module "
+        "WHERE as_of_date BETWEEN ? AND ? ORDER BY module_id, as_of_date",
+        [start, as_of],
+    ).fetchall()
+    out: dict[str, list] = {}
+    for mid, _wk, score in rows:
+        out.setdefault(mid, []).append(score)
+    return out
+
+
+def _regime_trail(con, as_of, weeks):
+    """Ordered (growth, inflation) tilt points over the trail window.
+    X = growth stance dim; Y = commodities stance dim (inflation proxy)."""
+    start = as_of - dt.timedelta(weeks=weeks - 1)
+    rows = con.execute(
+        "SELECT as_of_date, stance_dim, stance_value FROM agg_module "
+        "WHERE as_of_date BETWEEN ? AND ? AND stance_dim IN ('growth','commodities') "
+        "ORDER BY as_of_date",
+        [start, as_of],
+    ).fetchall()
+    by_week: dict = {}
+    for wk, dim, val in rows:
+        by_week.setdefault(wk, {})[dim] = val
+    trail = []
+    for wk in sorted(by_week):
+        d = by_week[wk]
+        if "growth" in d and "commodities" in d:
+            trail.append((float(d["growth"]), float(d["commodities"])))
+    return trail
 
 
 _CSS = """
@@ -73,6 +116,11 @@ th { color: var(--muted); font-weight: 600; }
 .hm .cell { width:16px; height:16px; } .hm .rowlab { padding:2px 6px; font-size:12px; white-space:nowrap; }
 .legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; }
 .legend .sw { width:16px; height:12px; display:inline-block; border-radius:2px; }
+.spark { vertical-align: middle; } .spark-na { color: var(--muted); }
+.regime-wrap { display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
+.rm-axis { stroke: var(--line); stroke-width: 1; }
+.rm-lab { fill: var(--muted); font-size: 10px; }
+.rm-now { fill: #b2182b; stroke: #fff; stroke-width: 1; }
 .foot { color: var(--muted); font-size: 12px; margin-top: 28px; }
 @media (prefers-color-scheme: dark) {
   :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; }
@@ -107,6 +155,12 @@ _TEMPLATE = """<!doctype html>
 {% for dim, val in stance %}<tr><td>{{ dim }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td></tr>
 {% endfor %}</tbody></table>
 
+<h2>Regime map <span class="sub">(growth × inflation tilt, {{ trail_weeks }}-week trail)</span></h2>
+<div class="regime-wrap">
+{{ regime_svg|safe }}
+<div class="sub" style="max-width:360px">The point is this week's macro tilt — horizontal = growth stance, vertical = inflation/commodities stance; the faded trail shows the path over the last {{ trail_weeks }} weeks. Regime label <strong>{{ s.regime.label or "n/a" }}</strong> governs the risk scaler.</div>
+</div>
+
 <h2>Contradictions</h2>
 {% if s.contradictions %}<div class="cards">
 {% for c in s.contradictions %}<div class="card {{ c.severity }}"><div class="sev">{{ c.severity }}</div>{{ c.summary }}
@@ -119,18 +173,20 @@ _TEMPLATE = """<!doctype html>
 {% endfor %}</tbody></table>{% else %}<div class="sub">No prior week for comparison.</div>{% endif %}
 
 <h2>Modules</h2>
-<table><thead><tr><th>Module</th><th class="num">Score</th><th>Tilt</th><th class="num">Confidence</th></tr></thead><tbody>
+<table><thead><tr><th>Module</th><th class="num">Score</th><th>52w</th><th>Tilt</th><th class="num">Confidence</th></tr></thead><tbody>
 {% for m in modules %}<tr><td>{{ m.module }}</td>
   <td class="num"><span class="pill" style="background:{{ color(m.score) }};color:{{ txt(color(m.score)) }}">{{ "%.1f"|format(m.score) }}</span></td>
+  <td>{{ module_spark.get(m.module, "")|safe }}</td>
   <td>{{ tilt(m.tilt)|safe }}</td><td class="num">{{ "%.1f"|format(m.confidence) }}</td></tr>
 {% endfor %}</tbody></table>
 
 <h2>Indicators</h2>
-<table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
+<table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th>52w score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
 {% for i in indicators %}<tr id="{{ i.id }}"><td>{{ i.id }}</td><td>{{ i.module }}</td>
   <td class="num">{{ i.value }}</td><td class="num">{{ "%+.4g"|format(i.delta_1w) if i.delta_1w is not none else "—" }}</td>
   <td>{{ i.trend }}</td>
   <td class="num"><span class="pill" style="background:{{ color(i.score) }};color:{{ txt(color(i.score)) }}">{{ "%.1f"|format(i.score) }}</span></td>
+  <td>{{ indicator_spark.get(i.id, "")|safe }}</td>
   <td class="num">{{ "%.0f"|format(i.confidence) }}</td><td>{{ "yes" if i.stale else "" }}</td></tr>
 {% endfor %}</tbody></table>
 
@@ -155,6 +211,18 @@ _TEMPLATE = """<!doctype html>
 def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) -> str:
     weeks, heat = _score_history(con, as_of, HEATMAP_WEEKS)
     heat_series = sorted(heat.keys())
+
+    # per-indicator score sparklines (ordered by week over the heatmap window)
+    indicator_spark = {
+        sid: sparkline_svg([heat[sid].get(wk) for wk in weeks])
+        for sid in heat
+    }
+    # per-module 52-week score sparklines
+    module_hist = _module_score_history(con, as_of, SPARK_WEEKS)
+    module_spark = {mid: sparkline_svg(vals, color="#6a7fb5") for mid, vals in module_hist.items()}
+    # regime 2D trail
+    regime_svg = regime_map_svg(_regime_trail(con, as_of, REGIME_TRAIL_WEEKS))
+
     env = Environment(autoescape=False, keep_trailing_newline=True)
     tmpl = env.from_string(_TEMPLATE)
     return tmpl.render(
@@ -167,6 +235,10 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         weeks=weeks,
         heat=heat,
         heat_series=heat_series,
+        indicator_spark=indicator_spark,
+        module_spark=module_spark,
+        regime_svg=regime_svg,
+        trail_weeks=REGIME_TRAIL_WEEKS,
         gauge=gauge_html,
         tilt=tilt_bar_html,
         color=score_color,

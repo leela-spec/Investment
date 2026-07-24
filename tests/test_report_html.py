@@ -19,13 +19,20 @@ def _render(populated_db, as_of):
 
 def test_html_has_all_sections(populated_db, as_of):
     html = _render(populated_db, as_of)
-    for heading in ["Stance vector", "Contradictions", "Top movers",
+    for heading in ["Stance vector", "Regime map", "Contradictions", "Top movers",
                     "Modules", "Indicators", "Score heatmap", "Interpretation"]:
         assert heading in html
     assert "IPOS Weekly Report" in html
     assert as_of.isoformat() in html
     # every indicator is anchor-linkable
     assert 'id="SPX"' in html and 'id="HY_OAS"' in html
+
+
+def test_html_has_svg_charts(populated_db, as_of):
+    html = _render(populated_db, as_of)
+    assert 'class="regime-map"' in html          # 2D regime trail
+    assert html.count('class="spark"') >= 20      # a sparkline per indicator
+    assert "<polyline" in html                    # line geometry, not an image ref
 
 
 def test_html_is_self_contained(populated_db, as_of):

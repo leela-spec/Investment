@@ -56,6 +56,68 @@ def gauge_html(value: float, *, vmin: float = 0, vmax: float = 100) -> str:
     )
 
 
+def _pts(values, w, h, pad=2):
+    """Normalize a value series to SVG polyline points within (w,h)."""
+    vals = [v for v in values if v is not None]
+    if len(vals) < 2:
+        return None, min(vals) if vals else None, max(vals) if vals else None
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1.0
+    n = len(values)
+    step = (w - 2 * pad) / (n - 1)
+    pts = []
+    for i, v in enumerate(values):
+        if v is None:
+            continue
+        x = pad + i * step
+        y = h - pad - (v - lo) / span * (h - 2 * pad)
+        pts.append(f"{x:.1f},{y:.1f}")
+    return " ".join(pts), lo, hi
+
+
+def sparkline_svg(values, *, w: int = 130, h: int = 26, color: str = "#3f6fb0") -> str:
+    """A minimal inline-SVG sparkline (no axes). Last point dotted."""
+    pts, lo, hi = _pts(values, w, h)
+    if not pts:
+        return '<span class="spark-na">—</span>'
+    last = pts.split(" ")[-1]
+    lx, ly = last.split(",")
+    return (
+        f'<svg class="spark" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
+        f'preserveAspectRatio="none" role="img">'
+        f'<polyline fill="none" stroke="{color}" stroke-width="1.4" points="{pts}"/>'
+        f'<circle cx="{lx}" cy="{ly}" r="1.9" fill="{color}"/></svg>'
+    )
+
+
+def regime_map_svg(points, *, w: int = 320, h: int = 240) -> str:
+    """2D regime map: X = growth tilt, Y = inflation/commodities tilt, in
+    [-1,+1]. Draws quadrant axes, a 26-week trail (faded->bold), and labels the
+    current point. `points` = ordered list of (x, y) oldest..newest."""
+    pad = 26
+    def sx(x): return pad + (x + 1) / 2 * (w - 2 * pad)
+    def sy(y): return (h - pad) - (y + 1) / 2 * (h - 2 * pad)
+    parts = [
+        f'<svg class="regime-map" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+        f'<line x1="{sx(0):.1f}" y1="{pad}" x2="{sx(0):.1f}" y2="{h-pad}" class="rm-axis"/>',
+        f'<line x1="{pad}" y1="{sy(0):.1f}" x2="{w-pad}" y2="{sy(0):.1f}" class="rm-axis"/>',
+        f'<text x="{w-pad}" y="{sy(0)-4:.1f}" class="rm-lab" text-anchor="end">growth +</text>',
+        f'<text x="{sx(0)+4:.1f}" y="{pad+8}" class="rm-lab">inflation +</text>',
+    ]
+    pts = [p for p in points if p is not None]
+    if len(pts) >= 2:
+        poly = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in pts)
+        parts.append(f'<polyline fill="none" stroke="#8aa0c0" stroke-width="1.3" points="{poly}"/>')
+    for i, (x, y) in enumerate(pts):
+        if i == len(pts) - 1:
+            parts.append(f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="4.5" class="rm-now"/>')
+        else:
+            op = 0.15 + 0.5 * (i / max(1, len(pts) - 1))
+            parts.append(f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="2" fill="#8aa0c0" opacity="{op:.2f}"/>')
+    parts.append("</svg>")
+    return "".join(parts)
+
+
 def tilt_bar_html(value: float) -> str:
     """A [-1,+1] tilt bar: center line, fill left (neg) or right (pos)."""
     v = max(-1.0, min(1.0, value))
