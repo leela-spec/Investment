@@ -128,7 +128,7 @@ indicators:
 
   - series_id: WALCL
     name: "Fed balance sheet (total assets)"
-    asset_class: Rates
+    asset_class: Liquidity
     frequency: W
     unit: usd_millions
     sources:
@@ -176,6 +176,32 @@ indicators:
     higher_is_better: false   # policy tightness
     scoring_method: zscore
     module_id: RatesLiquidity
+
+  # thin-module widening (WS-E): a 2nd real keyless member each for Liquidity
+  # and Fundamentals, so no active module rides on a single indicator.
+  - series_id: WRESBAL
+    name: "Reserve balances at the Fed"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: WRESBAL}
+      - {type: dbnomics, locator: FRED/WRESBAL}
+    higher_is_better: true    # more reserves = looser
+    scoring_method: zscore
+    module_id: Liquidity
+
+  - series_id: ICSA
+    name: "Initial jobless claims"
+    asset_class: Macro
+    frequency: W
+    unit: count
+    sources:
+      - {type: fred, locator: ICSA}
+      - {type: dbnomics, locator: FRED/ICSA}
+    higher_is_better: false   # more claims = weaker labor = worse
+    scoring_method: percentile
+    module_id: Fundamentals
 
   # ---- 8 Stooq ----
   - series_id: SPX

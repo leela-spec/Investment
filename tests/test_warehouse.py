@@ -17,7 +17,7 @@ def test_init_creates_schema_and_syncs(tmp_path):
     db = tmp_path / "w.duckdb"
     report = init_db(reg, db)
     assert "001_init.sql" in report["migrations_applied"]
-    assert report["dim_series_synced"] == 20
+    assert report["dim_series_synced"] == 22
 
     with connect(db, read_only=True) as con:
         tables = {
@@ -28,7 +28,7 @@ def test_init_creates_schema_and_syncs(tmp_path):
         }
         assert EXPECTED_TABLES <= tables
         n = con.execute("SELECT count(*) FROM dim_series").fetchone()[0]
-        assert n == 20
+        assert n == 22
 
 
 def test_init_is_idempotent(tmp_path):
@@ -37,4 +37,4 @@ def test_init_is_idempotent(tmp_path):
     init_db(reg, db)
     second = init_db(reg, db)
     assert second["migrations_applied"] == []  # no-op re-run
-    assert second["dim_series_synced"] == 20
+    assert second["dim_series_synced"] == 22

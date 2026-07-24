@@ -14,7 +14,7 @@ from ipos.config.load import CONFIG_DIR, ConfigError, load_registry
 
 def test_real_registry_loads():
     reg = load_registry()
-    assert len(reg.active()) == 20
+    assert len(reg.active()) == 22
     assert len(reg.modules) == 8
     # every active indicator's module is defined
     for e in reg.active():

@@ -167,6 +167,11 @@ _TEMPLATE = """<!doctype html>
 {% if c.details %}<div class="sub">{% for k, v in c.details.items() %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}</div>
 {% endfor %}</div>{% else %}<div class="sub">None flagged this week.</div>{% endif %}
 
+<h2>Events <span class="sub">(this / next week)</span></h2>
+{% if s.events %}<table><thead><tr><th>Date</th><th>When</th><th>Event</th><th>Category</th></tr></thead><tbody>
+{% for e in s.events %}<tr><td>{{ e.date }}{% if e.approximate %}~{% endif %}</td><td>{{ e.when.replace("_", " ") }}</td><td>{{ e.name }}</td><td>{{ e.category }}</td></tr>
+{% endfor %}</tbody></table>{% else %}<div class="sub">No scheduled macro events in the window.</div>{% endif %}
+
 <h2>Top movers <span class="sub">(Δscore vs prior week)</span></h2>
 {% if s.top_movers %}<table><thead><tr><th>Indicator</th><th class="num">Δscore 1w</th></tr></thead><tbody>
 {% for m in s.top_movers %}<tr><td>{{ m.id }}</td><td class="num">{{ "%+.1f"|format(m.delta_score_1w) }}</td></tr>

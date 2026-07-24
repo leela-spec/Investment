@@ -28,6 +28,7 @@ _BASE: dict[str, float] = {
     "T10Y2Y": 0.45, "T10Y3M": 0.55, "DGS10": 4.30, "NFCI": -0.40,
     "DTWEXBGS": 121.0, "HY_OAS": 3.20, "IG_OAS": 0.90, "VIXCLS": 16.0,
     "WALCL": 6_700_000.0, "UMCSENT": 66.0, "WTI": 76.0, "DFF": 4.33,
+    "WRESBAL": 3_300_000.0, "ICSA": 230_000.0,
     "SPX": 5500.0, "NDX": 19000.0, "RUT": 2200.0, "DAX": 18000.0,
     "GOLD": 2400.0, "COPPER": 4.30, "EURUSD": 1.08, "US10Y_STOOQ": 4.28,
 }

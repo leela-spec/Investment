@@ -5,7 +5,7 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-07-23 · **Updated by:** implementation session (Phase 0+1 walking skeleton) · **Branch of record:** `main` (work branch: `claude/i-project-continuation-4dwjhx`)
+**Last updated:** 2026-07-24 · **Updated by:** implementation session (Phase 2 + Phase 3 de-risk/dashboard/calendar) · **Branch of record:** `main` (work branch: `claude/i-project-continuation-4dwjhx`)
 
 ---
 
@@ -20,7 +20,8 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | **B — Knowledge extraction** (PDF → modules + JSONL) | ✅ **DONE & QA-verified** (204/204 IDs reconciled; 10 modules; 34 indicators, 126 rules, 44 process steps; `scripts/qa_repo.py` green) |
 | **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
 | **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
-| **A — Phase 2 (core value)** | 🚧 **MOSTLY DONE** — ✅ contradictions engine, ✅ golden-snapshot harness, ✅ regime classifier (close-only MVP) + risk_scaler + policy selectors, ✅ static self-contained HTML report, ✅ LLM narration scaffolding ($0 `none`/`manual`, token-budgeted prompt bundle). ⬜ live LLM providers (need key/network — deferred), ⬜ Task Scheduler registration (Windows-only). 52 tests green in ~23s. |
+| **A — Phase 2 (core value)** | ✅ **DONE** — contradictions engine, golden-snapshot harness, regime classifier + risk_scaler + policy selectors, static self-contained HTML report, LLM narration scaffolding ($0 `none`/`manual`). |
+| **A — Phase 3 (de-risk + dashboard + calendar)** | 🚧 **MOSTLY DONE** — ✅ keyless sources (DBnomics/US Treasury) so live runs need no FRED key; fallback chains; no single-sourced critical series. ✅ synthetic-leak closed (synthetic data can't be served as real). ✅ real-ATR regime from OHLC. ✅ confidence/rates/scoring cleanups. ✅ richer dashboard (regime 2D trail, sparklines, 52w heatmap — still self-contained). ✅ free economic calendar. ✅ widened to **22 indicators** (no single-member modules). ⬜ live LLM provider (key/net), ⬜ Windows Task Scheduler, ⬜ full 60-indicator breadth + fragile scrapes. 66 tests green in ~30s. |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
 **Current phase:** **Phase 2 (core value) — mostly complete**. Skeleton + contradictions + regime governor + static HTML report + AI scaffolding all done and testable end-to-end offline. Remaining Phase 2 items (live LLM provider, Windows Task Scheduler) need external setup; then Phase 3 (widen to 60 indicators).

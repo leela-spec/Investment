@@ -26,6 +26,8 @@ _SANITY: dict[str, tuple[float, float]] = {
     "Equity": (0.0, 100_000.0),    # index levels or VIX
     "FX": (0.0, 500.0),            # broad-USD index or a cross rate
     "Commodities": (0.0, 100_000.0),
+    "Liquidity": (0.0, 2.0e7),     # Fed balance sheet / reserves in $ millions
+    "Macro": (0.0, 5.0e6),         # counts / broad macro levels (e.g. claims)
 }
 
 

@@ -18,6 +18,7 @@ import jsonschema
 
 from ipos.config.load import REPO_ROOT
 from ipos.config.models import Registry
+from ipos.econ_calendar import events_for
 
 SCHEMA_VERSION = "1.0"
 EXPORTS_DIR = REPO_ROOT / "data" / "exports" / "snapshots"
@@ -157,6 +158,7 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             for m in modules
         ],
         "contradictions": contradictions,
+        "events": events_for(as_of),
         "top_movers": top_movers,
         "indicators": indicators,
         "data_quality": {

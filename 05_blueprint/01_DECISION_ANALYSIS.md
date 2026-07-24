@@ -149,3 +149,43 @@ Built four Phase-2 pieces on top of the skeleton. Deviations recorded:
 9. **HTML report uses inline CSS/SVG, not Plotly (refines C7 decision 1/3).** `ipos/report/` renders a self-contained report with inline CSS + colored divs/table cells (gauge, tilt bars, score heatmap) — **zero external references**, opens offline by double-click, ~65 KB/week. *Reason:* inlining ~3.5 MB of plotly.js into every weekly file contradicts the token-frugal / resilient principle; hand-rolled CSS meets C7's "static self-contained HTML" intent and the "good" test (understandable in <60s, contradictions inspectable, every indicator has value+score+history). Plotly/Quarto remains the documented upgrade path if interactivity is later needed.
 
 10. **AI live providers deferred; $0 `none`/`manual` implemented (C6).** `ipos/ai/` ships the provider interface, `NoneProvider`/`ManualProvider`, deterministic playbook retrieval (surfaced modules only, no RAG), and a token-budgeted `prompt_bundle.md` writer (system + excerpts + `snapshot.min.json`, ~2.9k tokens on the seed week). `provider: none` is the default and the system is fully functional without it; `manual` writes the bundle for one-click paste into a Claude/ChatGPT subscription ($0). Live providers (gemini/anthropic/ollama) raise a clear "needs key + network, deferred" error rather than shipping untested key-dependent code — consistent with the free-source policy and the user's defer-risky-ops guidance.
+
+### 2026-07-24 — Phase 3: de-risk data & trust, real regime signal, richer dashboard, free calendar
+
+After a 3-part audit checking the build against the original vision, Phase 3 was
+re-prioritized (de-risk → signal → dashboard → calendar → modest breadth) over a
+blind indicator-widening. User decisions: enrich the static HTML (SVG, not
+Streamlit — D3 unchanged); add a lightweight FREE economic calendar instead of a
+news pipeline (a news/NLP pipeline was confirmed to have never been in the
+vision, and "code computes, LLM narrates / no RAG" is retained); de-risk first.
+
+11. **Keyless-first sourcing (extends D5).** Added `dbnomics` (keyless aggregator
+    re-serving FRED/OECD/ECB/ISM) and `ustreasury` (keyless par-yield) connectors;
+    every FRED entry now has a keyless fallback so the FRED key is OFF the critical
+    path, and no single-sourced series is `critical`. This makes a fresh *keyless*
+    machine able to produce a real snapshot — the missing piece of the "free/live
+    now" constraint.
+12. **Synthetic data can no longer be served as real.** `--seed-offline` routes
+    through a synthetic pull path tagged with a `synthetic@` vintage (never written
+    to / replayed from the real archive); the snapshot carries a `synthetic_data`
+    flag and the reports show a prominent banner. Closes the archive-replay leak.
+13. **Real regime signal from OHLC.** Migration 003 + `fact_ohlc`; the Stooq OHLC
+    we used to discard is captured and the regime classifier uses real weekly
+    true-range/ATR + range-overlap when present (close-only fallback otherwise).
+14. **Confidence corrected.** Graded staleness quality; configurable stability
+    scale; coherence weighted 0 (it double-counted the contradictions engine and
+    inflated single-member modules).
+15. **Rates de-dup.** `US10Y_STOOQ` reweighted to 0 (displayed cross-check of
+    DGS10, no longer double-counted).
+16. **Dashboard enriched within the static-HTML decision (D3 intact).** Pure
+    inline-SVG sparklines (per indicator + per module) and a regime 2D map with a
+    26-week trail; heatmap 26→52 weeks. Zero external references retained; no
+    Streamlit, no Plotly.
+17. **Free economic calendar (`ipos/econ_calendar.py`, `configs/calendar.yaml`).**
+    Deterministic schedule-rule events (NFP/ISM/CPI/OPEX/FOMC) → snapshot `events`
+    + report section. The lighter, $0, no-scrape alternative to a news pipeline.
+18. **Thin-module widening.** Added keyless `WRESBAL` (Liquidity) and `ICSA`
+    (Fundamentals) so no active module rides on a single indicator (golden-20 → 22).
+19. **Cleanups:** scoring-parity test (vectorized == scalar), removed dead
+    `stance_vector()`, playbook excerpt truncates large modules at H2 instead of
+    dropping them, `playbook_selection` recorded in the snapshot.

@@ -18,7 +18,7 @@ def test_snapshot_schema_valid(populated_db, as_of):
     snap = _build(populated_db, as_of)
     validate(snap)  # raises on invalid
     assert snap["as_of"] == as_of.isoformat()
-    assert len(snap["indicators"]) == 20
+    assert len(snap["indicators"]) == 22
     assert len(snap["modules"]) == 8
     assert 0 <= snap["overall"]["risk_budget"] <= 100
 

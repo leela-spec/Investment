@@ -23,9 +23,11 @@ module_indicator_weights:
     RUT: 0.2
     DAX: 0.2
   Liquidity:
-    WALCL: 1.0
+    WALCL: 0.5
+    WRESBAL: 0.5
   Fundamentals:
-    UMCSENT: 1.0
+    UMCSENT: 0.5
+    ICSA: 0.5
   Commodities:
     WTI: 0.34
     GOLD: 0.33

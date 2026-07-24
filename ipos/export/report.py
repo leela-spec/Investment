@@ -49,7 +49,14 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 
 ## Contradictions
 {% if contradictions %}{% for c in contradictions %}- **[{{ c.severity }}]** {{ c.summary }}
-{% endfor %}{% else %}_None flagged (contradictions engine arrives in Phase 2)._
+{% endfor %}{% else %}_None flagged this week._
+{% endif %}
+
+## Events this / next week
+{% if events %}| Date | When | Event | Category |
+|---|---|---|---|
+{% for e in events %}| {{ e.date }}{% if e.approximate %}~{% endif %} | {{ e.when.replace("_", " ") }} | {{ e.name }} | {{ e.category }} |
+{% endfor %}{% else %}_No scheduled macro events in the window._
 {% endif %}
 
 ## Indicators
@@ -79,6 +86,7 @@ def render_report(snapshot: dict) -> str:
         modules_sorted=sorted(snapshot["modules"], key=lambda m: m["module"]),
         top_movers=snapshot["top_movers"],
         contradictions=snapshot["contradictions"],
+        events=snapshot.get("events", []),
         indicators=snapshot["indicators"],
         data_quality=snapshot["data_quality"],
     )

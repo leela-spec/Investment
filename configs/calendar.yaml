@@ -1,0 +1,39 @@
+# Free economic-event calendar (WS-D). Config-driven recurring macro events —
+# NO scraping, NO API key, fully deterministic from schedule rules. Provides
+# "why now" context ("events this/next week") in the snapshot + report.
+#
+# Rule types:
+#   nth_weekday       {n, weekday}         weekday: Mon=0 .. Sun=6 (e.g. Fri=4)
+#   first_business_day {}                  first Mon-Fri of the month
+#   day_of_month      {day, approximate}   approximate monthly release day
+#   dates             {dates: [YYYY-MM-DD]} explicit, user-maintained
+#
+# Dates lists (FOMC) are USER-MAINTAINED and approximate — update annually from
+# the official source (federalreserve.gov). Everything else is rule-derived.
+
+window:
+  this_week_days: 5        # Mon..Fri of the week ending on as_of (Friday)
+  include_next_week: true
+
+events:
+  - name: "US Nonfarm Payrolls"
+    category: growth
+    rule: {type: nth_weekday, n: 1, weekday: 4}      # 1st Friday
+
+  - name: "ISM Manufacturing PMI"
+    category: growth
+    rule: {type: first_business_day}
+
+  - name: "US CPI"
+    category: inflation
+    rule: {type: day_of_month, day: 14, approximate: true}
+
+  - name: "Options Expiry (monthly OPEX)"
+    category: positioning
+    rule: {type: nth_weekday, n: 3, weekday: 4}      # 3rd Friday
+
+  - name: "FOMC decision"
+    category: policy
+    # illustrative/user-maintained 2026 meeting dates — verify annually.
+    rule: {type: dates, dates: ["2026-01-28", "2026-03-18", "2026-04-29",
+      "2026-06-17", "2026-07-29", "2026-09-16", "2026-10-28", "2026-12-09"]}
