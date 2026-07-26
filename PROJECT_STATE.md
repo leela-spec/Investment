@@ -50,6 +50,7 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
    - ⬜ **Then Phase 3:** widen to 60 indicators (Tier-1 keyless first), pandera, scrapes, vintage handling → `C2`, `C9`.
 4. **Phase 3:** expand to 60 indicators (Tier-1 keyless first, then FRED), scrapes, pandera schemas, golden-snapshot tests, hardening → `C2`, `C9`.
 5. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
+6. **Unscoped possible future phase — not part of this roadmap:** a multi-analyst/cloud-hosted agent-governance layer (Slack review channels, scheduled extraction/reconciliation automations, tool allow/deny matrix) exists as an unreconciled 2026-04-15 draft — `docs/ipos-notes/` — that conflicts with locked decisions D4/D6 (local-first, single-operator, no orchestrator). See `01_DECISION_ANALYSIS.md` amendment 2026-07-26 before touching it.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 
@@ -82,6 +83,7 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `scripts/qa_*.py` | Repo QA (all green as of 2026-07-19); extend per meso plan C9 |
 | `logs/` | Extraction QA report + transcript copy |
 | `For next chat.md` | **Superseded** old handover (2026-02-14) — historical context only |
+| `docs/ipos-notes/*.md` | **Unreconciled 2026-04-15 draft** — a multi-analyst/cloud agent-governance framework that conflicts with D4/D6 (local-first, single-operator). Not part of the current roadmap; see `01_DECISION_ANALYSIS.md` amendment 2026-07-26 before adopting anything from it. |
 | `Everything from this chat.md` | Extraction transcript (source of truth for extraction; not the blueprint chat) |
 | `ipos/` | **Implementation package**: `config/` (pydantic + loader), `warehouse/` (DuckDB DDL + migrations + db), `etl/` (connectors + archive + fallback + fixtures), `transforms/` (canonical SQL + scoring), `aggregate/` (modules/stance/risk-budget + `regime.py` + `contradictions.py`), `export/` (snapshot + md report), `report/` (self-contained HTML), `ai/` (provider + playbook retrieval + prompt bundle), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py`, `golden.py` |
 | `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml`, `contradictions.yaml`, `ai.yaml` — single source of truth, validated at load |

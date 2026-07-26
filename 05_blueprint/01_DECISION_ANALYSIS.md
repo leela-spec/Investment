@@ -117,6 +117,18 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-26 — Discovered orphaned agent-governance draft (`docs/ipos-notes/`); filed as future-phase reference, not adopted
+
+**Context:** a folder-name collision (Windows case-insensitivity merged a pre-existing untracked `IPOS/` folder with the git-tracked `ipos/` code package into one physical directory) surfaced 4 markdown files dated 2026-04-15 that predate this blueprint (v1.0, 2026-07-19): `IPOS_AGENT_OPERATING_MODEL.md`, `IPOS_AUTOMATION_ARCHITECTURE.md`, `IPOS_TOOL_MATRIX.md`, `runbook_investment_research_IPOS_v2.md`. Relocated to `docs/ipos-notes/` (code/docs separation, no content change).
+
+**What they are:** a self-described *draft* agent-governance framework for a **different** deployment shape than what D4/D6 actually chose — a cloud-hosted, multi-analyst environment (Slack/Telegram review channels, a paid "Frontier model" tier, a `cron.schedule` tool, GitHub PR automation, concurrent-analyst locking). Five proposed automations (indicator extraction, reconciliation, daily market summary, monthly playbook refresh, maintenance alerts), a tool allow/deny matrix, and approval/rollback procedures. The documents twice state they are provisional and awaiting "the forthcoming IPOS blueprint" to reconcile against — that reconciliation never happened before this note.
+
+**Why not adopted now:** it directly conflicts with locked decisions D4 (plain CLI + Windows Task Scheduler, explicitly *no orchestrator*) and D6 ($0-first, single-operator, no paid Frontier tier by default). Adopting it as-is would mean reopening both decisions, standing up Slack/GitHub-write/cron infrastructure, and taking on recurring paid-model cost — none of which the current single-operator/$0/local-first build needs.
+
+**Disposition:** kept as-is, unreconciled, filed for a possible future phase (multi-analyst / cloud-hosted / Slack-collaborative IPOS) — **not** part of the current roadmap. See `00_MASTER_PLAN.md` Phase 4 for the pointer. If a future session considers building toward that future, treat this as a draft starting point requiring a fresh D4/D6-style decision analysis first (per §"How to disagree with the plan" in `HANDOVER.md` — do not silently merge it into the current $0/local design).
+
+**Switch trigger:** IPOS moves from single-operator to a multi-analyst/team setting → revisit `docs/ipos-notes/` as the starting draft, run it through the same risk/benefit/cost process as D1–D8 before adopting anything from it.
+
 ### 2026-07-23 — Phase 1 walking skeleton built; free-source policy sharpened; scoring-math fixes
 
 **Context:** first implementation session. Built the full walking skeleton (`ipos/` package, configs, DuckDB warehouse, ETL, transforms, scoring, aggregation, snapshot+report, CLI, tests). Ran in a sandbox with **no network to data hosts and no FRED key**.

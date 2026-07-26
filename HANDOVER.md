@@ -54,5 +54,6 @@ Phase 1 is done when a single command produces a correct, byte-identical-on-reru
 - **How each subsystem gets built** → `05_blueprint/meso/C1…C9`.
 - **Exact next build steps** → `05_blueprint/02_PHASE1_WORKPLAN.md`.
 - **What survived / what was lost from the planning session** → `PROJECT_STATE.md` §7.
+- **An unreconciled draft for a *different possible future* (multi-analyst/cloud, not this build)** → `docs/ipos-notes/*.md`, filed and explained in `01_DECISION_ANALYSIS.md` amendment 2026-07-26. Do not merge its assumptions into the current $0/local-first/single-operator design without a fresh decision analysis.
 
 That is the whole reasoning trail. If you internalize §1's governing principle and follow the phase order, you are aligned with the intent even where the plan is silent.

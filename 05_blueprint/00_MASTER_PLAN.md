@@ -143,6 +143,8 @@ Registry expansion to 60 (Credit/FX/Commodities completion; CBOE put/call, AAII 
 ### Phase 4 — Optional & scale (defer freely)
 Streamlit on-demand explorer; COT/ISM-subindex/buyback families toward 120; portfolio/exposure module (manual CSV first, per transcript guidance); local-LLM (Ollama) offline narration variant.
 
+**Possible future phase (unscoped, not this roadmap):** a multi-analyst/cloud-hosted governance layer (Slack/Telegram collaboration, scheduled extraction/reconciliation/summary automations, tool allow/deny matrix) exists as an unreconciled 2026-04-15 draft in `docs/ipos-notes/` — predates and conflicts with D4/D6 (local-first, single-operator, no orchestrator, $0-first). Do not adopt without a fresh decision analysis; see `01_DECISION_ANALYSIS.md` amendment 2026-07-26.
+
 ---
 
 ## 7. Token design of the AI layer (summary; detail in C6)
