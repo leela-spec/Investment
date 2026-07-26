@@ -15,6 +15,7 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import ipos.ai.bundle as bundle_mod
 import ipos.etl.base as etl_base
 import ipos.export.report as report_mod
 import ipos.export.snapshot as snap_mod
@@ -42,6 +43,7 @@ def build_golden_min(workdir: Path, as_of: dt.date = SEED_ANCHOR) -> str:
     etl_base.ARCHIVE_ROOT = workdir / "archive"
     snap_mod.EXPORTS_DIR = workdir / "exports"
     report_mod.EXPORTS_DIR = workdir / "exports"
+    bundle_mod.EXPORTS_DIR = workdir / "exports"
 
     res = run_weekly(
         as_of=as_of,

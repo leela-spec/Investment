@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import html as _html
+import re
 from pathlib import Path
 
 import duckdb
@@ -216,13 +217,52 @@ _TEMPLATE = """<!doctype html>
 <div class="legend"><span>0 weak</span><span class="sw" style="background:{{ color(0) }}"></span><span class="sw" style="background:{{ color(25) }}"></span><span class="sw" style="background:{{ color(50) }}"></span><span class="sw" style="background:{{ color(75) }}"></span><span class="sw" style="background:{{ color(100) }}"></span><span>100 strong</span> · <span>colorblind-safe (RdBu)</span></div>
 
 <h2>Interpretation</h2>
-{% if s.interpretation %}<div>{{ s.interpretation|e|replace("\n", "<br>")|safe }}</div>
+{% if s.interpretation %}<div>{{ interpretation_html|safe }}</div>
 <div class="sub">Narrated by {{ s.interpretation_meta.provider }} · prompt v{{ s.interpretation_meta.prompt_version }}</div>
 {% else %}<div class="sub">LLM narration disabled (provider: none). The report above is fully computed by code; enable a provider in configs/ai.yaml to append an interpretation.</div>{% endif %}
 
 <div class="foot">IPOS — local-first weekly macro process. Deterministic artifact; re-runs are byte-identical for a fixed as_of.</div>
 </div></body></html>
 """
+
+
+_BOLD_RE = re.compile(r"\*\*(.+?)\*\*")
+
+
+def _inline(text: str) -> str:
+    return _BOLD_RE.sub(r"<strong>\1</strong>", _html.escape(text))
+
+
+def _render_interpretation(text: str) -> str:
+    """Dependency-free renderer for the narration's markdown subset (## headers,
+    **bold**, - bullets) per prompts/weekly_checkup.md's fixed output format."""
+    out: list[str] = []
+    in_list = False
+    for raw in text.strip().splitlines():
+        line = raw.strip()
+        if not line:
+            if in_list:
+                out.append("</ul>")
+                in_list = False
+            continue
+        if line.startswith("## "):
+            if in_list:
+                out.append("</ul>")
+                in_list = False
+            out.append(f"<h3>{_inline(line[3:])}</h3>")
+        elif line.startswith("- "):
+            if not in_list:
+                out.append("<ul>")
+                in_list = True
+            out.append(f"<li>{_inline(line[2:])}</li>")
+        else:
+            if in_list:
+                out.append("</ul>")
+                in_list = False
+            out.append(f"<p>{_inline(line)}</p>")
+    if in_list:
+        out.append("</ul>")
+    return "".join(out)
 
 
 def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) -> str:
@@ -240,12 +280,18 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
     # regime 2D trail
     regime_svg = regime_map_svg(_regime_trail(con, as_of, REGIME_TRAIL_WEEKS))
 
+    interpretation_html = (
+        _render_interpretation(snapshot["interpretation"])
+        if snapshot.get("interpretation") else None
+    )
+
     env = Environment(autoescape=False, keep_trailing_newline=True)
     tmpl = env.from_string(_TEMPLATE)
     return tmpl.render(
         css=_CSS,
         as_of=snapshot["as_of"],
         s=snapshot,
+        interpretation_html=interpretation_html,
         stance=sorted(snapshot["overall"]["stance_vector"].items()),
         modules=sorted(snapshot["modules"], key=lambda m: m["module"]),
         indicators=snapshot["indicators"],

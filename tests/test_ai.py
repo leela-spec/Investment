@@ -21,10 +21,17 @@ def _snapshot(populated_db, as_of):
 
 
 def test_default_provider_is_none():
-    cfg = load_ai_config()
+    # AIConfig()'s own default (not configs/ai.yaml, which is operator-editable
+    # runtime state and may legitimately be switched to another provider).
+    cfg = AIConfig()
     assert cfg.provider == "none"
     assert isinstance(get_provider(cfg), NoneProvider)
     assert get_provider(cfg).narrate("sys", "user") is None
+
+
+def test_missing_config_file_defaults_to_none(tmp_path):
+    cfg = load_ai_config(tmp_path / "does_not_exist.yaml")
+    assert cfg.provider == "none"
 
 
 def test_narrate_none_returns_nothing(populated_db, as_of):
