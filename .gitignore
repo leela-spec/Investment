@@ -6,6 +6,9 @@ data/
 # --- secrets ---
 .env
 
+# --- Obsidian local workspace state (not note content) ---
+.obsidian/
+
 # --- python ---
 __pycache__/
 *.py[cod]
