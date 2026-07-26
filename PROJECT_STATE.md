@@ -5,7 +5,7 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-07-24 · **Updated by:** implementation session (Phase 2 + Phase 3 de-risk/dashboard/calendar) · **Branch of record:** `main` (work branch: `claude/i-project-continuation-4dwjhx`)
+**Last updated:** 2026-07-26 · **Updated by:** implementation session (UX explainability pass + live-data root-cause audit) · **Branch of record:** `main` (direct commits only — no long-lived work branches; see §4 below)
 
 ---
 
@@ -21,7 +21,7 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
 | **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
 | **A — Phase 2 (core value)** | ✅ **DONE** — contradictions engine, golden-snapshot harness, regime classifier + risk_scaler + policy selectors, static self-contained HTML report, LLM narration scaffolding ($0 `none`/`manual`). |
-| **A — Phase 3 (de-risk + dashboard + calendar)** | 🚧 **MOSTLY DONE** — ✅ keyless sources (DBnomics/US Treasury) so live runs need no FRED key; fallback chains; no single-sourced critical series. ✅ synthetic-leak closed (synthetic data can't be served as real). ✅ real-ATR regime from OHLC. ✅ confidence/rates/scoring cleanups. ✅ richer dashboard (regime 2D trail, sparklines, 52w heatmap — still self-contained). ✅ free economic calendar. ✅ widened to **22 indicators** (no single-member modules). ⬜ live LLM provider (key/net), ⬜ Windows Task Scheduler, ⬜ full 60-indicator breadth + fragile scrapes. 66 tests green in ~30s. |
+| **A — Phase 3 (de-risk + dashboard + calendar)** | 🚧 **MOSTLY DONE** — ✅ keyless sources (DBnomics/US Treasury) so live runs need no FRED key; fallback chains; no single-sourced critical series. ✅ synthetic-leak closed (synthetic data can't be served as real). ✅ real-ATR regime from OHLC. ✅ confidence/rates/scoring cleanups. ✅ richer dashboard (regime 2D trail, sparklines, 52w heatmap — still self-contained). ✅ free economic calendar. ✅ widened to **22 indicators** (no single-member modules). ✅ manual ($0) LLM narration wired end-to-end (`provider: file`), with markdown rendering fixed. ✅ hover-explanation glossary for every indicator/module/stance-dim/regime label (CSS-only popovers, `configs/glossary.yaml`). ⬜ Windows Task Scheduler, ⬜ full 60-indicator breadth + fragile scrapes, ⬜ **`FRED_API_KEY` still not set — see §3 item 7, this is currently blocking ALL live data**. 74 tests green. |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
 **Current phase:** **Phase 2 (core value) — mostly complete**. Skeleton + contradictions + regime governor + static HTML report + AI scaffolding all done and testable end-to-end offline. Remaining Phase 2 items (live LLM provider, Windows Task Scheduler) need external setup; then Phase 3 (widen to 60 indicators).
@@ -51,6 +51,15 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 4. **Phase 3:** expand to 60 indicators (Tier-1 keyless first, then FRED), scrapes, pandera schemas, golden-snapshot tests, hardening → `C2`, `C9`.
 5. **Phase 4 (optional):** Streamlit explorer, COT/ISM subindices, 120 indicators.
 6. **Unscoped possible future phase — not part of this roadmap:** a multi-analyst/cloud-hosted agent-governance layer (Slack review channels, scheduled extraction/reconciliation automations, tool allow/deny matrix) exists as an unreconciled 2026-04-15 draft — `docs/ipos-notes/` — that conflicts with locked decisions D4/D6 (local-first, single-operator, no orchestrator). See `01_DECISION_ANALYSIS.md` amendment 2026-07-26 before touching it.
+7. **🔴 Live data is currently 0/22 — root cause diagnosed 2026-07-26, see `01_DECISION_ANALYSIS.md` amendment 2026-07-26 (live-data audit).** This registry has exactly two keyless legs (Stooq, and DBnomics-as-FRED-proxy) and *both* were down simultaneously that day (Stooq bot-blocked every ticker; DBnomics' FRED-provider mirror server-erroring). Ranked fix list (not yet built, pick up here):
+   - **Get a free `FRED_API_KEY`** ([fredaccount.stlouisfed.org/apikeys](https://fredaccount.stlouisfed.org/apikeys), operator must do this — account creation is out of scope for an agent) → unblocks 15/22 series directly from FRED, bypassing DBnomics entirely. Highest leverage, do this first.
+   - **Add a second free source** (e.g. Yahoo Finance public endpoint) for the 7 series that are Stooq-only with zero fallback: `DAX`, `NDX`, `RUT`, `GOLD`, `COPPER`, `EURUSD`, `US10Y_STOOQ`. Closes a real gap versus D5's "never sole source" rule — treat as a D5-style decision (alternatives + switch trigger), not a silent addition.
+   - **`ipos-doctor` per-source live health check** (which of Stooq/FRED/DBnomics is reachable right now) — would have cut today's diagnosis from an hour to ten seconds.
+   - Retry/backoff + an explicit "last successful live pull" timestamp on the report, separate from `as_of`.
+8. **UX/explainability improvement plan (2026-07-26), ranked, only item 1 built so far:**
+   1. ✅ **Done** — hover-explanation glossary (indicators/modules/stance-vector/regime), CSS-only popovers, `configs/glossary.yaml` + `ipos/report/glossary.py`.
+   2. ⬜ Progressive-disclosure layout pass (F/Z-scan ordering, grouped modules, 1-line plain-language section captions) — research basis: contemporary fintech-dashboard UX guidance favors summary-first/detail-on-demand and jargon replaced by tooltips/glossary links, which item 1 already covers most of.
+   3. ⬜ General polish pass once the above and the live-data fixes land.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 

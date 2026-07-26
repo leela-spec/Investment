@@ -117,6 +117,24 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-26 — Live-data audit: root cause of 0/22 live pulls; UX explainability pass begun
+
+**Context:** operator asked why a live `ipos-weekly` run produced no real data at all, given "only a few sources are down." Traced every one of the 22 registry entries through its full fallback chain directly (bypassing the fail-safe abort) to get a true per-series picture, not just the 3 `critical` ones that block the run.
+
+**Finding — this is not "a few sources down," it's "the registry has exactly two keyless legs and both are down at once":**
+- 15/22 series are FRED-sourced. With no `FRED_API_KEY` set, every one of them falls through to the DBnomics-as-FRED-proxy keyless fallback (D5 amendment 11) — and DBnomics' FRED-provider mirror was returning a server-side `"Could not load storage"` error for every FRED series tested (confirmed DBnomics itself was healthy: a non-FRED provider, ECB, worked fine).
+- 7/22 series (`SPX`, `NDX`, `RUT`, `DAX`, `GOLD`, `COPPER`, `EURUSD`, `US10Y_STOOQ`) are Stooq-sourced, and Stooq was returning a bot-verification challenge page for every ticker tested, not a per-ticker issue.
+- Of those 7, **`NDX`, `RUT`, `DAX`, `GOLD`, `COPPER`, `EURUSD`, `US10Y_STOOQ` have zero fallback at all** — a real gap against this file's own D5 "never sole source" rule that predates this finding (they were added across Phase 1/3 sessions without a second leg).
+- Net: 0/22 succeeded, not because of 3 critical series, but because both live-data legs (Stooq, DBnomics-FRED) were simultaneously down and 7 series never had a second leg to begin with.
+
+**Disposition — ranked fix list, tracked in `PROJECT_STATE.md` §3 item 7, not yet built:**
+1. Operator obtains a free `FRED_API_KEY` (2-minute signup) — unblocks 15/22 series directly from FRED, independent of DBnomics. Highest leverage; account creation is operator-only, consistent with D5 amendment 11's original deferral reasoning.
+2. Add a second free source (candidate: Yahoo Finance's public endpoint) for the 7 Stooq-only series — this is a new decision in the shape of D5 (alternatives + switch trigger), not a silent addition; not yet built.
+3. `ipos-doctor` gains a per-source live reachability check, so this diagnosis takes ten seconds next time instead of an hour.
+**Switch trigger:** none needed — this is root-cause documentation, not a policy change. D5's existing switch triggers (a critical series unavailable free for >4 weeks) still govern if the FRED-key fix doesn't materialize.
+
+**Separately, a UX explainability pass began the same session** (operator: "I do not understand a lot of the stuff that is presented here"): item 1 of a ranked improvement plan (`PROJECT_STATE.md` §3 item 8) shipped — a plain-language glossary (`configs/glossary.yaml`) with CSS-only hover/focus popovers on every indicator, module, stance-vector dimension, and regime label in `report.html` (`ipos/report/glossary.py`, wired into `ipos/report/html.py`). No JS added; consistent with D3's self-contained-HTML constraint. Remaining ranked items (layout/progressive-disclosure pass) are listed but not built.
+
 ### 2026-07-26 — Discovered orphaned agent-governance draft (`docs/ipos-notes/`); filed as future-phase reference, not adopted
 
 **Context:** a folder-name collision (Windows case-insensitivity merged a pre-existing untracked `IPOS/` folder with the git-tracked `ipos/` code package into one physical directory) surfaced 4 markdown files dated 2026-04-15 that predate this blueprint (v1.0, 2026-07-19): `IPOS_AGENT_OPERATING_MODEL.md`, `IPOS_AUTOMATION_ARCHITECTURE.md`, `IPOS_TOOL_MATRIX.md`, `runbook_investment_research_IPOS_v2.md`. Relocated to `docs/ipos-notes/` (code/docs separation, no content change).
