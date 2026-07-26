@@ -58,6 +58,7 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
    1. ✅ **Done** — hover-explanation glossary (indicators/modules/stance-vector/regime), CSS-only popovers, `configs/glossary.yaml` + `ipos/report/glossary.py`.
    2. ⬜ Progressive-disclosure layout pass (F/Z-scan ordering, grouped modules, 1-line plain-language section captions) — research basis: contemporary fintech-dashboard UX guidance favors summary-first/detail-on-demand and jargon replaced by tooltips/glossary links, which item 1 already covers most of.
    3. ⬜ General polish pass once the above and the live-data fixes land.
+9. **Portfolio module — planned, zero code yet.** Full concrete design: [`05_blueprint/03_PORTFOLIO_MODULE.md`](05_blueprint/03_PORTFOLIO_MODULE.md). Compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested on next run — no live broker API is free for either, researched 2026-07-26) against the weekly suggested stance vector. Read that file before starting; it also has the researched automation-feasibility verdict for both brokers.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 
@@ -81,6 +82,7 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `05_blueprint/00_MASTER_PLAN.md` | Macro plan: vision, constraints, principles, validated architecture, feature ranking, 5 phases, risks |
 | `05_blueprint/01_DECISION_ANALYSIS.md` | Risk/benefit/cost/performance per decision, **alternatives + switch triggers**, risk register |
 | `05_blueprint/02_PHASE1_WORKPLAN.md` | Concrete next-build spec: scaffold, golden-20 indicators + tickers, build order, Definition of Done |
+| `05_blueprint/03_PORTFOLIO_MODULE.md` | **Planned, not built.** Portfolio-vs-stance module design: CSV drop-in schema, Smartbroker/finanzen.net zero automation-feasibility research, Definition of Done |
 | `05_blueprint/meso/C1…C9_*.md` | Per-cluster implementation plans (options → decision → steps → Definition of Done) |
 | `05_blueprint/research/2026-07-19_*.md` | Archived evidence: transcript digest, free data sources, stack validation, LLM token patterns |
 | `Automated Investment Playbook.md` | The original full Blueprint (deliverables 1–9: stack, schema DDL, scoring math, prompts, mock MVP) |

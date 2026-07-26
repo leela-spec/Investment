@@ -117,6 +117,19 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-26 (later still) — Portfolio module planned (not built); automation-feasibility research for Smartbroker/finanzen.net zero
+
+**Context:** operator asked how to integrate real portfolio holdings into the weekly report and, specifically, whether their Smartbroker and finanzen.net zero (Germany) broker accounts could be wired in via an API, and asked for this to be automated.
+
+**Researched before answering (not guessed):**
+- **Smartbroker**: has a real REST API (SMARTBROKER+ "API-Trading") that can query portfolios/transactions. Free only with "heavy trader" VIP status (≥45 trades/quarter); otherwise €29.90/month.
+- **finanzen.net zero**: no public API found — CSV/PDF export only. Every third-party tool integrating with it (Portfolio Performance, DivvyDiary, Finanzfluss Copilot) relies on the same manual CSV export; there is no more-automated free path.
+- **PSD2/open-banking aggregators** (FinAPI, Tink, etc.): real, BaFin-regulated, could read either broker with consent, but these are B2B products priced/scoped for companies integrating with banks, not a simple personal API key — out of scope for a $0 personal project without further access/cost research.
+
+**Decision:** design for maximum automation within the $0 constraint — a drop-a-file, auto-ingest-on-next-run pattern (`data/inbox/portfolio*.csv`, same convention as the existing `manual_csv` connector), not manual data entry, but also not a live API pull (since that isn't free for either broker today). Full design: `05_blueprint/03_PORTFOLIO_MODULE.md`. **Zero code written yet — this is a plan only.**
+**Alternative considered and rejected:** an unofficial/reverse-engineered scraping library for either broker (some exist in the wild for German neobrokers) — rejected outright: ToS risk, fragility, and would require storing broker login credentials, which is out of bounds for this agent and inconsistent with the project's security posture regardless of who operates it.
+**Switch trigger:** if the operator already qualifies as (or becomes) a Smartbroker heavy trader, or decides €29.90/month or a PSD2-aggregator subscription is worth paying for full automation, revisit as a new D5-style decision — the CSV-drop-in design's aggregation/report logic doesn't change, only how position data arrives.
+
 ### 2026-07-26 (later) — Yahoo Finance added as D5's missing second leg; two synthetic-served-as-real bugs found and fixed
 
 **Context:** operator obtained a free `FRED_API_KEY` (self-signup, stored in gitignored `.env`, loaded by `ipos/cli.py`'s built-in loader) — the highest-leverage item from the live-data audit above. This alone unblocked 15/22 series direct from FRED. The remaining blocker was the 7 series that are Stooq-only with zero fallback, one of which (`SPX`) is `critical` and was aborting the whole run.

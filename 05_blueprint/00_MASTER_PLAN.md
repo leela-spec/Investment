@@ -141,7 +141,7 @@ Z-score scoring + tanh damping; confidence composite (quality/stability/coherenc
 Registry expansion to 60 (Credit/FX/Commodities completion; CBOE put/call, AAII headline, NAAIM, CNN F&G, ISM headline via DBnomics — each scrape ≤ ~30 lines with cache + graceful failure); pandera schemas per source; golden-snapshot + monotonicity + integrity test suites; vintage/revision support; `scoring_version` governance; health-check command (`ipos-doctor`: source freshness, DB integrity, task status).
 
 ### Phase 4 — Optional & scale (defer freely)
-Streamlit on-demand explorer; COT/ISM-subindex/buyback families toward 120; portfolio/exposure module (manual CSV first, per transcript guidance); local-LLM (Ollama) offline narration variant.
+Streamlit on-demand explorer; COT/ISM-subindex/buyback families toward 120; **portfolio/exposure module — full concrete design in `05_blueprint/03_PORTFOLIO_MODULE.md` (planned 2026-07-26, not yet built)**: compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested) against the weekly suggested stance vector; local-LLM (Ollama) offline narration variant.
 
 **Possible future phase (unscoped, not this roadmap):** a multi-analyst/cloud-hosted governance layer (Slack/Telegram collaboration, scheduled extraction/reconciliation/summary automations, tool allow/deny matrix) exists as an unreconciled 2026-04-15 draft in `docs/ipos-notes/` — predates and conflicts with D4/D6 (local-first, single-operator, no orchestrator, $0-first). Do not adopt without a fresh decision analysis; see `01_DECISION_ANALYSIS.md` amendment 2026-07-26.
 
