@@ -1,0 +1,249 @@
+# Plain-language explanations surfaced as hover popovers in the HTML report
+# (ipos/report/glossary.py + report/html.py). Content only, no logic; edits
+# here need no code change. Every lookup degrades to "no description
+# available" rather than failing the report if a key is missing.
+
+concepts:
+  risk_budget:
+    title: "Risk budget"
+    body: >
+      How much portfolio risk the process currently supports, 0 (fully
+      defensive) to 100 (full risk-on). Computed from the weighted module
+      scores, then scaled down by the regime's risk multiplier.
+  confidence:
+    title: "Confidence"
+    body: >
+      How much the system trusts this week's numbers, 0-100. Driven by data
+      freshness and signal stability — it is not a market opinion.
+  regime:
+    title: "Regime"
+    body: >
+      The market-condition governor (CHOPPY / TRENDY / MOMENTUM / UNCERTAIN)
+      that sets position sizing, entry style, and stop policy for the week.
+  stance_vector:
+    title: "Stance vector"
+    body: >
+      Eight tilts, one per module's asset class, each from -1 to +1.
+      Positive = supportive / risk-on for that dimension; negative = headwind
+      / risk-off.
+  contradictions:
+    title: "Contradictions"
+    body: >
+      Cases where two signals inside the same module disagree sharply (e.g.
+      one equity index strong while another is weak). A flag to slow down
+      and check the details, not an error.
+  regime_map:
+    title: "Regime map"
+    body: >
+      This week's macro tilt plotted on growth (horizontal) vs.
+      inflation/commodities (vertical) axes, with a fading trail showing
+      recent weeks.
+
+stance_dimensions:
+  equity:
+    title: "Equity"
+    body: >
+      Appetite for equity risk. Positive = risk-on, stocks supported;
+      negative = risk-off, de-risk equity exposure.
+  duration:
+    title: "Duration"
+    body: >
+      Interest-rate / duration exposure tilt. Positive = rates backdrop
+      favors longer duration; negative = rate risk elevated, favor shorter
+      duration.
+  growth:
+    title: "Growth"
+    body: >
+      Growth / recession-risk tilt derived from the Treasury yield curve.
+      Positive = curve shape consistent with expansion; negative = curve
+      flags recession risk.
+  credit:
+    title: "Credit"
+    body: >
+      Credit-spread tilt. Positive = spreads tight or compressing (risk-on);
+      negative = spreads widening (credit stress building).
+  liquidity:
+    title: "Liquidity"
+    body: >
+      Central-bank liquidity tilt (Fed balance sheet & bank reserves).
+      Positive = liquidity expanding (supportive); negative = liquidity
+      draining (headwind).
+  usd:
+    title: "USD / FX"
+    body: >
+      US dollar tilt. Positive = dollar backdrop supportive of risk assets;
+      negative = dollar strength, typically a risk-off signal.
+  commodities:
+    title: "Commodities"
+    body: >
+      Commodities tilt (energy, metals). Positive = commodity prices firm or
+      rising; negative = commodity weakness.
+  fundamentals:
+    title: "Fundamentals"
+    body: >
+      Macro fundamentals & sentiment tilt (consumer sentiment, jobless
+      claims). Positive = the real-economy backdrop is improving.
+
+modules:
+  EquityRisk:
+    body: >
+      Combines major equity indices (SPX, NDX, RUT, DAX) with the VIX and
+      consumer sentiment. High score = broad-based risk-on across equities.
+  RatesLiquidity:
+    body: >
+      Policy rate, 10y Treasury yield, and the Chicago Fed financial
+      conditions index. High score = the rate/liquidity backdrop supports
+      risk-taking.
+  GrowthRisk:
+    body: >
+      Built from Treasury yield-curve spreads (10y-2y, 10y-3m). High score =
+      curve shape consistent with expansion, not recession.
+  Credit:
+    body: >
+      High-yield and investment-grade option-adjusted spreads (OAS). High
+      score = spreads tight, credit markets calm; low score = spreads wide,
+      credit stress building.
+  Liquidity:
+    body: >
+      Fed balance-sheet size and bank reserve balances. High score =
+      liquidity expanding (QE-like); low score = liquidity draining
+      (QT-like).
+  FX:
+    body: >
+      Trade-weighted USD index and EUR/USD. High score = dollar backdrop
+      supportive of risk assets (typically a weaker or stable dollar).
+  Commodities:
+    body: >
+      Crude oil, gold, and copper. High score = broad commodity strength,
+      often a growth/inflation signal.
+  Fundamentals:
+    body: >
+      Consumer sentiment and initial jobless claims. High score = the real
+      economy backdrop is improving.
+
+regime_labels:
+  CHOPPY:
+    body: >
+      Range-bound, low-trend market. Risk posture: defensive sizing, don't
+      rely on breakouts, favor mean-reversion over momentum signals.
+  TRENDY:
+    body: >
+      A directional, orderly trend is in place. Risk posture: standard
+      sizing, trail stops using recent swing highs/lows.
+  MOMENTUM:
+    body: >
+      A strong, accelerating trend. Risk posture: can lean into strength;
+      use wider trailing stops (e.g. Supertrend-like) to avoid being shaken
+      out early.
+  UNCERTAIN:
+    body: >
+      The regime signal isn't confident yet (below the confidence threshold
+      or too new to confirm). Risk posture: the defensive default — smallest
+      sizing, widest stop buffer, quick-exit trailing — until the signal
+      firms up.
+
+indicators:
+  T10Y2Y:
+    body: >
+      10y minus 2y Treasury yield spread — the classic yield-curve recession
+      indicator; inversion (negative) has preceded most US recessions.
+      Higher/steeper = more supportive of growth.
+  T10Y3M:
+    body: >
+      10y minus 3-month Treasury yield spread — the Fed's own preferred
+      yield-curve recession indicator, same idea as 10y-2y. Higher/steeper =
+      more supportive of growth.
+  DGS10:
+    body: >
+      The benchmark 10-year US Treasury yield. Rising yields raise the
+      discount rate on risk assets (typically a headwind), so this scores
+      lower as yields rise.
+  NFCI:
+    body: >
+      Chicago Fed National Financial Conditions Index — a composite of
+      money-market, debt, and equity conditions. Negative = looser/easier
+      conditions (supportive); positive = tighter conditions (headwind).
+  DTWEXBGS:
+    body: >
+      Trade-weighted US dollar index (broad basket). A stronger dollar tends
+      to tighten global financial conditions and pressure risk assets, so
+      this scores lower as the dollar strengthens.
+  HY_OAS:
+    body: >
+      ICE BofA US High Yield Option-Adjusted Spread — the extra yield junk
+      bonds pay over Treasuries. Widening spreads signal credit stress. A
+      critical, must-have series for the run.
+  IG_OAS:
+    body: >
+      ICE BofA US Investment Grade Option-Adjusted Spread — the same idea as
+      HY_OAS but for higher-quality corporate debt; a calmer, slower-moving
+      credit-stress gauge.
+  VIXCLS:
+    body: >
+      CBOE Volatility Index — the market's expected 30-day equity
+      volatility, often called the "fear gauge." Higher VIX = more fear /
+      risk-off, so this scores lower as VIX rises.
+  WALCL:
+    body: >
+      Total assets on the Federal Reserve's balance sheet. A rising balance
+      sheet (QE-like) injects liquidity and scores as supportive; a
+      shrinking one (QT-like) drains it.
+  UMCSENT:
+    body: >
+      University of Michigan Consumer Sentiment Index — a survey-based read
+      on how confident US consumers feel. Higher sentiment = healthier
+      consumer backdrop.
+  WTI:
+    body: >
+      West Texas Intermediate crude oil price — the main US oil benchmark; a
+      broad growth/inflation signal via energy prices.
+  DFF:
+    body: >
+      Effective Federal Funds Rate — the actual traded rate for the Fed's
+      policy target. A higher rate signals tighter monetary policy, scored
+      as a headwind.
+  WRESBAL:
+    body: >
+      Reserve balances banks hold at the Federal Reserve — a direct measure
+      of liquidity the Fed has injected into the banking system. More
+      reserves = looser conditions.
+  ICSA:
+    body: >
+      Initial jobless claims — new US unemployment-insurance filings each
+      week, a fast-moving labor-market check. Rising claims = weakening
+      labor market, scored as a headwind.
+  SPX:
+    body: >
+      S&P 500 — the main US large-cap equity benchmark, and this system's
+      primary risk-on/risk-off reference (used as the regime classifier's
+      benchmark series). A critical, must-have series for the run.
+  NDX:
+    body: >
+      Nasdaq 100 — mega-cap, tech-heavy US equities; tends to lead or lag
+      the SPX depending on whether growth or value is in favor.
+  RUT:
+    body: >
+      Russell 2000 — US small-cap equities; a read on domestic,
+      credit-sensitive risk appetite versus the large-cap SPX/NDX.
+  DAX:
+    body: >
+      Germany's DAX index — the main euro-area equity benchmark, used as a
+      European risk-appetite cross-check against the US indices.
+  GOLD:
+    body: >
+      Spot gold price. Scored here as "higher = broad commodity strength,"
+      though gold can also rise in risk-off, flight-to-safety episodes —
+      worth reading alongside the other Commodities members.
+  COPPER:
+    body: >
+      Copper futures price — "Dr. Copper," a classic industrial-demand and
+      global-growth barometer.
+  EURUSD:
+    body: >
+      Euro/US dollar exchange rate — the world's most-traded FX pair; used
+      here as a cross-check against the broad USD index (DTWEXBGS).
+  US10Y_STOOQ:
+    body: >
+      US 10-year yield sourced from the market-data vendor (Stooq) rather
+      than FRED — a same-day cross-check against DGS10; not double-counted
+      in the module weighting.

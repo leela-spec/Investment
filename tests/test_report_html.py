@@ -48,3 +48,13 @@ def test_html_is_self_contained(populated_db, as_of):
 
 def test_html_deterministic(populated_db, as_of):
     assert _render(populated_db, as_of) == _render(populated_db, as_of)
+
+
+def test_html_has_glossary_tooltips(populated_db, as_of):
+    html = _render(populated_db, as_of)
+    # CSS-only popovers (C7 UX pass): no JS is added, hover/focus is pure CSS.
+    assert 'class="tt"' in html and 'class="tt-pop"' in html
+    assert "<script" not in html.lower()
+    # a known indicator and module explanation actually surfaced
+    assert "yield-curve recession indicator" in html  # T10Y2Y
+    assert "High score = broad-based risk-on" in html  # EquityRisk module

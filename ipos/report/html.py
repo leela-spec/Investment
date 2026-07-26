@@ -25,6 +25,7 @@ from ipos.report.charts import (
     text_on,
     tilt_bar_html,
 )
+from ipos.report.glossary import load_glossary, tooltip
 
 HEATMAP_WEEKS = 52
 SPARK_WEEKS = 52
@@ -131,6 +132,16 @@ th { color: var(--muted); font-weight: 600; }
 .rm-lab { fill: var(--muted); font-size: 10px; }
 .rm-now { fill: #b2182b; stroke: #fff; stroke-width: 1; }
 .foot { color: var(--muted); font-size: 12px; margin-top: 28px; }
+.tt { position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }
+.tt .tt-pop { visibility: hidden; opacity: 0; position: absolute; z-index: 60;
+  left: 0; top: 100%; margin-top: 6px; width: 260px; max-width: 70vw;
+  background: var(--fg); color: var(--bg); font-size: 12px; font-weight: 400; line-height: 1.4;
+  text-transform: none; letter-spacing: normal;
+  padding: 8px 10px; border-radius: 6px; box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  transition: opacity .12s ease; pointer-events: none; }
+.tt .tt-pop b { display: block; margin-bottom: 3px; }
+.tt:hover .tt-pop, .tt:focus .tt-pop { visibility: visible; opacity: 1; }
+h2 .tt { font-weight: 400; }
 @media (prefers-color-scheme: dark) {
   :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31; }
 }
@@ -155,26 +166,26 @@ _TEMPLATE = """<!doctype html>
 {% else %}<div class="banner ok">✓ All {{ s.data_quality.n_indicators }} indicators fresh.</div>{% endif %}
 
 <div class="kpis">
-  <div class="kpi hero"><div class="label">Risk budget</div><div class="val">{{ "%.1f"|format(s.overall.risk_budget) }}<small> / 100</small></div>{{ gauge(s.overall.risk_budget)|safe }}
+  <div class="kpi hero"><div class="label">{{ concept_tt("risk_budget", "Risk budget")|safe }}</div><div class="val">{{ "%.1f"|format(s.overall.risk_budget) }}<small> / 100</small></div>{{ gauge(s.overall.risk_budget)|safe }}
     <div class="sub">how much risk the process supports this week</div></div>
-  <div class="kpi"><div class="label">Confidence</div><div class="val">{{ "%.1f"|format(s.overall.confidence) }}<small> / 100</small></div>{{ gauge(s.overall.confidence)|safe }}</div>
-  <div class="kpi"><div class="label">Regime</div><div class="val">{{ s.regime.label or "n/a" }}</div>
+  <div class="kpi"><div class="label">{{ concept_tt("confidence", "Confidence")|safe }}</div><div class="val">{{ "%.1f"|format(s.overall.confidence) }}<small> / 100</small></div>{{ gauge(s.overall.confidence)|safe }}</div>
+  <div class="kpi"><div class="label">{{ concept_tt("regime", "Regime")|safe }}</div><div class="val">{{ regime_tt(s.regime.label)|safe }}</div>
     <div class="sub">{% if s.regime.confidence is not none %}conf {{ "%.0f"|format(s.regime.confidence) }} · risk ×{{ s.regime.risk_scaler }}{% endif %}</div></div>
 </div>
 {% if s.regime.policy_selectors %}<div class="sub">Policy — size <strong>{{ s.regime.policy_selectors.position_size }}</strong> · entry <strong>{{ s.regime.policy_selectors.entry_style }}</strong> · trail <strong>{{ s.regime.policy_selectors.trailing_stop }}</strong> · stop <strong>{{ s.regime.policy_selectors.initial_stop }}</strong></div>{% endif %}
 
-<h2>Stance vector</h2>
+<h2>{{ concept_tt("stance_vector", "Stance vector")|safe }}</h2>
 <table><tbody>
-{% for dim, val in stance %}<tr><td>{{ dim }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td></tr>
+{% for dim, val in stance %}<tr><td>{{ stance_tt(dim)|safe }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td></tr>
 {% endfor %}</tbody></table>
 
-<h2>Regime map <span class="sub">(growth × inflation tilt, {{ trail_weeks }}-week trail)</span></h2>
+<h2>{{ concept_tt("regime_map", "Regime map")|safe }} <span class="sub">(growth × inflation tilt, {{ trail_weeks }}-week trail)</span></h2>
 <div class="regime-wrap">
 {{ regime_svg|safe }}
 <div class="sub" style="max-width:360px">The point is this week's macro tilt — horizontal = growth stance, vertical = inflation/commodities stance; the faded trail shows the path over the last {{ trail_weeks }} weeks. Regime label <strong>{{ s.regime.label or "n/a" }}</strong> governs the risk scaler.</div>
 </div>
 
-<h2>Contradictions</h2>
+<h2>{{ concept_tt("contradictions", "Contradictions")|safe }}</h2>
 {% if s.contradictions %}<div class="cards">
 {% for c in s.contradictions %}<div class="card {{ c.severity }}"><div class="sev">{{ c.severity }}</div>{{ c.summary }}
 {% if c.details %}<div class="sub">{% for k, v in c.details.items() %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}</div>
@@ -192,7 +203,7 @@ _TEMPLATE = """<!doctype html>
 
 <h2>Modules</h2>
 <table><thead><tr><th>Module</th><th class="num">Score</th><th>52w</th><th>Tilt</th><th class="num">Confidence</th></tr></thead><tbody>
-{% for m in modules %}<tr><td>{{ m.module }}</td>
+{% for m in modules %}<tr><td>{{ module_tt(m.module)|safe }}</td>
   <td class="num"><span class="pill" style="background:{{ color(m.score) }};color:{{ txt(color(m.score)) }}">{{ "%.1f"|format(m.score) }}</span></td>
   <td>{{ module_spark.get(m.module, "")|safe }}</td>
   <td>{{ tilt(m.tilt)|safe }}</td><td class="num">{{ "%.1f"|format(m.confidence) }}</td></tr>
@@ -200,7 +211,7 @@ _TEMPLATE = """<!doctype html>
 
 <h2>Indicators</h2>
 <table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th>52w score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
-{% for i in indicators %}<tr id="{{ i.id }}"><td>{{ i.id }}</td><td>{{ i.module }}</td>
+{% for i in indicators %}<tr id="{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>
   <td class="num">{{ i.value }}</td><td class="num">{{ "%+.4g"|format(i.delta_1w) if i.delta_1w is not none else "—" }}</td>
   <td>{{ i.trend }}</td>
   <td class="num"><span class="pill" style="background:{{ color(i.score) }};color:{{ txt(color(i.score)) }}">{{ "%.1f"|format(i.score) }}</span></td>
@@ -285,6 +296,27 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         if snapshot.get("interpretation") else None
     )
 
+    gloss = load_glossary()
+
+    def concept_tt(key: str, label: str) -> str:
+        return tooltip(label, gloss.get("concepts", {}).get(key))
+
+    def stance_tt(dim: str) -> str:
+        entry = gloss.get("stance_dimensions", {}).get(dim)
+        label = (entry or {}).get("title") or dim
+        return tooltip(label, entry)
+
+    def module_tt(module_id: str) -> str:
+        return tooltip(module_id, gloss.get("modules", {}).get(module_id), title=module_id)
+
+    def indicator_tt(series_id: str) -> str:
+        return tooltip(series_id, gloss.get("indicators", {}).get(series_id), title=series_id)
+
+    def regime_tt(label: str | None) -> str:
+        if not label:
+            return "n/a"
+        return tooltip(label, gloss.get("regime_labels", {}).get(label), title=label)
+
     env = Environment(autoescape=False, keep_trailing_newline=True)
     tmpl = env.from_string(_TEMPLATE)
     return tmpl.render(
@@ -292,6 +324,11 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         as_of=snapshot["as_of"],
         s=snapshot,
         interpretation_html=interpretation_html,
+        concept_tt=concept_tt,
+        stance_tt=stance_tt,
+        module_tt=module_tt,
+        indicator_tt=indicator_tt,
+        regime_tt=regime_tt,
         stance=sorted(snapshot["overall"]["stance_vector"].items()),
         modules=sorted(snapshot["modules"], key=lambda m: m["module"]),
         indicators=snapshot["indicators"],
