@@ -39,7 +39,7 @@ def test_bundle_within_budget_and_structured(populated_db, as_of, tmp_path):
     assert meta["tokens"]["playbook"] <= cfg.budget["playbook"]
     assert meta["tokens"]["snapshot"] <= cfg.budget["snapshot"]
     res = write_bundle(snap, reg, cfg, as_of, base_dir=tmp_path)
-    text = open(res["prompt_bundle"]).read()
+    text = open(res["prompt_bundle"], encoding="utf-8").read()
     assert "## SYSTEM" in text and "## USER" in text
     assert "snapshot.min.json" in text
 
