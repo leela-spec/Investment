@@ -6,7 +6,7 @@ from __future__ import annotations
 import datetime as dt
 
 from ipos.config.models import RegistryEntry, Source
-from ipos.etl import dbnomics, ustreasury
+from ipos.etl import dbnomics, ustreasury, yahoo
 
 
 def _entry():
@@ -60,6 +60,56 @@ def test_ustreasury_parses_tenor(monkeypatch):
                          dt.date(2026, 1, 1), dt.date(2026, 7, 17))
     assert set(df["value"]) == {4.30, 4.33}
     assert list(df.columns) == ["obs_date", "value"]
+
+
+def _yahoo_chart(timestamps, opens, highs, lows, closes):
+    return {"chart": {"result": [{
+        "timestamp": timestamps,
+        "indicators": {"quote": [{
+            "open": opens, "high": highs, "low": lows, "close": closes,
+        }]},
+    }]}}
+
+
+def test_yahoo_parses_close(monkeypatch):
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self):
+            return _yahoo_chart(
+                [1752710400, 1752796800],  # 2025-07-17, 2025-07-18 UTC noon
+                [1.0, 1.0], [1.0, 1.0], [1.0, 1.0], [100.0, None],
+            )
+    monkeypatch.setattr(yahoo.requests, "get", lambda *a, **k: Resp())
+    df = yahoo.pull(_entry(), Source(type="yahoo", locator="^GSPC"), None, None)
+    assert list(df["value"]) == [100.0]  # the None close is dropped
+
+
+def test_yahoo_no_result_raises(monkeypatch):
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self): return {"chart": {"result": []}}
+    monkeypatch.setattr(yahoo.requests, "get", lambda *a, **k: Resp())
+    try:
+        yahoo.pull(_entry(), Source(type="yahoo", locator="^GSPC"), None, None)
+        assert False, "expected RuntimeError"
+    except RuntimeError:
+        pass
+
+
+def test_yahoo_pull_ohlc(monkeypatch):
+    class Resp:
+        status_code = 200
+        def raise_for_status(self): pass
+        def json(self):
+            return _yahoo_chart(
+                [1752710400], [99.0], [102.0], [98.0], [100.0],
+            )
+    monkeypatch.setattr(yahoo.requests, "get", lambda *a, **k: Resp())
+    df = yahoo.pull_ohlc(_entry(), Source(type="yahoo", locator="^GSPC"), None, None)
+    assert list(df.columns) == ["obs_date", "open", "high", "low", "close"]
+    assert df.iloc[0]["high"] == 102.0 and df.iloc[0]["low"] == 98.0
 
 
 def test_registry_multisource_no_single_critical():

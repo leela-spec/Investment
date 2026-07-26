@@ -7,6 +7,16 @@
 --
 -- Determinism: when a single obs_date carries multiple vintages we keep the
 -- lexicographically greatest vintage_id (stable), so re-runs are byte-identical.
+-- A real observation always outranks a synthetic one for the same obs_date
+-- regardless of vintage-string ordering ("synthetic@..." sorts after a real
+-- vintage's series-id prefix, so without this a synthetic seed row could
+-- silently outrank a later real pull that landed on the same calendar date --
+-- the exact "synthetic served as real" leak D5 amendment 12 exists to close).
+-- On a real (non---seed-offline) run, synthetic rows are excluded from the
+-- candidate set entirely (bound param $1 = include_synthetic) -- otherwise a
+-- fabricated *later* obs_date (the synthetic seed's own multi-year history)
+-- would legitimately out-ASOF a real but older observation, which the
+-- same-date tie-break above cannot catch.
 
 INSERT OR REPLACE INTO fact_weekly
   (series_id, as_of_date, value, vintage_id, obs_date, ingested_at)
@@ -16,9 +26,10 @@ WITH latest_obs AS (
     SELECT *,
            row_number() OVER (
              PARTITION BY series_id, obs_date
-             ORDER BY vintage_id DESC, ingested_at DESC
+             ORDER BY (vintage_id LIKE 'synthetic@%') ASC, vintage_id DESC, ingested_at DESC
            ) AS rn
     FROM fact_observation
+    WHERE ($1 OR vintage_id NOT LIKE 'synthetic@%')
   )
   WHERE rn = 1
 ),

@@ -118,10 +118,12 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "details": json.loads(details) if details else {},
         })
 
-    # synthetic-data detection: any canonical value backed by a synthetic
-    # vintage means the run used --seed-offline demo data, never real.
+    # synthetic-data detection: THIS week's canonical values backed by a
+    # synthetic vintage means THIS run used --seed-offline demo data. Must be
+    # `=`, not `<=`: an earlier week's legitimate demo run must never taint
+    # every later real week's flag forever (2026-07-26 regression).
     synthetic_data = con.execute(
-        "SELECT count(*) FROM fact_weekly WHERE as_of_date <= ? "
+        "SELECT count(*) FROM fact_weekly WHERE as_of_date = ? "
         "AND vintage_id LIKE 'synthetic@%'",
         [as_of],
     ).fetchone()[0] > 0

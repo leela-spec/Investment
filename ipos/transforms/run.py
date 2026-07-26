@@ -23,8 +23,12 @@ SQL_DIR = Path(__file__).resolve().parent / "sql"
 
 # --- weekly Friday grid -----------------------------------------------------
 
-def _friday_grid(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> list[dt.date]:
-    row = con.execute("SELECT min(obs_date), max(obs_date) FROM fact_observation").fetchone()
+def _friday_grid(con: duckdb.DuckDBPyConnection, as_of: dt.date, include_synthetic: bool) -> list[dt.date]:
+    row = con.execute(
+        "SELECT min(obs_date), max(obs_date) FROM fact_observation "
+        "WHERE (? OR vintage_id NOT LIKE 'synthetic@%')",
+        [include_synthetic],
+    ).fetchone()
     if not row or row[0] is None:
         return []
     first_obs = row[0]
@@ -34,15 +38,20 @@ def _friday_grid(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> list[dt.date
     return [as_of - dt.timedelta(weeks=i) for i in range(n_weeks - 1, -1, -1)]
 
 
-def build_canonical(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> int:
-    weeks = _friday_grid(con, as_of)
+def build_canonical(con: duckdb.DuckDBPyConnection, as_of: dt.date, synthetic: bool = False) -> int:
+    """``synthetic`` must be True only for a --seed-offline demo run: it makes
+    synthetic-vintage rows visible to the ASOF join. A real run (the default)
+    never considers them, so a fabricated demo observation can never outrank
+    a real one -- neither on a same-date tie nor by having a later obs_date
+    (2026-07-26 regression; see canonical_weekly.sql)."""
+    weeks = _friday_grid(con, as_of, include_synthetic=synthetic)
     if not weeks:
         return 0
     wk = pd.DataFrame({"as_of_date": [pd.Timestamp(w) for w in weeks]})
     con.register("week_keys_df", wk)
     con.execute("CREATE OR REPLACE TEMP TABLE week_keys AS SELECT as_of_date::DATE AS as_of_date FROM week_keys_df")
     sql = (SQL_DIR / "canonical_weekly.sql").read_text(encoding="utf-8")
-    con.execute(sql)
+    con.execute(sql, [synthetic])
     con.unregister("week_keys_df")
     return con.execute(
         "SELECT count(*) FROM fact_weekly WHERE as_of_date <= ?", [as_of]

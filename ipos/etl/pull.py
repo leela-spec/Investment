@@ -13,7 +13,7 @@ import duckdb
 import pandas as pd
 
 from ipos.config.models import RegistryEntry, Registry
-from ipos.etl import dbnomics, fred, manual_csv, stooq, ustreasury
+from ipos.etl import dbnomics, fred, manual_csv, stooq, ustreasury, yahoo
 from ipos.etl.base import PullResult, run_fallback
 from ipos.etl.validators import ValidationError, validate_observations
 
@@ -23,7 +23,11 @@ CONNECTORS = {
     "manual_csv": manual_csv.pull,
     "dbnomics": dbnomics.pull,
     "ustreasury": ustreasury.pull,
+    "yahoo": yahoo.pull,
 }
+
+# OHLC-capable connectors for the regime governor (C4), tried in this order.
+OHLC_CONNECTORS = [("stooq", stooq.pull_ohlc), ("yahoo", yahoo.pull_ohlc)]
 
 
 @dataclass
@@ -87,29 +91,39 @@ def pull_ohlc(
     ingested_at: dt.datetime,
     connectors: dict | None = None,
 ) -> dict:
-    """Populate fact_ohlc for the given benchmark series from their Stooq source
-    (the only OHLC-capable connector). Best-effort and never fatal: on failure
-    or when no Stooq source exists, the regime classifier falls back to
-    close-only. Returns {series_id: rows}."""
-    from ipos.etl import stooq  # local import
+    """Populate fact_ohlc for the given benchmark series, trying each
+    OHLC-capable source in order (Stooq, then Yahoo as a second free leg —
+    see 01_DECISION_ANALYSIS.md amendment 2026-07-26). Best-effort and never
+    fatal: on failure of every source, the regime classifier falls back to
+    close-only. Returns {series_id: rows}.
 
+    ``connectors={"stooq_ohlc": fn}`` (used by tests) overrides the whole
+    lookup with a single injected connector tried against the entry's
+    "stooq" source, preserving the pre-Yahoo test contract."""
     conns = connectors if connectors is not None else CONNECTORS
-    stooq_ohlc = conns.get("stooq_ohlc") or (stooq.pull_ohlc if "stooq" in conns else None)
+    if "stooq_ohlc" in conns:
+        candidates = [("stooq", conns["stooq_ohlc"])]
+    else:
+        candidates = [(t, fn) for t, fn in OHLC_CONNECTORS if t in conns]
     out: dict[str, int] = {}
-    if stooq_ohlc is None:
+    if not candidates:
         return out
     for sid in benchmarks:
         try:
             entry = registry.by_id(sid)
         except KeyError:
             continue
-        src = next((s for s in entry.sources if s.type == "stooq"), None)
-        if src is None:
-            continue
-        try:
-            df = stooq_ohlc(entry, src, None, as_of)
-        except Exception:
-            continue
+        df = None
+        for src_type, ohlc_fn in candidates:
+            src = next((s for s in entry.sources if s.type == src_type), None)
+            if src is None:
+                continue
+            try:
+                df = ohlc_fn(entry, src, None, as_of)
+            except Exception:
+                df = None
+            if df is not None and not df.empty:
+                break
         if df is None or df.empty:
             continue
         df = df.copy()

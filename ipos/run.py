@@ -115,7 +115,7 @@ def run_weekly(
 
         # --- stage: canonical + features/scores ---
         t0 = dt.datetime.now()
-        nweekly = build_canonical(con, aod)
+        nweekly = build_canonical(con, aod, synthetic=seed_offline)
         _log_stage(con, run_id, aod, "canonical", "OK", t0, rows_out=nweekly)
 
         t0 = dt.datetime.now()
