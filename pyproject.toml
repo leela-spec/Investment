@@ -27,6 +27,7 @@ ipos-score = "ipos.cli:cmd_score"
 ipos-weekly = "ipos.cli:cmd_weekly"
 ipos-doctor = "ipos.cli:cmd_doctor"
 ipos-backfill = "ipos.cli:cmd_backfill"
+ipos-replay = "ipos.cli:cmd_replay"
 
 [build-system]
 requires = ["hatchling"]

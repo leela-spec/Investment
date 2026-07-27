@@ -230,6 +230,40 @@ def _validate_references(
         raise ContradictionConfigError(f"predicates reference unknown series: {sorted(bad_series)}")
 
 
+def module_members(
+    con: duckdb.DuckDBPyConnection, as_of: dt.date
+) -> dict[str, list[tuple[str, float]]]:
+    """module_id -> [(series_id, score), ...] ascending by score, for the week.
+
+    This is the drill-down behind a ``module_spread`` contradiction: the spread
+    is just ``last.score - first.score``, so the two ends name exactly which
+    indicators are disagreeing."""
+    out: dict[str, list[tuple[str, float]]] = {}
+    for module_id, series_id, score in con.execute(
+        """
+        SELECT d.module_id, s.series_id, s.score_0_100
+        FROM fact_score s JOIN dim_series d USING (series_id)
+        WHERE s.as_of_date = ? AND d.enabled
+        ORDER BY d.module_id, s.score_0_100
+        """,
+        [as_of],
+    ).fetchall():
+        out.setdefault(module_id, []).append((series_id, float(score)))
+    return out
+
+
+def _spread_modules(tree: ast.Expression) -> set[str]:
+    """Module ids this predicate inspects via ``module_spread(...)``."""
+    out: set[str] = set()
+    for node in ast.walk(tree):
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "module_spread" and node.args):
+            arg = node.args[0]
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
+                out.add(arg.value)
+    return out
+
+
 def _captured_values(tree: ast.Expression, funcs: dict) -> dict:
     """Evaluate every module()/indicator()/module_*() reference in the predicate
     so the log records exactly which numbers triggered it."""
@@ -257,6 +291,7 @@ def evaluate(
     preds = load_predicates(path)
     _validate_references(con, preds)
     ctx = _build_context(con, as_of)
+    members = module_members(con, as_of)
 
     hits: list[dict] = []
     for pred in preds:
@@ -265,11 +300,25 @@ def evaluate(
         except ContradictionConfigError:
             raise
         if fired:
+            details = _captured_values(pred.tree, ctx)
+            # name the disagreeing ends of any module_spread this rule inspects,
+            # so the report can say "VIXCLS 28 vs RUT 96" instead of just "68".
+            for module_id in sorted(_spread_modules(pred.tree)):
+                mem = members.get(module_id) or []
+                if len(mem) >= 2:
+                    details[f"lowest({module_id})"] = f"{mem[0][0]} {mem[0][1]:.1f}"
+                    details[f"highest({module_id})"] = f"{mem[-1][0]} {mem[-1][1]:.1f}"
+            # reserved, machine-readable: which modules this rule is about, so
+            # the report can render their members. Underscore keys are not
+            # displayed as plain key=value pairs.
+            refs = _references([pred])["module"]
+            if refs:
+                details["_modules"] = sorted(refs)
             hits.append({
                 "id": pred.id,
                 "severity": pred.severity,
                 "summary": pred.summary,
-                "details": _captured_values(pred.tree, ctx),
+                "details": dict(sorted(details.items())),
             })
 
     sev_rank = {"high": 0, "med": 1, "low": 2}

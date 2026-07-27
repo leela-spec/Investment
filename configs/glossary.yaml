@@ -29,15 +29,95 @@ concepts:
   contradictions:
     title: "Contradictions"
     body: >
-      Cases where two signals inside the same module disagree sharply (e.g.
-      one equity index strong while another is weak). A flag to slow down
-      and check the details, not an error.
+      Signals that disagree — either two modules pointing opposite ways, or
+      members inside one module strongly at odds. What to do: treat the
+      affected tilt as less reliable than its confidence suggests, size
+      smaller, and read the named indicators before acting. A flag to slow
+      down, not an error.
   regime_map:
     title: "Regime map"
     body: >
       This week's macro tilt plotted on growth (horizontal) vs.
-      inflation/commodities (vertical) axes, with a fading trail showing
-      recent weeks.
+      inflation/commodities (vertical) axes. The trail is the path over the
+      recent weeks — muted for the older half, accented with an arrowhead for
+      the recent half, so you can see which way conditions are travelling.
+  score:
+    title: "Score (0-100)"
+    body: >
+      Where this week's reading sits against its OWN history — not against
+      other indicators. 50 is typical; above 50 is more supportive than usual
+      for that module's tilt, below 50 less. Percentile-ranked over roughly
+      three years (or z-scored) per indicator. A relative position, never a
+      price target.
+  tilt:
+    title: "Tilt (-1 to +1)"
+    body: >
+      The suggested lean for this module this week, derived from its score.
+      Positive = supportive, negative = headwind, near zero = neutral. A
+      description of conditions, never a trade instruction.
+  delta_value:
+    title: "Δ value (1 week)"
+    body: >
+      Change in the indicator's raw value since last week, in its own units.
+      Useful for the level, but NOT comparable between indicators — a
+      balance-sheet series moves in billions while a copper price moves in
+      cents. For cross-indicator comparison use the score horizons instead.
+  score_horizons:
+    title: "Score horizons — 1w / 1m / 1q / 1y"
+    body: >
+      Change in the 0-100 score over one week, month, quarter and year, as
+      four small bars: up (blue) = score improving, down (red) = weakening,
+      height = size, capped at 45 points. Because scores are normalised, these
+      ARE comparable across every indicator. Hover a bar for the exact number.
+  delta_score:
+    title: "Δ score"
+    body: >
+      Change in the 0-100 score over the stated period. Comparable across all
+      indicators, unlike a raw-value change.
+  stale:
+    title: "Stale"
+    body: >
+      The newest observation is older than this indicator's allowance (10 days
+      for daily series, 14 weekly, 45 monthly). The value is still used, but
+      confidence is cut and the run is marked degraded.
+  risk_scaler:
+    title: "Risk scaler"
+    body: >
+      The regime's multiplier on the raw risk budget: TRENDY ×1.00,
+      MOMENTUM ×0.75, CHOPPY ×0.50, UNCERTAIN ×0.40. This is how the
+      market-condition governor throttles position sizing.
+  module_spread:
+    title: "Module spread"
+    body: >
+      Highest minus lowest member score inside one module. Above 60 the
+      members are contradicting each other, so the module's average tilt is
+      hiding a genuine disagreement rather than expressing a consensus.
+  top_movers:
+    title: "Top movers"
+    body: >
+      The indicators whose 0-100 score changed most since last week — the
+      week's news, ranked by how much the system's read of each one shifted.
+  modules_section:
+    title: "Modules"
+    body: >
+      The eight thematic groups indicators roll up into. Each gets a weighted
+      score, a confidence, and the tilt that feeds the stance vector.
+  indicators_section:
+    title: "Indicators"
+    body: >
+      Every active series this week: its latest value, how it moved, its
+      0-100 score against its own history, and whether the data is fresh.
+  score_heatmap:
+    title: "Score heat map"
+    body: >
+      Every indicator's 0-100 score, one column per week, newest at the right
+      — so persistent strength or a regime change shows up as a horizontal
+      colour band. Rows are grouped by module; hover any cell for the value.
+  events:
+    title: "Events"
+    body: >
+      Scheduled macro events in this and next week (policy decisions, major
+      releases) that could invalidate the week's read before the next run.
   portfolio_vs_stance:
     title: "Portfolio vs. Stance"
     body: >
@@ -47,6 +127,109 @@ concepts:
       never a trade or rebalancing suggestion. Appears only after a portfolio
       CSV export is dropped in data/inbox/ (see
       05_blueprint/03_PORTFOLIO_MODULE.md); omitted otherwise.
+  interpretation:
+    title: "Interpretation"
+    body: >
+      The only section written by a language model. It narrates what the
+      computed numbers above already say — it never calculates, scores, or
+      decides anything, and it cannot change a single figure in this report.
+  regime_ribbon:
+    title: "Regime timeline"
+    body: >
+      One cell per week, oldest at the left, coloured by that week's regime.
+      Darker means the regime allowed more risk. A vertical tick marks each
+      change, so you can read how long the current condition has held.
+
+# Macro quadrants of the regime map (growth × inflation). Descriptive
+# regime-context education, not positioning advice.
+macro_quadrants:
+  Reflation:
+    body: >
+      Growth tilt positive AND inflation tilt positive — expansion with rising
+      prices. Historically the quadrant where commodities and cyclicals carry
+      the load and long duration struggles.
+  Goldilocks:
+    body: >
+      Growth positive, inflation negative — expansion without price pressure.
+      Historically the friendliest quadrant, with equities and bonds able to
+      work at the same time.
+  Stagflation:
+    body: >
+      Growth negative, inflation positive — the hostile quadrant, where
+      neither equities nor duration reliably works and real assets tend to be
+      the only shelter.
+  Deflation:
+    body: >
+      Growth negative AND inflation negative — contraction with falling
+      prices. Historically favours duration and quality over cyclicals.
+
+# Per-contradiction explanations. Looked up by exact id first, then by kind
+# (any *_MIXED_SIGNAL / *_MISMATCH id falls back to the shared entry), so a
+# new per-module rule needs no glossary edit.
+contradiction_kinds:
+  mixed_signal:
+    title: "Mixed signal inside one module"
+    body: >
+      This module's member indicators disagree by more than 60 score points,
+      so its averaged tilt is a midpoint between opposites rather than a
+      consensus. What to do: read the two named indicators below — the
+      disagreement usually means one leg is early or one is stale. Treat the
+      module tilt as low-information until they converge.
+  portfolio_mismatch:
+    title: "Holdings vs. suggested tilt"
+    body: >
+      Your actual weight in this module and the tilt the system suggests point
+      different ways — either you hold size in something it currently flags as
+      a headwind, or you hold nothing in something it currently likes. What to
+      do: nothing automatically. This is a prompt to check the position was
+      deliberate, not a trade signal.
+
+contradictions_by_id:
+  EQ_vs_CREDIT:
+    title: "Equities risk-on, credit warning"
+    body: >
+      Equity scores are strong while credit spreads signal stress. Credit
+      usually leads equities at turns, so this combination historically
+      resolves toward the credit signal. What to do: treat equity strength as
+      less durable than it looks and watch spreads for confirmation.
+  EQ_vs_RATES:
+    title: "Equities risk-on, rates tight"
+    body: >
+      Equities are strong while rates and liquidity conditions read tight.
+      Tight financial conditions eventually bite valuations. What to do: note
+      that equity strength is running against its funding backdrop.
+  EQ_vs_GROWTH:
+    title: "Equities risk-on, curve warning"
+    body: >
+      Equities are strong while the yield curve signals elevated recession
+      risk. The curve leads by quarters, not weeks, so both can be true at
+      once. What to do: keep the horizon mismatch in mind rather than
+      resolving it either way.
+  COMMODITIES_vs_GROWTH:
+    title: "Commodities strong, growth weak"
+    body: >
+      Cyclical commodities are strong while the curve signals weak growth.
+      Often a supply story rather than a demand story. What to do: check
+      whether the commodity strength is broad or concentrated.
+  LIQUIDITY_vs_CREDIT:
+    title: "Liquidity supportive, credit stressed"
+    body: >
+      Central-bank liquidity looks supportive while credit spreads signal
+      stress — liquidity is reaching markets but not the riskiest borrowers.
+      What to do: favour quality over the high-yield end of risk.
+  EQ_vs_FUNDAMENTALS:
+    title: "Equities risk-on, fundamentals weak"
+    body: >
+      Equities are strong while consumer and macro fundamentals are weak.
+      Markets can lead a recovery, but the gap is worth respecting. What to
+      do: treat this as a reason for smaller size, not a reason to be short.
+  BROAD_RISKON_CREDIT_LAG:
+    title: "Broad risk-on, credit not confirming"
+    body: >
+      Equities AND commodities are both strong while credit lags. The
+      broadest version of the credit-divergence warning. What to do: this is
+      the highest-severity combination in the set — reduce reliance on the
+      risk-on read until credit confirms.
 
 stance_dimensions:
   equity:

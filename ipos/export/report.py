@@ -25,9 +25,7 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 ## Overall
 - **Risk budget:** {{ "%.1f"|format(overall.risk_budget) }} / 100
 - **Confidence:** {{ "%.1f"|format(overall.confidence) }} / 100
-- **Regime:** {{ regime.label or "n/a" }}{% if regime.confidence is not none %} (confidence {{ "%.0f"|format(regime.confidence) }}, risk_scaler {{ regime.risk_scaler }}){% endif %}{% if regime.policy_selectors %}
-  - _Policy:_ size {{ regime.policy_selectors.position_size }} · entry {{ regime.policy_selectors.entry_style }} · trail {{ regime.policy_selectors.trailing_stop }} · stop {{ regime.policy_selectors.initial_stop }}{% endif %}{% if flags.degraded %}
-- ⚠️ **Degraded run:** {{ data_quality.n_stale }} stale, {{ data_quality.n_missing }} missing series{% endif %}
+- **Regime:** {{ regime.label or "n/a" }}{% if regime.confidence is not none %} (confidence {{ "%.0f"|format(regime.confidence) }}, risk_scaler {{ regime.risk_scaler }}){% endif %}{% if regime.policy_selectors %}{{ nl }}  - _Policy:_ size {{ regime.policy_selectors.position_size }} · entry {{ regime.policy_selectors.entry_style }} · trail {{ regime.policy_selectors.trailing_stop }} · stop {{ regime.policy_selectors.initial_stop }}{% endif %}{% if flags.degraded %}{{ nl }}- ⚠️ **Degraded run:** {{ data_quality.n_stale }} stale, {{ data_quality.n_missing }} missing series{% endif %}
 
 ### Stance vector
 | Dimension | Tilt |
@@ -62,7 +60,7 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 {% endif %}
 
 ## Contradictions
-{% if contradictions %}{% for c in contradictions %}- **[{{ c.severity }}]** {{ c.summary }}
+{% if contradictions %}{% for c in contradictions %}- **[{{ c.severity }}]** {{ c.summary }}{{ bullets(c) }}
 {% endfor %}{% else %}_None flagged this week._
 {% endif %}
 
@@ -74,9 +72,12 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 {% endif %}
 
 ## Indicators
-| ID | Module | Value | Δ1w | Trend | Score | Conf | Stale |
-|---|---|---|---|---|---|---|---|
-{% for i in indicators %}| {{ i.id }} | {{ i.module }} | {{ i.value }} | {{ i.delta_1w if i.delta_1w is not none else "—" }} | {{ i.trend }} | {{ "%.1f"|format(i.score) }} | {{ "%.0f"|format(i.confidence) }} | {{ "yes" if i.stale else "" }} |
+Δ value = change in the indicator's own units (not comparable between indicators).
+Δscore 1w/1m/1q/1y = change in the 0-100 score, which _is_ comparable.
+
+| ID | Module | Value | Δ value 1w | Trend | Score | Δscore 1w | 1m | 1q | 1y | Conf | Stale |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+{% for i in indicators %}| {{ i.id }} | {{ i.module }} | {{ i.value }} | {{ i.delta_1w if i.delta_1w is not none else "—" }} | {{ i.trend }} | {{ "%.1f"|format(i.score) }} | {{ sd(i, "1w") }} | {{ sd(i, "4w") }} | {{ sd(i, "12w") }} | {{ sd(i, "52w") }} | {{ "%.0f"|format(i.confidence) }} | {{ "yes" if i.stale else "" }} |
 {% endfor %}
 
 ## Data quality
@@ -86,10 +87,31 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 """
 
 
+def _score_delta(indicator: dict, horizon: str) -> str:
+    """Format one score-horizon delta for the markdown table."""
+    v = (indicator.get("score_deltas") or {}).get(horizon)
+    return f"{v:+.1f}" if v is not None else "—"
+
+
+def _detail_bullets(contradiction: dict) -> str:
+    """Indented markdown bullets naming what triggered a contradiction —
+    built in Python because Jinja's ``trim_blocks`` eats the newline after a
+    block tag, which would collapse nested loop output onto one line.
+    Underscore keys are machine-readable refs, not display."""
+    items = [
+        (k, v) for k, v in (contradiction.get("details") or {}).items()
+        if not k.startswith("_")
+    ]
+    return "".join(f"\n  - {k} = {v}" for k, v in items)
+
+
 def render_report(snapshot: dict) -> str:
     env = Environment(trim_blocks=True, lstrip_blocks=True, keep_trailing_newline=True)
     tmpl = env.from_string(_TEMPLATE)
     return tmpl.render(
+        sd=_score_delta,
+        bullets=_detail_bullets,
+        nl="\n",
         as_of=snapshot["as_of"],
         scoring_version=snapshot["scoring_version"],
         schema_version=snapshot["schema_version"],

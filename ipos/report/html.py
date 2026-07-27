@@ -16,11 +16,17 @@ from pathlib import Path
 import duckdb
 from jinja2 import Environment
 
+from ipos.aggregate.contradictions import module_members
 from ipos.aggregate.portfolio import portfolio_vs_stance
+from ipos.aggregate.regime import RISK_SCALER
 from ipos.export.snapshot import EXPORTS_DIR
 from ipos.report.charts import (
+    QUADRANTS,
     gauge_html,
+    horizon_strip_svg,
+    member_strip_svg,
     regime_map_svg,
+    regime_ribbon_svg,
     score_color,
     sparkline_svg,
     text_on,
@@ -30,7 +36,11 @@ from ipos.report.glossary import load_glossary, tooltip
 
 HEATMAP_WEEKS = 52
 SPARK_WEEKS = 52
-REGIME_TRAIL_WEEKS = 26
+# Aggregate-layer history window (module scores, stance values, regime trail
+# and ribbon). Separate from the score-history windows above because
+# agg_module/agg_regime are only as deep as `ipos-replay` has rebuilt them,
+# whereas fact_score carries the full history.
+AGG_WEEKS = 26
 
 
 def _score_history(con: duckdb.DuckDBPyConnection, as_of: dt.date, weeks: int):
@@ -65,8 +75,10 @@ def _module_score_history(con, as_of, weeks):
 
 
 def _regime_trail(con, as_of, weeks):
-    """Ordered (growth, inflation) tilt points over the trail window.
-    X = growth stance dim; Y = commodities stance dim (inflation proxy)."""
+    """Ordered ``(week, growth, inflation)`` points over the trail window.
+    X = growth stance dim; Y = commodities stance dim (inflation proxy).
+    The week is carried so the map can label month boundaries and the
+    start/now ends of the path."""
     start = as_of - dt.timedelta(weeks=weeks - 1)
     rows = con.execute(
         "SELECT as_of_date, stance_dim, stance_value FROM agg_module "
@@ -81,8 +93,34 @@ def _regime_trail(con, as_of, weeks):
     for wk in sorted(by_week):
         d = by_week[wk]
         if "growth" in d and "commodities" in d:
-            trail.append((float(d["growth"]), float(d["commodities"])))
+            trail.append((wk, float(d["growth"]), float(d["commodities"])))
     return trail
+
+
+def _regime_history(con, as_of, weeks):
+    """Ordered ``(week, label, regime_confidence, risk_scaler)`` for the ribbon."""
+    start = as_of - dt.timedelta(weeks=weeks - 1)
+    return [
+        (wk, label, conf, scaler)
+        for wk, label, conf, scaler in con.execute(
+            "SELECT as_of_date, regime_label, regime_confidence, risk_scaler "
+            "FROM agg_regime WHERE as_of_date BETWEEN ? AND ? ORDER BY as_of_date",
+            [start, as_of],
+        ).fetchall()
+    ]
+
+
+def _stance_history(con, as_of, weeks):
+    """stance_dim -> ordered list of stance values over the window."""
+    start = as_of - dt.timedelta(weeks=weeks - 1)
+    out: dict[str, list] = {}
+    for dim, _wk, val in con.execute(
+        "SELECT stance_dim, as_of_date, stance_value FROM agg_module "
+        "WHERE as_of_date BETWEEN ? AND ? ORDER BY stance_dim, as_of_date",
+        [start, as_of],
+    ).fetchall():
+        out.setdefault(dim, []).append(val)
+    return out
 
 
 _CSS = """
@@ -124,14 +162,47 @@ th { color: var(--muted); font-weight: 600; }
 .hm { overflow-x:auto; } .hm table { width:auto; } .hm td { padding:0; }
 .hm .cell { width:16px; height:16px; transition: outline .05s; } .hm .rowlab { padding:2px 6px; font-size:12px; white-space:nowrap; }
 .hm .cell:hover { outline: 2px solid var(--fg); outline-offset: -1px; position: relative; z-index: 2; }
-.rm-quad { fill: var(--muted); font-size: 10px; opacity: .55; font-style: italic; }
-.legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; }
+.rm-quad { fill: var(--muted); font-size: 10.5px; opacity: .7; letter-spacing:.03em; }
+.legend { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--muted); margin-top:6px; flex-wrap:wrap; }
 .legend .sw { width:16px; height:12px; display:inline-block; border-radius:2px; }
-.spark { vertical-align: middle; } .spark-na { color: var(--muted); }
+.spark { vertical-align: middle; } .spark-na { color: var(--muted); font-size:12px; }
 .regime-wrap { display:flex; gap:20px; align-items:flex-start; flex-wrap:wrap; }
 .rm-axis { stroke: var(--line); stroke-width: 1; }
 .rm-lab { fill: var(--muted); font-size: 10px; }
-.rm-now { fill: #b2182b; stroke: #fff; stroke-width: 1; }
+.rm-now { fill: #b2182b; stroke: var(--bg); stroke-width: 2; }
+/* regime trail: older half recedes, recent half leads and carries the arrow */
+.rm-trail-old { stroke: var(--muted); stroke-width: 1.4; opacity: .5; }
+.rm-trail-new { stroke: #2166ac; stroke-width: 2; }
+.rm-arrowhead { fill: #b2182b; }
+.rm-dot { fill: var(--muted); opacity: .55; }
+.rm-dot-month { fill: #2166ac; opacity: .85; }
+.rm-tick { fill: var(--muted); font-size: 9.5px; }
+.rm-nowlab { fill: #b2182b; font-size: 10.5px; font-weight: 600; }
+/* quadrant key panel — fills the space to the right of the map */
+.quadkey { max-width: 330px; font-size: 12.5px; color: var(--muted); }
+.quadkey .qk { margin-bottom: 9px; }
+.quadkey .qk b { color: var(--fg); }
+/* regime ribbon: ordinal one-hue ramp keyed to how much risk each regime allows */
+:root { --rg-uncertain:#86b6ef; --rg-choppy:#5598e7; --rg-momentum:#2a78d6; --rg-trendy:#184f95; }
+.ribbon { display:block; }
+.ribbon-flip { stroke: var(--fg); stroke-width: 1.5; }
+/* multi-horizon score-delta strip */
+.hstrip { vertical-align: middle; }
+.hs-base { stroke: var(--line); stroke-width: 1; }
+.hs-up { fill: #2166ac; } .hs-down { fill: #b2182b; } .hs-flat { fill: var(--muted); }
+.hs-na { fill: var(--muted); font-size: 9px; }
+/* contradiction member strip */
+.mstrip { display:block; margin: 6px 0 2px; }
+.ms-axis { stroke: var(--line); stroke-width: 1; }
+.ms-tick { stroke: var(--line); stroke-width: 1; }
+.ms-ticklab { fill: var(--muted); font-size: 9px; }
+.ms-span { stroke: #e08214; stroke-width: 2; }
+.ms-spanlab { fill: #e08214; font-size: 9.5px; font-weight: 600; }
+.ms-dot { stroke: var(--bg); stroke-width: 2; }
+.hm .monlab { font-size: 9.5px; color: var(--muted); text-align: left; padding: 0 0 2px 0;
+  white-space: nowrap; }
+.hm .modlab { font-size: 10px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .05em; padding: 6px 6px 2px; font-weight: 600; }
 .foot { color: var(--muted); font-size: 12px; margin-top: 28px; }
 .tt { position: relative; cursor: help; border-bottom: 1px dotted var(--muted); }
 .tt .tt-pop { visibility: hidden; opacity: 0; position: absolute; z-index: 60;
@@ -144,11 +215,16 @@ th { color: var(--muted); font-weight: 600; }
 .tt:hover .tt-pop, .tt:focus .tt-pop { visibility: visible; opacity: 1; }
 h2 .tt { font-weight: 400; }
 @media (prefers-color-scheme: dark) {
-  :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31; }
+  :root { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31;
+    /* the same one-hue ramp re-stepped for the dark surface (validated: every
+       step clears the 2:1 floor against #16171a) — not an automatic flip */
+    --rg-uncertain:#256abf; --rg-choppy:#5598e7; --rg-momentum:#86b6ef; --rg-trendy:#b7d3f6; }
 }
 /* viewer's explicit theme toggle wins over the OS media query, both directions */
-:root[data-theme="dark"] { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31; }
-:root[data-theme="light"] { --bg:#ffffff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2; --card:#f7f7f8; --track:#ececec; }
+:root[data-theme="dark"] { --bg:#16171a; --fg:#e8e8e8; --muted:#9aa0a6; --line:#2c2e33; --card:#1e2024; --track:#2a2c31;
+  --rg-uncertain:#256abf; --rg-choppy:#5598e7; --rg-momentum:#86b6ef; --rg-trendy:#b7d3f6; }
+:root[data-theme="light"] { --bg:#ffffff; --fg:#1a1a1a; --muted:#666; --line:#e2e2e2; --card:#f7f7f8; --track:#ececec;
+  --rg-uncertain:#86b6ef; --rg-choppy:#5598e7; --rg-momentum:#2a78d6; --rg-trendy:#184f95; }
 .gauge { background: var(--track, #ececec); } .tilt { background: var(--track, #f0f0f0); }
 """
 
@@ -176,34 +252,56 @@ _TEMPLATE = """<!doctype html>
 {% if s.regime.policy_selectors %}<div class="sub">Policy — size <strong>{{ s.regime.policy_selectors.position_size }}</strong> · entry <strong>{{ s.regime.policy_selectors.entry_style }}</strong> · trail <strong>{{ s.regime.policy_selectors.trailing_stop }}</strong> · stop <strong>{{ s.regime.policy_selectors.initial_stop }}</strong></div>{% endif %}
 
 <h2>{{ concept_tt("stance_vector", "Stance vector")|safe }}</h2>
-<table><tbody>
-{% for dim, val in stance %}<tr><td>{{ stance_tt(dim)|safe }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td></tr>
+<table><thead><tr><th>Dimension</th><th>{{ concept_tt("tilt", "Tilt")|safe }}</th><th class="num">Now</th><th>{{ agg_weeks }}w path</th><th class="num">vs 1m</th></tr></thead><tbody>
+{% for dim, val in stance %}<tr><td>{{ stance_tt(dim)|safe }}</td><td>{{ tilt(val)|safe }}</td><td class="num">{{ "%+.2f"|format(val) }}</td>
+  <td>{{ stance_spark.get(dim, "")|safe }}</td>
+  <td class="num">{% if stance_delta.get(dim) is not none %}{{ "%+.2f"|format(stance_delta[dim]) }}{% else %}—{% endif %}</td></tr>
 {% endfor %}</tbody></table>
 
-<h2>{{ concept_tt("regime_map", "Regime map")|safe }} <span class="sub">(growth × inflation tilt, {{ trail_weeks }}-week trail)</span></h2>
+<h2>{{ concept_tt("regime_map", "Regime map")|safe }} <span class="sub">(growth × inflation tilt, {{ agg_weeks }}-week path)</span></h2>
 <div class="regime-wrap">
 {{ regime_svg|safe }}
-<div class="sub" style="max-width:360px">The point is this week's macro tilt — horizontal = growth stance, vertical = inflation/commodities stance; the faded trail shows the path over the last {{ trail_weeks }} weeks. Regime label <strong>{{ s.regime.label or "n/a" }}</strong> governs the risk scaler.</div>
+<div class="quadkey">
+{% for name, body in quadrants %}<div class="qk"><b>{{ quadrant_tt(name)|safe }}</b> — {{ body }}</div>
+{% endfor %}
+<div class="sub" style="margin:0">Horizontal = growth stance, vertical = inflation/commodities stance. Larger dots mark month starts; the red dot is this week. Regime <strong>{{ regime_tt(s.regime.label)|safe }}</strong> sets the {{ concept_tt("risk_scaler", "risk scaler")|safe }}.</div>
 </div>
+</div>
+
+<h3 class="sub" style="margin:16px 0 4px">{{ concept_tt("regime_ribbon", "Regime timeline")|safe }}</h3>
+{{ regime_ribbon|safe }}
+<div class="legend">{% for label, scaler in regime_ramp %}<span class="sw" style="background:var(--rg-{{ label|lower }})"></span><span>{{ label }} <span style="opacity:.7">×{{ scaler }}</span></span>{% endfor %} · <span>darker = more risk allowed</span></div>
 
 <h2>{{ concept_tt("contradictions", "Contradictions")|safe }}</h2>
 {% if s.contradictions %}<div class="cards">
-{% for c in s.contradictions %}<div class="card {{ c.severity }}"><div class="sev">{{ c.severity }}</div>{{ c.summary }}
-{% if c.details %}<div class="sub">{% for k, v in c.details.items() %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}</div>
+{% for c in s.contradictions %}<div class="card {{ c.severity }}"><div class="sev">{{ c.severity }}</div>{{ contradiction_tt(c.id, c.summary)|safe }}
+{% set shown = visible_details(c.details) %}
+{% if shown %}<div class="sub" style="margin:4px 0 0">{% for k, v in shown %}{{ k }}={{ v }}{% if not loop.last %} · {% endif %}{% endfor %}</div>{% endif %}
+{% for mod in c.details.get("_modules", []) %}{% if members.get(mod) %}
+<div class="sub" style="margin:6px 0 0">{{ module_tt(mod)|safe }} members on the shared {{ concept_tt("score", "score")|safe }} scale:</div>
+{{ member_strip(members[mod])|safe }}
+<div class="sub" style="margin:0">{% for sid, sc in members[mod] %}<a href="#ind-{{ sid }}">{{ sid }}</a> {{ "%.0f"|format(sc) }}{% if not loop.last %} · {% endif %}{% endfor %}</div>
+{% endif %}{% endfor %}
+</div>
 {% endfor %}</div>{% else %}<div class="sub">None flagged this week.</div>{% endif %}
 
-<h2>Events <span class="sub">(this / next week)</span></h2>
+<h2>{{ concept_tt("events", "Events")|safe }} <span class="sub">(this / next week)</span></h2>
 {% if s.events %}<table><thead><tr><th>Date</th><th>When</th><th>Event</th><th>Category</th></tr></thead><tbody>
 {% for e in s.events %}<tr><td>{{ e.date }}{% if e.approximate %}~{% endif %}</td><td>{{ e.when.replace("_", " ") }}</td><td>{{ e.name }}</td><td>{{ e.category }}</td></tr>
 {% endfor %}</tbody></table>{% else %}<div class="sub">No scheduled macro events in the window.</div>{% endif %}
 
-<h2>Top movers <span class="sub">(Δscore vs prior week)</span></h2>
-{% if s.top_movers %}<table><thead><tr><th>Indicator</th><th class="num">Δscore 1w</th></tr></thead><tbody>
-{% for m in s.top_movers %}<tr><td>{{ m.id }}</td><td class="num">{{ "%+.1f"|format(m.delta_score_1w) }}</td></tr>
+<h2>{{ concept_tt("top_movers", "Top movers")|safe }} <span class="sub">(biggest {{ concept_tt("delta_score", "Δscore")|safe }} vs prior week)</span></h2>
+{% if s.top_movers %}<table><thead><tr><th>Indicator</th><th>Module</th><th class="num">{{ concept_tt("score", "Score")|safe }}</th><th>52w score</th><th>{{ concept_tt("score_horizons", "1w · 1m · 1q · 1y")|safe }}</th><th class="num">{{ concept_tt("delta_score", "Δscore 1w")|safe }}</th></tr></thead><tbody>
+{% for m in s.top_movers %}{% set ind = ind_by_id.get(m.id) %}<tr><td>{{ indicator_tt(m.id)|safe }}</td>
+  <td>{% if ind %}{{ module_tt(ind.module)|safe }}{% endif %}</td>
+  <td class="num">{% if ind %}<span class="pill" style="background:{{ color(ind.score) }};color:{{ txt(color(ind.score)) }}">{{ "%.1f"|format(ind.score) }}</span>{% endif %}</td>
+  <td>{{ indicator_spark.get(m.id, "")|safe }}</td>
+  <td>{% if ind %}{{ hstrip(ind.score_deltas, m.id)|safe }}{% endif %}</td>
+  <td class="num">{{ "%+.1f"|format(m.delta_score_1w) }}</td></tr>
 {% endfor %}</tbody></table>{% else %}<div class="sub">No prior week for comparison.</div>{% endif %}
 
-<h2>Modules</h2>
-<table><thead><tr><th>Module</th><th class="num">Score</th><th>52w</th><th>Tilt</th><th class="num">Confidence</th></tr></thead><tbody>
+<h2>{{ concept_tt("modules_section", "Modules")|safe }}</h2>
+<table><thead><tr><th>Module</th><th class="num">{{ concept_tt("score", "Score")|safe }}</th><th>{{ agg_weeks }}w</th><th>{{ concept_tt("tilt", "Tilt")|safe }}</th><th class="num">{{ concept_tt("confidence", "Confidence")|safe }}</th></tr></thead><tbody>
 {% for m in modules %}<tr><td>{{ module_tt(m.module)|safe }}</td>
   <td class="num"><span class="pill" style="background:{{ color(m.score) }};color:{{ txt(color(m.score)) }}">{{ "%.1f"|format(m.score) }}</span></td>
   <td>{{ module_spark.get(m.module, "")|safe }}</td>
@@ -223,25 +321,28 @@ _TEMPLATE = """<!doctype html>
 <div class="sub">Total portfolio value: €{{ "%.0f"|format(s.portfolio.total_value_eur) }}</div>
 {% else %}<div class="sub">Drop a portfolio CSV export in <code>data/inbox/</code> (<code>portfolio*.csv</code>) to compare your actual exposure against this week's stance vector.</div>{% endif %}
 
-<h2>Indicators</h2>
-<table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th>52w score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
-{% for i in indicators %}<tr id="{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>
+<h2>{{ concept_tt("indicators_section", "Indicators")|safe }}</h2>
+<table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">{{ concept_tt("delta_value", "Δ value 1w")|safe }}</th><th>Trend</th><th class="num">{{ concept_tt("score", "Score")|safe }}</th><th>{{ concept_tt("score_horizons", "1w · 1m · 1q · 1y")|safe }}</th><th>52w score</th><th class="num">{{ concept_tt("confidence", "Conf")|safe }}</th><th>{{ concept_tt("stale", "Stale")|safe }}</th></tr></thead><tbody>
+{% for i in indicators %}<tr id="ind-{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>
   <td class="num">{{ i.value }}</td><td class="num">{{ "%+.4g"|format(i.delta_1w) if i.delta_1w is not none else "—" }}</td>
   <td>{{ i.trend }}</td>
   <td class="num"><span class="pill" style="background:{{ color(i.score) }};color:{{ txt(color(i.score)) }}">{{ "%.1f"|format(i.score) }}</span></td>
+  <td>{{ hstrip(i.score_deltas, i.id)|safe }}</td>
   <td>{{ indicator_spark.get(i.id, "")|safe }}</td>
   <td class="num">{{ "%.0f"|format(i.confidence) }}</td><td>{{ "yes" if i.stale else "" }}</td></tr>
 {% endfor %}</tbody></table>
 
-<h2>Score heatmap <span class="sub">(last {{ weeks|length }} weeks)</span></h2>
+<h2>{{ concept_tt("score_heatmap", "Score heatmap")|safe }} <span class="sub">(last {{ weeks|length }} weeks, newest right)</span></h2>
 <div class="hm"><table><tbody>
-{% for sid in heat_series %}<tr><td class="rowlab">{{ sid }}</td>
+<tr><td></td>{% for wk in weeks %}<td class="monlab">{{ month_tick(wk, loop.index0) }}</td>{% endfor %}</tr>
+{% for mod, sids in heat_groups %}<tr><td class="modlab" colspan="{{ weeks|length + 1 }}">{{ module_tt(mod)|safe }}</td></tr>
+{% for sid in sids %}<tr><td class="rowlab">{{ indicator_tt(sid)|safe }}</td>
 {% for wk in weeks %}<td><div class="cell" title="{{ sid }} {{ wk }}: {{ heat[sid].get(wk) }}" style="background:{{ color(heat[sid].get(wk)) }}"></div></td>{% endfor %}
-</tr>{% endfor %}
+</tr>{% endfor %}{% endfor %}
 </tbody></table></div>
 <div class="legend"><span>0 weak</span><span class="sw" style="background:{{ color(0) }}"></span><span class="sw" style="background:{{ color(25) }}"></span><span class="sw" style="background:{{ color(50) }}"></span><span class="sw" style="background:{{ color(75) }}"></span><span class="sw" style="background:{{ color(100) }}"></span><span>100 strong</span> · <span>colorblind-safe (RdBu)</span></div>
 
-<h2>Interpretation</h2>
+<h2>{{ concept_tt("interpretation", "Interpretation")|safe }}</h2>
 {% if s.interpretation %}<div>{{ interpretation_html|safe }}</div>
 <div class="sub">Narrated by {{ s.interpretation_meta.provider }} · prompt v{{ s.interpretation_meta.prompt_version }}</div>
 {% else %}<div class="sub">LLM narration disabled (provider: none). The report above is fully computed by code; enable a provider in configs/ai.yaml to append an interpretation.</div>{% endif %}
@@ -299,11 +400,37 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         sid: sparkline_svg([heat[sid].get(wk) for wk in weeks])
         for sid in heat
     }
-    # per-module 52-week score sparklines
-    module_hist = _module_score_history(con, as_of, SPARK_WEEKS)
+    # per-module score sparklines over the aggregate-history window
+    module_hist = _module_score_history(con, as_of, AGG_WEEKS)
     module_spark = {mid: sparkline_svg(vals, color="#6a7fb5") for mid, vals in module_hist.items()}
-    # regime 2D trail
-    regime_svg = regime_map_svg(_regime_trail(con, as_of, REGIME_TRAIL_WEEKS))
+    # stance-dimension paths + change vs ~1 month ago (4 aggregate weeks back)
+    stance_hist = _stance_history(con, as_of, AGG_WEEKS)
+    stance_spark = {
+        dim: sparkline_svg(vals, color="#6a7fb5") for dim, vals in stance_hist.items()
+    }
+    stance_delta = {
+        dim: (vals[-1] - vals[-5]) if len(vals) >= 5 else None
+        for dim, vals in stance_hist.items()
+    }
+    # regime 2D path + the label timeline beneath it
+    regime_svg = regime_map_svg(_regime_trail(con, as_of, AGG_WEEKS))
+    regime_ribbon = regime_ribbon_svg(_regime_history(con, as_of, AGG_WEEKS))
+
+    # heatmap rows grouped by module (module_id -> its series, both sorted)
+    module_of = dict(con.execute(
+        "SELECT series_id, module_id FROM dim_series WHERE enabled"
+    ).fetchall())
+    grouped: dict[str, list[str]] = {}
+    for sid in heat_series:
+        grouped.setdefault(module_of.get(sid, "—"), []).append(sid)
+    heat_groups = sorted((mod, sorted(sids)) for mod, sids in grouped.items())
+
+    def month_tick(week, idx: int) -> str:
+        """Label a heatmap column only at a month boundary, so the 52-column
+        axis stays readable."""
+        if idx == 0 or week.month != weeks[idx - 1].month:
+            return week.strftime("%b")
+        return ""
 
     interpretation_html = (
         _render_interpretation(snapshot["interpretation"])
@@ -312,6 +439,17 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
 
     portfolio_rows = portfolio_vs_stance(snapshot)
     gloss = load_glossary()
+
+    # regime legend, ordered by how much risk each regime allows
+    regime_ramp = sorted(RISK_SCALER.items(), key=lambda kv: -kv[1])
+    # quadrant key: the name (tooltip carries the full explanation) plus the
+    # axis signs, which are the definition and need no prose
+    quadrant_bodies = [
+        (name, f"growth {'+' if qx > 0 else '−'} · inflation {'+' if qy > 0 else '−'}")
+        for name, qx, qy in QUADRANTS
+    ]
+    # member scores per module, for the contradiction drill-down strips
+    members = module_members(con, as_of)
 
     def concept_tt(key: str, label: str) -> str:
         return tooltip(label, gloss.get("concepts", {}).get(key))
@@ -332,6 +470,24 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
             return "n/a"
         return tooltip(label, gloss.get("regime_labels", {}).get(label), title=label)
 
+    def quadrant_tt(name: str) -> str:
+        return tooltip(name, gloss.get("macro_quadrants", {}).get(name), title=name)
+
+    def contradiction_tt(cid: str, summary: str) -> str:
+        """Explain a contradiction by exact id, else by kind (any
+        ``*_MIXED_SIGNAL`` / ``*_MISMATCH`` shares one entry), else fall back to
+        the general concept — so a new per-module rule needs no glossary edit."""
+        entry = gloss.get("contradictions_by_id", {}).get(cid)
+        if entry is None:
+            kinds = gloss.get("contradiction_kinds", {})
+            if cid.endswith("_MIXED_SIGNAL"):
+                entry = kinds.get("mixed_signal")
+            elif cid.endswith("_MISMATCH"):
+                entry = kinds.get("portfolio_mismatch")
+        if entry is None:
+            entry = gloss.get("concepts", {}).get("contradictions")
+        return tooltip(summary, entry, title=(entry or {}).get("title") or cid)
+
     env = Environment(autoescape=False, keep_trailing_newline=True)
     tmpl = env.from_string(_TEMPLATE)
     return tmpl.render(
@@ -344,17 +500,34 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         module_tt=module_tt,
         indicator_tt=indicator_tt,
         regime_tt=regime_tt,
+        quadrant_tt=quadrant_tt,
+        contradiction_tt=contradiction_tt,
         stance=sorted(snapshot["overall"]["stance_vector"].items()),
         modules=sorted(snapshot["modules"], key=lambda m: m["module"]),
         portfolio_rows=portfolio_rows,
         indicators=snapshot["indicators"],
+        ind_by_id={i["id"]: i for i in snapshot["indicators"]},
         weeks=weeks,
         heat=heat,
         heat_series=heat_series,
+        heat_groups=heat_groups,
+        month_tick=month_tick,
         indicator_spark=indicator_spark,
         module_spark=module_spark,
+        stance_spark=stance_spark,
+        stance_delta=stance_delta,
         regime_svg=regime_svg,
-        trail_weeks=REGIME_TRAIL_WEEKS,
+        regime_ribbon=regime_ribbon,
+        regime_ramp=regime_ramp,
+        quadrants=quadrant_bodies,
+        members=members,
+        member_strip=member_strip_svg,
+        # underscore keys are machine-readable refs (e.g. _modules), not display
+        visible_details=lambda d: [
+            (k, v) for k, v in (d or {}).items() if not k.startswith("_")
+        ],
+        hstrip=lambda deltas, label="": horizon_strip_svg(deltas or {}, label=label),
+        agg_weeks=AGG_WEEKS,
         gauge=gauge_html,
         tilt=tilt_bar_html,
         color=score_color,

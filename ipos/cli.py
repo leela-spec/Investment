@@ -1,8 +1,9 @@
 """Command-line entry points (C8). One idempotent CLI; Windows Task Scheduler
 invokes ``ipos-weekly``.
 
-Subcommands: init, pull, score, weekly, doctor, backfill. Each ``cmd_*`` is a
-console-script entry point (see pyproject); ``main`` is the ``ipos`` dispatcher.
+Subcommands: init, pull, score, weekly, doctor, backfill, replay. Each ``cmd_*``
+is a console-script entry point (see pyproject); ``main`` is the ``ipos``
+dispatcher.
 """
 
 from __future__ import annotations
@@ -176,11 +177,53 @@ def cmd_backfill(argv: list[str] | None = None) -> int:
     return backfill_main(argv)
 
 
+def cmd_replay(argv: list[str] | None = None) -> int:
+    """Rebuild the aggregate layer (module scores, stance, regime) for past
+    weeks from scores already stored — no network. Gives the report its
+    regime trail and stance/module history."""
+    _load_dotenv()
+    p = argparse.ArgumentParser(
+        prog="ipos-replay",
+        description="Recompute agg_module/agg_regime for past weeks from stored scores.",
+    )
+    p.add_argument("--weeks", type=int, default=None,
+                   help=f"how many recent scored weeks to rebuild (default: {'26'})")
+    p.add_argument("--db")
+    p.add_argument("-v", "--verbose", action="store_true")
+    p.add_argument("--allow-synthetic", action="store_true",
+                   help="also rebuild weeks whose canonical values are synthetic "
+                        "(demo/offline only — never for a real warehouse)")
+    args = p.parse_args(argv)
+    _setup_logging(args.verbose)
+    from ipos.config.load import load_registry
+    from ipos.replay import DEFAULT_WEEKS, replay_aggregates
+    from ipos.warehouse.db import connect
+
+    reg = load_registry()
+    with connect(args.db) as con:
+        rep = replay_aggregates(
+            con, reg, weeks=args.weeks or DEFAULT_WEEKS,
+            allow_synthetic=args.allow_synthetic,
+        )
+    if not rep["weeks"]:
+        print("ipos-replay: no scored weeks found — run ipos-score/ipos-weekly first")
+        return 1
+    print(f"ipos-replay: rebuilt {rep['done']}/{rep['weeks']} weeks "
+          f"({rep['first']} .. {rep['last']})")
+    if rep["skipped_synthetic"]:
+        print(f"  skipped {len(rep['skipped_synthetic'])} week(s) with synthetic "
+              f"canonical data: {rep['skipped_synthetic'][0]} .. "
+              f"{rep['skipped_synthetic'][-1]}")
+    if rep["failed"]:
+        print(f"  failed: {rep['failed']}", file=sys.stderr)
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     p = argparse.ArgumentParser(prog="ipos", description="Investment Process OS CLI.")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("init", "pull", "score", "weekly", "doctor", "backfill"):
+    for name in ("init", "pull", "score", "weekly", "doctor", "backfill", "replay"):
         sub.add_parser(name, add_help=False)
     if not argv:
         p.print_help()
@@ -189,6 +232,7 @@ def main(argv: list[str] | None = None) -> int:
     dispatch = {
         "init": cmd_init, "pull": cmd_pull, "score": cmd_score,
         "weekly": cmd_weekly, "doctor": cmd_doctor, "backfill": cmd_backfill,
+        "replay": cmd_replay,
     }
     if cmd not in dispatch:
         p.print_help()

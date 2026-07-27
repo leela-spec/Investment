@@ -96,41 +96,242 @@ def sparkline_svg(values, *, w: int = 130, h: int = 26, color: str = "#3f6fb0") 
     )
 
 
-def regime_map_svg(points, *, w: int = 320, h: int = 240) -> str:
+_MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+# Macro quadrants (growth × inflation) — interpretive anchors. Keys match the
+# ``macro_quadrants`` glossary section so the report can explain each one.
+QUADRANTS = (
+    ("Reflation", 0.52, 0.58),     # growth+ inflation+
+    ("Stagflation", -0.52, 0.58),  # growth- inflation+
+    ("Goldilocks", 0.52, -0.62),   # growth+ inflation-
+    ("Deflation", -0.52, -0.62),   # growth- inflation-
+)
+
+
+def _mon(d) -> str:
+    return _MONTHS[d.month - 1]
+
+
+def _short_date(d) -> str:
+    return f"{_MONTHS[d.month - 1]} {d.day}"
+
+
+def regime_map_svg(points, *, w: int = 400, h: int = 320) -> str:
     """2D regime map: X = growth tilt, Y = inflation/commodities tilt, in
-    [-1,+1]. Draws quadrant axes, a 26-week trail (faded->bold), and labels the
-    current point. `points` = ordered list of (x, y) oldest..newest."""
-    pad = 26
+    [-1,+1].
+
+    ``points`` = ordered ``(week_date, x, y)`` oldest..newest. Draws the
+    quadrant axes, the trail (older half muted, recent half accented and
+    arrow-headed so direction of travel is unambiguous), a larger dot plus
+    month label at each month boundary, and start/now callouts. Every point
+    carries a ``<title>`` so hovering gives the week and its coordinates.
+
+    Previously this drew an unlabelled 1.3px polyline with 2px dots at 15-65%
+    opacity, which was effectively invisible — the path was there but unreadable.
+    """
+    pad = 34
     def sx(x): return pad + (x + 1) / 2 * (w - 2 * pad)
     def sy(y): return (h - pad) - (y + 1) / 2 * (h - 2 * pad)
-    # named macro quadrants (growth × inflation) — interpretive anchors
-    quad = [
-        (sx(0.5), sy(0.55), "Reflation"),     # growth+ inflation+
-        (sx(-0.5), sy(0.55), "Stagflation"),  # growth- inflation+
-        (sx(0.5), sy(-0.6), "Goldilocks"),    # growth+ inflation-
-        (sx(-0.5), sy(-0.6), "Deflation"),    # growth- inflation-
-    ]
+
     parts = [
         f'<svg class="regime-map" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+        '<defs><marker id="rm-arrow" viewBox="0 0 10 10" refX="8" refY="5" '
+        'markerWidth="6" markerHeight="6" orient="auto-start-reverse">'
+        '<path d="M 0 0 L 10 5 L 0 10 z" class="rm-arrowhead"/></marker></defs>',
     ]
-    for qx, qy, lab in quad:
-        parts.append(f'<text x="{qx:.1f}" y="{qy:.1f}" class="rm-quad" text-anchor="middle">{lab}</text>')
+    for lab, qx, qy in QUADRANTS:
+        parts.append(
+            f'<text x="{sx(qx):.1f}" y="{sy(qy):.1f}" class="rm-quad" '
+            f'text-anchor="middle">{lab}<title>{lab} quadrant</title></text>'
+        )
     parts += [
         f'<line x1="{sx(0):.1f}" y1="{pad}" x2="{sx(0):.1f}" y2="{h-pad}" class="rm-axis"/>',
         f'<line x1="{pad}" y1="{sy(0):.1f}" x2="{w-pad}" y2="{sy(0):.1f}" class="rm-axis"/>',
-        f'<text x="{w-pad}" y="{sy(0)-4:.1f}" class="rm-lab" text-anchor="end">growth →</text>',
-        f'<text x="{sx(0)+4:.1f}" y="{pad+8}" class="rm-lab">inflation ↑</text>',
+        f'<text x="{w-pad}" y="{sy(0)-6:.1f}" class="rm-lab" text-anchor="end">growth tilt →</text>',
+        f'<text x="{sx(0)+6:.1f}" y="{pad+2:.1f}" class="rm-lab">inflation tilt ↑</text>',
     ]
+
     pts = [p for p in points if p is not None]
-    if len(pts) >= 2:
-        poly = " ".join(f"{sx(x):.1f},{sy(y):.1f}" for x, y in pts)
-        parts.append(f'<polyline fill="none" stroke="#8aa0c0" stroke-width="1.3" points="{poly}"/>')
-    for i, (x, y) in enumerate(pts):
-        if i == len(pts) - 1:
-            parts.append(f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="4.5" class="rm-now"/>')
+    if not pts:
+        parts.append(
+            f'<text x="{w/2:.0f}" y="{h/2:.0f}" class="rm-lab" text-anchor="middle">'
+            "no history yet — run ipos-replay</text></svg>"
+        )
+        return "".join(parts)
+
+    xy = [(sx(x), sy(y)) for _d, x, y in pts]
+    if len(xy) >= 2:
+        half = len(xy) // 2
+        older = " ".join(f"{x:.1f},{y:.1f}" for x, y in xy[:half + 1])
+        recent = " ".join(f"{x:.1f},{y:.1f}" for x, y in xy[half:])
+        parts.append(f'<polyline fill="none" class="rm-trail-old" points="{older}"/>')
+        parts.append(
+            f'<polyline fill="none" class="rm-trail-new" points="{recent}" '
+            'marker-end="url(#rm-arrow)"/>'
+        )
+
+    last_month = None
+    for i, ((d, x, y), (px, py)) in enumerate(zip(pts, xy)):
+        is_last = i == len(pts) - 1
+        new_month = _mon(d) != last_month
+        last_month = _mon(d)
+        title = f"{d.isoformat()} — growth {x:+.2f}, inflation {y:+.2f}"
+        if is_last:
+            parts.append(
+                f'<circle cx="{px:.1f}" cy="{py:.1f}" r="5.5" class="rm-now">'
+                f"<title>{title} (current week)</title></circle>"
+            )
         else:
-            op = 0.15 + 0.5 * (i / max(1, len(pts) - 1))
-            parts.append(f'<circle cx="{sx(x):.1f}" cy="{sy(y):.1f}" r="2" fill="#8aa0c0" opacity="{op:.2f}"/>')
+            cls = "rm-dot-month" if new_month else "rm-dot"
+            parts.append(
+                f'<circle cx="{px:.1f}" cy="{py:.1f}" r="{3.2 if new_month else 2}" '
+                f'class="{cls}"><title>{title}</title></circle>'
+            )
+            if new_month:
+                parts.append(
+                    f'<text x="{px+6:.1f}" y="{py-5:.1f}" class="rm-tick">{_mon(d)}</text>'
+                )
+    # start / now callouts
+    parts.append(
+        f'<text x="{xy[0][0]+7:.1f}" y="{xy[0][1]+13:.1f}" class="rm-tick">'
+        f"start {_short_date(pts[0][0])}</text>"
+    )
+    if len(pts) > 1:
+        parts.append(
+            f'<text x="{xy[-1][0]-9:.1f}" y="{xy[-1][1]+17:.1f}" class="rm-nowlab" '
+            f'text-anchor="end">now · {_short_date(pts[-1][0])}</text>'
+        )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+REGIME_RAMP = {
+    "TRENDY": "var(--rg-trendy)",
+    "MOMENTUM": "var(--rg-momentum)",
+    "CHOPPY": "var(--rg-choppy)",
+    "UNCERTAIN": "var(--rg-uncertain)",
+}
+
+
+def regime_ribbon_svg(history, *, cell: int = 16, h: int = 22) -> str:
+    """One cell per week, coloured by regime label, oldest → newest, with a
+    tick at every label change and month labels underneath.
+
+    ``history`` = ordered ``(week_date, label, confidence, risk_scaler)``. The
+    colours are an *ordinal* one-hue ramp keyed to how much risk each regime
+    allows (TRENDY 1.00 → UNCERTAIN 0.40), not a categorical palette — the
+    sequence is meaningful, so the encoding is too."""
+    rows = [r for r in history if r is not None]
+    if not rows:
+        return '<span class="spark-na">no regime history yet — run ipos-replay</span>'
+    gap = 2
+    top = 0
+    w = len(rows) * (cell + gap)
+    parts = [
+        f'<svg class="ribbon" width="{w}" height="{h + 16}" '
+        f'viewBox="0 0 {w} {h + 16}" role="img">'
+    ]
+    last_month = None
+    for i, (d, label, conf, scaler) in enumerate(rows):
+        x = i * (cell + gap)
+        fill = REGIME_RAMP.get(label, "var(--rg-uncertain)")
+        conf_txt = f", conf {conf:.0f}" if conf is not None else ""
+        parts.append(
+            f'<rect x="{x}" y="{top}" width="{cell}" height="{h}" rx="2" fill="{fill}">'
+            f"<title>{d.isoformat()} — {label or 'n/a'}{conf_txt}, risk ×{scaler}</title></rect>"
+        )
+        if _mon(d) != last_month:
+            parts.append(
+                f'<text x="{x}" y="{h + 12}" class="rm-tick">{_mon(d)}</text>'
+            )
+            last_month = _mon(d)
+    for i in range(1, len(rows)):
+        if rows[i][1] != rows[i - 1][1]:
+            x = i * (cell + gap) - 1
+            parts.append(
+                f'<line x1="{x}" y1="{top - 2}" x2="{x}" y2="{top + h + 2}" '
+                'class="ribbon-flip"/>'
+            )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+HORIZONS = (("1w", "1 week"), ("4w", "1 month"), ("12w", "1 quarter"), ("52w", "1 year"))
+_HORIZON_FULL_SCALE = 45.0  # score points that fill the bar
+
+
+def horizon_strip_svg(deltas: dict, *, label: str = "") -> str:
+    """Four small diverging bars — 1w / 1m / 1q / 1y — reading the *shape* of an
+    indicator's momentum at a glance. Up (improving score) is the strong pole,
+    down the weak pole, height is magnitude clipped at ±45 score points.
+
+    ``deltas`` maps horizon key ("1w", "4w", "12w", "52w") to a score delta or
+    None. Exact numbers ride along in each bar's ``<title>``."""
+    bw, gap, h = 10, 4, 26
+    mid = h / 2
+    w = len(HORIZONS) * (bw + gap)
+    parts = [
+        f'<svg class="hstrip" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+        f'<line x1="0" y1="{mid}" x2="{w - gap}" y2="{mid}" class="hs-base"/>',
+    ]
+    for i, (key, human) in enumerate(HORIZONS):
+        v = deltas.get(key)
+        x = i * (bw + gap)
+        if v is None:
+            parts.append(
+                f'<text x="{x + bw/2:.1f}" y="{mid + 3:.1f}" class="hs-na" '
+                f'text-anchor="middle">·<title>{label} {human}: no data</title></text>'
+            )
+            continue
+        mag = min(abs(float(v)), _HORIZON_FULL_SCALE) / _HORIZON_FULL_SCALE * (mid - 2)
+        up = float(v) > 0
+        cls = "hs-flat" if float(v) == 0 else ("hs-up" if up else "hs-down")
+        y = mid - mag if up else mid
+        parts.append(
+            f'<rect x="{x}" y="{y:.1f}" width="{bw}" height="{max(mag, 1.5):.1f}" '
+            f'rx="1.5" class="{cls}">'
+            f"<title>{label} {human}: {float(v):+.1f} score points</title></rect>"
+        )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def member_strip_svg(members, *, w: int = 300) -> str:
+    """Where a module's member indicators sit on the shared 0-100 score scale,
+    so an intra-module disagreement reads as physical distance rather than a
+    bare spread number. ``members`` = ordered ``(series_id, score)`` ascending.
+
+    This is the answer to "where are these mixed signals?" — the two ends of
+    the span are the indicators that disagree."""
+    rows = [m for m in members if m is not None]
+    if len(rows) < 2:
+        return ""
+    h, axis = 46, 28
+    def X(v): return 4 + v / 100.0 * (w - 8)
+    lo, hi = rows[0], rows[-1]
+    parts = [
+        f'<svg class="mstrip" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+        f'<line x1="{X(0):.1f}" y1="{axis}" x2="{X(100):.1f}" y2="{axis}" class="ms-axis"/>',
+    ]
+    for t in (0, 25, 50, 75, 100):
+        parts.append(
+            f'<line x1="{X(t):.1f}" y1="{axis - 4}" x2="{X(t):.1f}" y2="{axis + 4}" class="ms-tick"/>'
+            f'<text x="{X(t):.1f}" y="{axis + 15}" class="ms-ticklab" text-anchor="middle">{t}</text>'
+        )
+    parts.append(
+        f'<line x1="{X(lo[1]):.1f}" y1="{axis - 15}" x2="{X(hi[1]):.1f}" y2="{axis - 15}" '
+        'class="ms-span"/>'
+    )
+    parts.append(
+        f'<text x="{(X(lo[1]) + X(hi[1])) / 2:.1f}" y="{axis - 19}" class="ms-spanlab" '
+        f'text-anchor="middle">{hi[1] - lo[1]:.0f} apart</text>'
+    )
+    for sid, score in rows:
+        parts.append(
+            f'<circle cx="{X(score):.1f}" cy="{axis}" r="5" fill="{score_color(score)}" '
+            f'class="ms-dot"><title>{sid}: score {score:.1f}</title></circle>'
+        )
     parts.append("</svg>")
     return "".join(parts)
 

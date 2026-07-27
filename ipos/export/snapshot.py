@@ -39,6 +39,43 @@ def _trend_word(v: float | None) -> str:
     return "up" if v > 0 else ("down" if v < 0 else "flat")
 
 
+SCORE_DELTA_HORIZONS = {"1w": 1, "4w": 4, "12w": 12, "52w": 52}
+
+
+def _score_deltas(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> dict[str, dict]:
+    """Per-indicator change in the 0-100 SCORE over 1w / 4w / 12w / 52w.
+
+    Score deltas rather than raw-value deltas because scores are the only
+    cross-comparable quantity in the system: WALCL moving "+4,350" and COPPER
+    moving "+0.14" cannot be ranked against each other, but "+12 score points"
+    and "+3 score points" can. Horizons step back by *available scored weeks*,
+    not calendar arithmetic, so a gap in history shifts the comparison week
+    instead of silently returning None."""
+    weeks = [r[0] for r in con.execute(
+        "SELECT DISTINCT as_of_date FROM fact_score WHERE as_of_date <= ? "
+        "ORDER BY as_of_date DESC LIMIT ?",
+        [as_of, max(SCORE_DELTA_HORIZONS.values()) + 1],
+    ).fetchall()]
+    if not weeks:
+        return {}
+    current = dict(con.execute(
+        "SELECT series_id, score_0_100 FROM fact_score WHERE as_of_date = ?", [weeks[0]]
+    ).fetchall())
+    out: dict[str, dict] = {sid: {} for sid in current}
+    for key, back in SCORE_DELTA_HORIZONS.items():
+        if back >= len(weeks):
+            for sid in current:
+                out[sid][key] = None
+            continue
+        past = dict(con.execute(
+            "SELECT series_id, score_0_100 FROM fact_score WHERE as_of_date = ?",
+            [weeks[back]],
+        ).fetchall())
+        for sid, score in current.items():
+            out[sid][key] = _r(score - past[sid]) if sid in past else None
+    return out
+
+
 def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt.date) -> dict:
     defaults = registry.defaults
 
@@ -68,6 +105,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
     for sid, fid, val in feats:
         feat_map.setdefault(sid, {})[fid] = val
 
+    score_deltas = _score_deltas(con, as_of)
+
     indicators = []
     rows = con.execute(
         """
@@ -93,6 +132,9 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "score": _r(score),
             "confidence": _r(conf),
             "stale": bool(stale),
+            # change in the 0-100 score, comparable across indicators (unlike
+            # the raw-value deltas above)
+            "score_deltas": score_deltas.get(sid, {}),
         })
 
     # top movers: change in score vs previous week

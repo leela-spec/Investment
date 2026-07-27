@@ -47,7 +47,12 @@ contradictions:
     summary: "Broad risk-on (equities + commodities) but credit not confirming."
     when: "module('EquityRisk') >= 65 and module('Commodities') >= 60 and module('Credit') <= 45"
 
-  # intra-module conflict (Blueprint "mixed signal"): members far apart
+  # Intra-module conflict (Blueprint "mixed signal"): members far apart.
+  # One rule per golden module — every module is monitored. Before 2026-07-27
+  # only EquityRisk and RatesLiquidity had one, which is why Fundamentals could
+  # run a 91-point internal disagreement (UMCSENT 8 vs ICSA 99) unflagged.
+  # The engine attaches the disagreeing ends to each hit's details, so the
+  # report can name them instead of printing a bare spread number.
   - id: EQUITY_MIXED_SIGNAL
     severity: low
     summary: "Mixed signals within the equity-risk module (members strongly disagree)."
@@ -57,6 +62,36 @@ contradictions:
     severity: low
     summary: "Mixed signals within the rates/liquidity module (members strongly disagree)."
     when: "module_spread('RatesLiquidity') >= 60"
+
+  - id: CREDIT_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the credit module (members strongly disagree)."
+    when: "module_spread('Credit') >= 60"
+
+  - id: GROWTH_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the growth-risk module (members strongly disagree)."
+    when: "module_spread('GrowthRisk') >= 60"
+
+  - id: LIQUIDITY_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the liquidity module (members strongly disagree)."
+    when: "module_spread('Liquidity') >= 60"
+
+  - id: FX_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the FX module (members strongly disagree)."
+    when: "module_spread('FX') >= 60"
+
+  - id: COMMODITIES_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the commodities module (members strongly disagree)."
+    when: "module_spread('Commodities') >= 60"
+
+  - id: FUNDAMENTALS_MIXED_SIGNAL
+    severity: low
+    summary: "Mixed signals within the fundamentals module (members strongly disagree)."
+    when: "module_spread('Fundamentals') >= 60"
 
   # Portfolio vs. stance (05_blueprint/03_PORTFOLIO_MODULE.md §8 follow-up 2):
   # actual holdings disagreeing with this week's suggested tilt. Reuses
