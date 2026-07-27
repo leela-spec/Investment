@@ -17,18 +17,39 @@ import requests
 from ipos.config.models import RegistryEntry, Source
 
 CHART_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"
-_TIMEOUT = 10
+_TIMEOUT = 30  # a 40-year daily pull is a bigger payload than a 5-year one
 _HEADERS = {"User-Agent": "Mozilla/5.0 (IPOS weekly macro job)"}
+
+# Earliest date we ever ask for when the caller wants "all available history"
+# (start=None, i.e. ipos-backfill and the weekly pull). Yahoo simply starts at
+# whenever the symbol begins, so this is a floor, not a claim about coverage.
+# It is the Unix epoch for a hard technical reason, not taste: the endpoint
+# takes period1 as a Unix timestamp, and pre-1970 dates are negative, which
+# Windows cannot convert back (`OSError: [Errno 22]` — verified 2026-07-27).
+# Symbols whose history predates 1970 (e.g. ^GSPC reaches 1927) are therefore
+# capped here; 56 years still dwarfs the 156-week scoring window.
+MAX_HISTORY_START = dt.date(1970, 1, 1)
 
 
 def _fetch(locator: str, start: dt.date | None, end: dt.date | None) -> dict:
+    """Always request an EXPLICIT period1/period2 window — never `range=max`.
+
+    This matters more than it looks: `range=max` with `interval=1d` silently
+    returns QUARTERLY bars (verified 2026-07-27: ^GSPC gave 168 rows spanning
+    41 years, median gap 91 days). An explicit period1/period2 over the same
+    span returns true daily data (10,469 rows). Requesting `range=max` would
+    therefore have swapped 5 years of daily history for 168 quarterly points
+    and quietly wrecked every weekly canonical value.
+
+    The previous default of `range="5y"` was the *only* reason the eight market
+    series were capped at 5 years of history — the sources were never the limit.
+    """
     params = {"interval": "1d"}
-    if start:
-        params["period1"] = str(int(dt.datetime.combine(start, dt.time.min, dt.timezone.utc).timestamp()))
-        params["period2"] = str(int(dt.datetime.combine(
-            end or dt.date.today(), dt.time.max, dt.timezone.utc).timestamp()))
-    else:
-        params["range"] = "5y"
+    period_start = start or MAX_HISTORY_START
+    params["period1"] = str(int(dt.datetime.combine(
+        period_start, dt.time.min, dt.timezone.utc).timestamp()))
+    params["period2"] = str(int(dt.datetime.combine(
+        end or dt.date.today(), dt.time.max, dt.timezone.utc).timestamp()))
     resp = requests.get(CHART_URL.format(symbol=locator), params=params,
                          headers=_HEADERS, timeout=_TIMEOUT)
     resp.raise_for_status()

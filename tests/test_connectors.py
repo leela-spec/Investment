@@ -112,12 +112,70 @@ def test_yahoo_pull_ohlc(monkeypatch):
     assert df.iloc[0]["high"] == 102.0 and df.iloc[0]["low"] == 98.0
 
 
+# Source types that need no API key. The point of the rule below is that losing
+# the FRED key (or FRED itself) must not take the whole pipeline down.
+KEYLESS_TYPES = {"dbnomics", "stooq", "yahoo", "ustreasury", "manual_csv"}
+
+# FRED series with NO free keyless alternative, each with the reason. This list
+# replaced a blanket "every FRED entry has a dbnomics fallback" assertion, which
+# passed only because the registry listed dbnomics legs that stopped working:
+# FRED left DBnomics entirely (verified 2026-07-27, 93 providers, no FRED), so
+# 15 such legs were dead and were removed. Keeping the exceptions explicit means
+# a genuinely single-sourced series is visible in review rather than hidden
+# behind a fallback that cannot fire.
+NO_FREE_ALTERNATIVE = {
+    "NFCI": "Chicago Fed proprietary composite; published via FRED only",
+    "WALCL": "Fed H.4.1 balance sheet; no keyless machine feed wired",
+    "WRESBAL": "same H.4.1 release as WALCL",
+    "ICSA": "DOL claims; no keyless feed wired (DOL has one, not yet built)",
+    "UMCSENT": "U. Michigan survey, licensed distribution",
+    "DTWEXBGS": "Fed broad trade-weighted USD — the ICE dollar index (DXY) is a "
+                "DIFFERENT index (120.5 vs 101.4 same day), so it is not a substitute",
+    "DFF": "effective fed funds; NY Fed publishes EFFR keyless, connector not built",
+}
+
+
 def test_registry_multisource_no_single_critical():
     from ipos.config.load import load_registry
     reg = load_registry()
     assert not [e.series_id for e in reg.active() if e.critical and len(e.sources) < 2]
-    # every FRED entry now has a keyless dbnomics fallback
+
+
+def test_every_fred_series_has_a_keyless_fallback_or_a_stated_reason():
+    """Losing the FRED key must not be fatal. Any FRED-backed series without a
+    keyless leg has to be listed in NO_FREE_ALTERNATIVE with a reason."""
+    from ipos.config.load import load_registry
+
+    reg = load_registry()
+    unprotected = []
     for e in reg.active():
-        types = [s.type for s in e.sources]
-        if "fred" in types:
-            assert "dbnomics" in types, f"{e.series_id} lacks keyless fallback"
+        types = {s.type for s in e.sources}
+        if "fred" not in types:
+            continue
+        if types & KEYLESS_TYPES:
+            continue
+        if e.series_id in NO_FREE_ALTERNATIVE:
+            continue
+        unprotected.append(e.series_id)
+    assert not unprotected, (
+        "these FRED series have no keyless fallback and no stated reason — add a "
+        f"real second source, or document why none exists: {unprotected}"
+    )
+
+
+def test_no_free_alternative_list_stays_honest():
+    """The exception list must not rot: every entry must still be a real FRED
+    series that still lacks a keyless leg. If someone wires a fallback, the
+    entry has to be removed so the list keeps meaning something."""
+    from ipos.config.load import load_registry
+
+    reg = load_registry()
+    by_id = {e.series_id: e for e in reg.active()}
+    stale = []
+    for sid in NO_FREE_ALTERNATIVE:
+        entry = by_id.get(sid)
+        if entry is None:
+            stale.append(f"{sid} (no longer in the registry)")
+        elif {s.type for s in entry.sources} & KEYLESS_TYPES:
+            stale.append(f"{sid} (now HAS a keyless fallback — drop it from the list)")
+    assert not stale, f"NO_FREE_ALTERNATIVE is out of date: {stale}"

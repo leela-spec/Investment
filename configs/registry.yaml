@@ -6,6 +6,36 @@
 # directly (the band table IS the mapping), so band indicators do not invert.
 #
 # Curve bands seed from rules.jsonl (<0 -> 20 ... >=1.0 -> 90).
+#
+# ---------------------------------------------------------------------------
+# SOURCE-AVAILABILITY AUDIT, 2026-07-27 (all claims below were tested live)
+#
+# 1. DBnomics dropped FRED as a provider. Its API lists 93 providers and FRED
+#    is not among them, so every `{type: dbnomics, locator: FRED/...}` leg was
+#    dead — 15 of them, one per FRED series. They have been REMOVED rather than
+#    left in place: a fallback that cannot work is worse than no fallback,
+#    because it hides the fact that a series is single-sourced. Re-add them if
+#    FRED ever returns to DBnomics.
+#
+# 2. Stooq was returning an HTML block page (not CSV) for every symbol tested,
+#    so the eight market series were being carried entirely by their Yahoo leg.
+#    Stooq entries are KEPT — unlike the DBnomics change this looks like a
+#    transient block/rate-limit, not a structural removal — but do not assume
+#    Stooq is live. `ipos-doctor` and the run's stale flags will show it.
+#
+# 3. Yahoo history depth was self-inflicted, not a source limit: the connector
+#    defaulted to `range=5y`. It now requests explicit dates and reaches back
+#    decades (SPX 1985, DAX/RUT 1987, US10Y 1985, GOLD/COPPER 2000, EURUSD
+#    2003) at true DAILY granularity. NB `range=max` must never be used — it
+#    silently returns QUARTERLY bars.
+#
+# 4. Genuinely single-source (FRED-only) after the cleanup, because no free
+#    equivalent exists: T10Y2Y, T10Y3M, NFCI, DTWEXBGS, WALCL, WRESBAL, ICSA,
+#    UMCSENT, DFF, HY_OAS, IG_OAS. Their only backstop is the local archive
+#    replay. Notes: DTWEXBGS has no substitute (the Fed's broad trade-weighted
+#    index is NOT the ICE dollar index DXY — 120.5 vs 101.4 on the same day);
+#    T10Y2Y/T10Y3M could in principle be derived from the ustreasury tenors.
+# ---------------------------------------------------------------------------
 
 indicators:
   # ---- 12 FRED ----
@@ -16,7 +46,11 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: T10Y2Y}
-      - {type: dbnomics, locator: FRED/T10Y2Y}
+      # Official keyless second leg, required because this series is `critical`
+      # and FRED became its only source when FRED left DBnomics (2026-07-27).
+      # The Treasury publishes the tenors; the connector differences them.
+      # Verified same-day against FRED: +0.360 vs 0.36.
+      - {type: ustreasury, locator: "BC_10YEAR-BC_2YEAR"}
     higher_is_better: true
     scoring_method: band
     scoring_params:
@@ -36,7 +70,7 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: T10Y3M}
-      - {type: dbnomics, locator: FRED/T10Y3M}
+      - {type: ustreasury, locator: "BC_10YEAR-BC_3MONTH"}  # verified: +0.730 vs FRED 0.73
     higher_is_better: true
     scoring_method: band
     scoring_params:
@@ -55,7 +89,6 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: DGS10}
-      - {type: dbnomics, locator: FRED/DGS10}
       - {type: ustreasury, locator: BC_10YEAR}
     higher_is_better: false
     scoring_method: zscore
@@ -68,7 +101,6 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: NFCI}
-      - {type: dbnomics, locator: FRED/NFCI}
     higher_is_better: false   # negative = loose = supportive
     scoring_method: zscore
     module_id: RatesLiquidity
@@ -80,7 +112,6 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: DTWEXBGS}
-      - {type: dbnomics, locator: FRED/DTWEXBGS}
     higher_is_better: false   # strong USD = risk-off
     scoring_method: percentile
     module_id: FX
@@ -91,15 +122,25 @@ indicators:
     frequency: D
     unit: pct
     sources:
-      # FRED truncated the ICE BofA OAS series to a rolling ~3-year window
-      # (Apr 2026): it serves nothing before ~2023-07-28. The dbnomics mirror
-      # below was the planned fallback for older history but is DEAD as of
-      # 2026-07-27 — the API returns "no series for FRED/BAMLH0A0HYM2". So
-      # pre-2023-07 history is only recoverable via a manual_csv drop from
-      # another provider. Do NOT let a --seed-offline run fill the gap: that
-      # produced the synthetic canonical rows purged on 2026-07-27.
+      # HISTORY CAP — 3 years, and it is not recoverable free. Exhaustively
+      # checked 2026-07-27:
+      #   * FRED's own note: "Starting in April 2026, this series will only
+      #     include 3 years of observations. For more data, go to the source."
+      #     observation_start is now 2023-07-28.
+      #   * ALFRED vintages do NOT escape it — vintages 2024-01/2025-06/2026-01
+      #     all return the same truncated window (history was purged, not just
+      #     re-dated).
+      #   * The truncation is universal across ICE BofA series (checked
+      #     BAMLC0A0CM, BAMLH0A1HYBB, BAMLH0A3HYC, BAMLH0A0HYM2EY — all start
+      #     2023-07-28), so no sibling index can stand in.
+      #   * DBnomics is gone as a route: FRED is no longer a DBnomics provider.
+      #   * Remaining free routes are aggregator sites (TradingEconomics,
+      #     Equibles) which need keys or scraping — not wired deliberately.
+      # So: 3 years is the honest free cap. Percentile scoring uses a 156-week
+      # (~3y) window, so it still just fits. Drop a manual_csv export in if you
+      # ever obtain longer history. NEVER let --seed-offline fill the gap —
+      # that produced the synthetic rows purged 2026-07-27.
       - {type: fred, locator: BAMLH0A0HYM2}
-      - {type: dbnomics, locator: FRED/BAMLH0A0HYM2}   # verified dead 2026-07-27
       - {type: manual_csv, locator: "hy_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile
@@ -113,9 +154,8 @@ indicators:
     frequency: D
     unit: pct
     sources:
-      # Same truncation + dead mirror as HY_OAS above (see its comment).
+      # Same 3-year cap as HY_OAS above — see its comment for the full audit.
       - {type: fred, locator: BAMLC0A0CM}
-      - {type: dbnomics, locator: FRED/BAMLC0A0CM}     # verified dead 2026-07-27
       - {type: manual_csv, locator: "ig_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile
@@ -128,8 +168,8 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: VIXCLS}
-      - {type: dbnomics, locator: FRED/VIXCLS}
       - {type: stooq, locator: "^vix"}
+      - {type: yahoo, locator: "^VIX"}     # verified 2026-07-27: daily from 1990-01-02, matches VIXCLS
     higher_is_better: false
     scoring_method: percentile
     module_id: EquityRisk
@@ -141,7 +181,6 @@ indicators:
     unit: usd_millions
     sources:
       - {type: fred, locator: WALCL}
-      - {type: dbnomics, locator: FRED/WALCL}
     higher_is_better: true    # QE/QT proxy
     scoring_method: zscore
     module_id: Liquidity
@@ -154,7 +193,6 @@ indicators:
     unit: index
     sources:
       - {type: fred, locator: UMCSENT}
-      - {type: dbnomics, locator: FRED/UMCSENT}
     higher_is_better: true
     scoring_method: percentile
     module_id: Fundamentals
@@ -167,8 +205,10 @@ indicators:
     unit: usd
     sources:
       - {type: fred, locator: DCOILWTICO}
-      - {type: dbnomics, locator: FRED/DCOILWTICO}
       - {type: stooq, locator: "cl.f"}
+      # front-month futures, not the DCOILWTICO spot series: a small basis, so
+      # it is the LAST leg — a degraded-but-real price beats no price.
+      - {type: yahoo, locator: "CL=F"}     # verified 2026-07-27: daily from 2000-08-23
     higher_is_better: true
     scoring_method: percentile
     module_id: Commodities
@@ -180,7 +220,6 @@ indicators:
     unit: pct
     sources:
       - {type: fred, locator: DFF}
-      - {type: dbnomics, locator: FRED/DFF}
     higher_is_better: false   # policy tightness
     scoring_method: zscore
     module_id: RatesLiquidity
@@ -194,7 +233,6 @@ indicators:
     unit: usd_millions
     sources:
       - {type: fred, locator: WRESBAL}
-      - {type: dbnomics, locator: FRED/WRESBAL}
     higher_is_better: true    # more reserves = looser
     scoring_method: zscore
     module_id: Liquidity
@@ -206,7 +244,6 @@ indicators:
     unit: count
     sources:
       - {type: fred, locator: ICSA}
-      - {type: dbnomics, locator: FRED/ICSA}
     higher_is_better: false   # more claims = weaker labor = worse
     scoring_method: percentile
     module_id: Fundamentals
@@ -221,7 +258,6 @@ indicators:
       - {type: stooq, locator: "^spx"}
       - {type: stooq, locator: "spy.us"}
       - {type: yahoo, locator: "^GSPC"}
-      - {type: dbnomics, locator: FRED/SP500}
     higher_is_better: true
     scoring_method: percentile
     module_id: EquityRisk
