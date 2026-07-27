@@ -211,6 +211,7 @@ _TEMPLATE = """<!doctype html>
 {% endfor %}</tbody></table>
 
 <h2>{{ concept_tt("portfolio_vs_stance", "Portfolio vs. Stance")|safe }}</h2>
+{% if s.portfolio and s.portfolio.freshness and s.portfolio.freshness.stale %}<div class="banner warn">⚠️ Portfolio CSV is {{ s.portfolio.freshness.age_days }} days old — this comparison may be out of date.</div>{% endif %}
 {% if portfolio_rows %}
 <table><thead><tr><th>Module</th><th class="num">Your weight</th><th colspan="2">Suggested tilt</th><th>Read</th></tr></thead><tbody>
 {% for r in portfolio_rows %}<tr><td>{{ module_tt(r.module)|safe }}</td>

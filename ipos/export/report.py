@@ -42,6 +42,8 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 {% endfor %}
 
 ## Portfolio vs. Stance
+{% if portfolio and portfolio.freshness and portfolio.freshness.stale %}> ⚠️ **Portfolio CSV is {{ portfolio.freshness.age_days }} days old** — this comparison may be out of date.
+{% endif %}
 {% if portfolio_rows %}| Module | Your weight | Suggested tilt | Read |
 |---|---|---|---|
 {% for r in portfolio_rows %}| {{ r.module }} | {{ "%.1f"|format(r.weight_pct) }}% | {{ "%+.2f"|format(r.tilt) }} | {{ r.read }} |

@@ -60,13 +60,16 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
    1. ✅ **Done** — hover-explanation glossary (indicators/modules/stance-vector/regime), CSS-only popovers, `configs/glossary.yaml` + `ipos/report/glossary.py`.
    2. ⬜ Progressive-disclosure layout pass (F/Z-scan ordering, grouped modules, 1-line plain-language section captions) — research basis: contemporary fintech-dashboard UX guidance favors summary-first/detail-on-demand and jargon replaced by tooltips/glossary links, which item 1 already covers most of.
    3. ⬜ General polish pass once the above and the live-data fixes land.
-9. **✅ Portfolio vs. Stance module — built 2026-07-27.** Full design + post-build notes: [`05_blueprint/03_PORTFOLIO_MODULE.md`](05_blueprint/03_PORTFOLIO_MODULE.md) §8. Compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested on next run — no live broker API is free for either, researched 2026-07-26) against the weekly suggested stance vector; degrades to fully omitted with no CSV present. Ranked follow-ups (none blocking), highest first:
-   1. ⬜ Verify CSV column-guessing against a *real* broker export (never tested against one) — do this before trusting the module on real holdings.
-   2. ⬜ Surface large weight/tilt mismatches via the existing contradictions engine instead of a buried table row.
-   3. ⬜ Currency conversion for non-EUR positions (registry already carries a live `EURUSD` series).
-   4. ⬜ Log the portfolio stage in `run_log` like every other pipeline stage (currently silent, no audit trail).
-   5. ⬜ Flag a stale/aging portfolio CSV by file mtime (no staleness concept yet, unlike every indicator).
-   6. ⬜ A single aggregate portfolio-level read (portfolio-weighted tilt vs. `risk_budget`), not just per-module rows.
+9. **✅ Portfolio vs. Stance module — built 2026-07-27, 5/7 follow-ups closed same day.** Full design + post-build notes: [`05_blueprint/03_PORTFOLIO_MODULE.md`](05_blueprint/03_PORTFOLIO_MODULE.md) §8. Compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested on next run — no live broker API is free for either, researched 2026-07-26) against the weekly suggested stance vector; degrades to fully omitted with no CSV present. Ranked follow-ups, highest first:
+   1. ✅ **Done** — verified against a real finanzen.net Zero export same day: it was semicolon-delimited, German column names/number format, matching none of the invented schema. Parser rewritten (delimiter sniffing + file-level locale decision, not per-column — see §8 note 1 for why per-column detection would have silently misparsed thousands-only values like `"8.849"`); all 5 real positions verified to parse exactly right.
+   2. ✅ **Done** — weight/tilt mismatches now feed the contradictions engine (`fact_portfolio_weight` table + 8 new `PORTFOLIO_*_MISMATCH` rules), not just a buried table row.
+   3. ✅ **Done** — non-EUR positions convert via the existing live `EURUSD` series (`convert_to_eur`), warn-and-skip on an unsupported currency.
+   4. ✅ **Done** — the portfolio build is now its own logged `run_log` stage, like every other pipeline stage.
+   5. ✅ **Done** — a stale/aging portfolio CSV (file mtime vs. `as_of`, 14-day allowance) now shows the same `.banner.warn` used elsewhere.
+   6. ⬜ A single aggregate portfolio-level read (portfolio-weighted tilt vs. `risk_budget`), not just per-module rows — deferred, needs a weighting-formula decision.
+   7. ⬜ Weight-history sparkline — cosmetic, Phase-4-optional.
+   8. ⬜ *(new)* Populate real ISIN→module mappings in `configs/portfolio_mapping.yaml` (ships empty) — an operator judgment call, not something to invent silently.
+   9. ⬜ *(new)* Smartbroker PDF ingestion — that broker has no CSV export path, only a gated paid API; PDF table extraction is a separate, larger feature.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 

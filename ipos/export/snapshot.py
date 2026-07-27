@@ -16,10 +16,11 @@ from pathlib import Path
 import duckdb
 import jsonschema
 
-from ipos.aggregate.portfolio import aggregate_portfolio, load_mapping
+from ipos.aggregate.portfolio import aggregate_portfolio, convert_to_eur, load_mapping
 from ipos.config.load import REPO_ROOT
 from ipos.config.models import Registry
 from ipos.econ_calendar import events_for
+from ipos.etl import portfolio_csv
 from ipos.etl.portfolio_csv import load_positions
 
 SCHEMA_VERSION = "1.0"
@@ -142,8 +143,14 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
     portfolio_block = None
     positions = load_positions()
     if positions is not None and not positions.empty:
+        positions, fx_warnings = convert_to_eur(positions, con, as_of)
         mapping, unmapped_policy = load_mapping()
         portfolio_block = aggregate_portfolio(positions, mapping, unmapped_policy)
+        if fx_warnings:
+            portfolio_block["fx_warnings"] = fx_warnings
+        freshness = portfolio_csv.portfolio_freshness(portfolio_csv.latest_portfolio_file(), as_of)
+        if freshness is not None:
+            portfolio_block["freshness"] = freshness
 
     snapshot = {
         "schema_version": SCHEMA_VERSION,
@@ -270,6 +277,13 @@ SNAPSHOT_SCHEMA = {
                 "modules": {"type": "object"},
                 "unmapped": {"type": "array"},
                 "total_value_eur": {"type": "number"},
+                "freshness": {
+                    "type": "object",
+                    "properties": {
+                        "age_days": {"type": "integer"},
+                        "stale": {"type": "boolean"},
+                    },
+                },
             },
         },
     },

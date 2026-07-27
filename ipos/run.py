@@ -21,11 +21,13 @@ import duckdb
 
 from ipos.aggregate.contradictions import evaluate as evaluate_contradictions
 from ipos.aggregate.modules import aggregate
+from ipos.aggregate.portfolio import aggregate_portfolio, convert_to_eur, load_mapping, persist_portfolio_weights
 from ipos.aggregate.regime import classify_from_db
 from ipos.ai.bundle import narrate, write_bundle
 from ipos.ai.provider import load_ai_config
 from ipos.config.load import load_registry
 from ipos.config.models import Registry
+from ipos.etl.portfolio_csv import load_positions
 from ipos.etl.pull import pull_all, pull_ohlc
 from ipos.export.report import write_report
 from ipos.export.snapshot import build_snapshot, validate, write_snapshot
@@ -147,6 +149,30 @@ def run_weekly(
         agg = aggregate(con, reg, aod, regime=regime)
         result.stages["aggregate"] = agg
         _log_stage(con, run_id, aod, "aggregate", "OK", t0, rows_out=agg.get("modules"))
+
+        # --- stage: portfolio (optional; omitted entirely when no CSV is
+        #     present -- never a hard dependency, matches the module's own
+        #     fail-degraded contract). Runs BEFORE contradictions so
+        #     portfolio_weight()/tilt() have data in the DB to read from. ---
+        t0 = dt.datetime.now()
+        positions = load_positions()
+        portfolio_block = None
+        if positions is not None and not positions.empty:
+            positions, fx_warnings = convert_to_eur(positions, con, aod)
+            mapping, unmapped_policy = load_mapping()
+            portfolio_block = aggregate_portfolio(positions, mapping, unmapped_policy)
+            if fx_warnings:
+                portfolio_block["fx_warnings"] = fx_warnings
+        n_weights = persist_portfolio_weights(con, aod, portfolio_block)
+        result.stages["portfolio"] = {
+            "found_csv": portfolio_block is not None,
+            "modules": len(portfolio_block["modules"]) if portfolio_block else 0,
+            "unmapped": len(portfolio_block["unmapped"]) if portfolio_block else 0,
+        }
+        _log_stage(con, run_id, aod, "portfolio", "OK", t0, rows_out=n_weights,
+                   detail=("no portfolio CSV found" if portfolio_block is None
+                           else f"modules={len(portfolio_block['modules'])} "
+                                f"unmapped={len(portfolio_block['unmapped'])}"))
 
         # --- stage: contradictions ---
         t0 = dt.datetime.now()

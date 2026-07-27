@@ -104,6 +104,45 @@ def test_no_contradiction_when_aligned(tmp_path):
     assert all(h["id"] not in {"EQ_vs_CREDIT", "EQ_vs_RATES", "EQ_vs_GROWTH"} for h in hits)
 
 
+def test_portfolio_weight_and_tilt_available_in_context(tmp_path):
+    db = tmp_path / "w.duckdb"
+    _seed_scores(db, {"EquityRisk": 80.0})
+    with connect(db) as con:
+        con.execute(
+            "INSERT INTO fact_portfolio_weight (as_of_date, module_id, weight_pct, value_eur) "
+            "VALUES (?, ?, ?, ?)",
+            [AS_OF, "EquityRisk", 42.0, 1000.0],
+        )
+        ctx = _build_context(con, AS_OF)
+    assert ctx["portfolio_weight"]("EquityRisk") == pytest.approx(42.0)
+    assert ctx["tilt"]("EquityRisk") == pytest.approx((80.0 - 50) / 50)
+    assert ctx["portfolio_weight"]("Credit") is None  # no row this week -> fail-degraded
+
+
+def test_portfolio_equityrisk_mismatch_fires_when_headwind_held(tmp_path):
+    db = tmp_path / "w.duckdb"
+    # score 30 -> tilt (30-50)/50 = -0.4 <= -0.2, held at 40% weight -> mismatch
+    _seed_scores(db, {"EquityRisk": 30.0})
+    with connect(db) as con:
+        con.execute(
+            "INSERT INTO fact_portfolio_weight (as_of_date, module_id, weight_pct, value_eur) "
+            "VALUES (?, ?, ?, ?)",
+            [AS_OF, "EquityRisk", 40.0, 1000.0],
+        )
+        hits = evaluate(con, AS_OF)
+    assert "PORTFOLIO_EQUITYRISK_MISMATCH" in {h["id"] for h in hits}
+
+
+def test_portfolio_mismatch_does_not_fire_with_no_portfolio_data(tmp_path):
+    db = tmp_path / "w.duckdb"
+    # same headwind tilt as above, but no fact_portfolio_weight row at all this
+    # week (no CSV dropped) -> portfolio_weight() is None -> can't fire
+    _seed_scores(db, {"EquityRisk": 30.0})
+    with connect(db) as con:
+        hits = evaluate(con, AS_OF)
+    assert not any(h["id"].startswith("PORTFOLIO_") for h in hits)
+
+
 def test_engine_deterministic_and_ordered(tmp_path):
     db = tmp_path / "w.duckdb"
     _seed_scores(db, {"EquityRisk": 80.0, "Credit": 30.0, "RatesLiquidity": 30.0,

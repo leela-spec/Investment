@@ -57,3 +57,50 @@ contradictions:
     severity: low
     summary: "Mixed signals within the rates/liquidity module (members strongly disagree)."
     when: "module_spread('RatesLiquidity') >= 60"
+
+  # Portfolio vs. stance (05_blueprint/03_PORTFOLIO_MODULE.md §8 follow-up 2):
+  # actual holdings disagreeing with this week's suggested tilt. Reuses
+  # stance_alignment's own thresholds (weight_threshold=10.0, tilt_
+  # threshold=0.2) from ipos/aggregate/portfolio.py so the rule agrees with
+  # the report's own "aligned"/"headwind" language. portfolio_weight() is
+  # null in any week with no portfolio CSV dropped, so these silently don't
+  # fire in the common no-CSV case (fail-degraded, never a hard dependency).
+  - id: PORTFOLIO_EQUITYRISK_MISMATCH
+    severity: med
+    summary: "Your EquityRisk portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('EquityRisk') >= 10 and tilt('EquityRisk') <= -0.2) or (portfolio_weight('EquityRisk') < 10 and tilt('EquityRisk') >= 0.2)"
+
+  - id: PORTFOLIO_RATESLIQUIDITY_MISMATCH
+    severity: med
+    summary: "Your RatesLiquidity portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('RatesLiquidity') >= 10 and tilt('RatesLiquidity') <= -0.2) or (portfolio_weight('RatesLiquidity') < 10 and tilt('RatesLiquidity') >= 0.2)"
+
+  - id: PORTFOLIO_GROWTHRISK_MISMATCH
+    severity: med
+    summary: "Your GrowthRisk portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('GrowthRisk') >= 10 and tilt('GrowthRisk') <= -0.2) or (portfolio_weight('GrowthRisk') < 10 and tilt('GrowthRisk') >= 0.2)"
+
+  - id: PORTFOLIO_CREDIT_MISMATCH
+    severity: med
+    summary: "Your Credit portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('Credit') >= 10 and tilt('Credit') <= -0.2) or (portfolio_weight('Credit') < 10 and tilt('Credit') >= 0.2)"
+
+  - id: PORTFOLIO_LIQUIDITY_MISMATCH
+    severity: med
+    summary: "Your Liquidity portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('Liquidity') >= 10 and tilt('Liquidity') <= -0.2) or (portfolio_weight('Liquidity') < 10 and tilt('Liquidity') >= 0.2)"
+
+  - id: PORTFOLIO_FX_MISMATCH
+    severity: med
+    summary: "Your FX portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('FX') >= 10 and tilt('FX') <= -0.2) or (portfolio_weight('FX') < 10 and tilt('FX') >= 0.2)"
+
+  - id: PORTFOLIO_COMMODITIES_MISMATCH
+    severity: low
+    summary: "Your Commodities portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('Commodities') >= 10 and tilt('Commodities') <= -0.2) or (portfolio_weight('Commodities') < 10 and tilt('Commodities') >= 0.2)"
+
+  - id: PORTFOLIO_FUNDAMENTALS_MISMATCH
+    severity: low
+    summary: "Your Fundamentals portfolio weight and this week's suggested tilt disagree."
+    when: "(portfolio_weight('Fundamentals') >= 10 and tilt('Fundamentals') <= -0.2) or (portfolio_weight('Fundamentals') < 10 and tilt('Fundamentals') >= 0.2)"

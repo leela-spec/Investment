@@ -28,7 +28,8 @@ from ipos.config.load import REPO_ROOT
 
 CONTRADICTIONS_YAML = REPO_ROOT / "configs" / "contradictions.yaml"
 
-_ALLOWED_FUNCS = {"module", "module_conf", "module_spread", "indicator", "regime", "abs", "min", "max"}
+_ALLOWED_FUNCS = {"module", "module_conf", "module_spread", "indicator", "regime",
+                  "tilt", "portfolio_weight", "abs", "min", "max"}
 _SEVERITIES = {"low", "med", "high"}
 
 
@@ -49,6 +50,7 @@ class Predicate:
 
 _ALLOWED_NODES = (
     ast.Expression, ast.BoolOp, ast.And, ast.Or, ast.UnaryOp, ast.Not,
+    ast.USub, ast.UAdd,
     ast.Compare, ast.Lt, ast.LtE, ast.Gt, ast.GtE, ast.Eq, ast.NotEq,
     ast.Call, ast.Name, ast.Load, ast.Constant,
 )
@@ -86,6 +88,9 @@ def _eval(node: ast.AST, funcs: dict):
         return all(vals) if isinstance(node.op, ast.And) else any(vals)
     if isinstance(node, ast.UnaryOp) and isinstance(node.op, ast.Not):
         return not _eval(node.operand, funcs)
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.USub, ast.UAdd)):
+        val = _eval(node.operand, funcs)
+        return -val if isinstance(node.op, ast.USub) else val
     if isinstance(node, ast.Compare):
         left = _eval(node.left, funcs)
         for op, comp in zip(node.ops, node.comparators):
@@ -172,6 +177,13 @@ def _build_context(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> dict:
     ).fetchone()
     regime_label = regime_row[0] if regime_row else None
 
+    tilts = dict(con.execute(
+        "SELECT module_id, stance_value FROM agg_module WHERE as_of_date = ?", [as_of]
+    ).fetchall())
+    portfolio_weights = dict(con.execute(
+        "SELECT module_id, weight_pct FROM fact_portfolio_weight WHERE as_of_date = ?", [as_of]
+    ).fetchall())
+
     def _get(d, key):
         # missing this week => None => predicate can't fire (fail-degraded).
         return float(d[key]) if key in d else None
@@ -182,6 +194,8 @@ def _build_context(con: duckdb.DuckDBPyConnection, as_of: dt.date) -> dict:
         "module_spread": lambda k: _get(spreads, k),
         "indicator": lambda k: _get(indicators, k),
         "regime": lambda: regime_label,
+        "tilt": lambda k: _get(tilts, k),
+        "portfolio_weight": lambda k: _get(portfolio_weights, k),
         "abs": abs, "min": min, "max": max,
     }
 
@@ -195,7 +209,7 @@ def _references(preds: list[Predicate]) -> dict[str, set[str]]:
             if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.args:
                 arg = node.args[0]
                 if isinstance(arg, ast.Constant) and isinstance(arg.value, str):
-                    if node.func.id in ("module", "module_conf", "module_spread"):
+                    if node.func.id in ("module", "module_conf", "module_spread", "tilt", "portfolio_weight"):
                         out["module"].add(arg.value)
                     elif node.func.id == "indicator":
                         out["indicator"].add(arg.value)
@@ -223,7 +237,7 @@ def _captured_values(tree: ast.Expression, funcs: dict) -> dict:
     for node in ast.walk(tree):
         if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             fn = node.func.id
-            if fn in ("module", "module_conf", "module_spread", "indicator") and node.args:
+            if fn in ("module", "module_conf", "module_spread", "indicator", "tilt", "portfolio_weight") and node.args:
                 arg = node.args[0]
                 if isinstance(arg, ast.Constant):
                     try:
