@@ -166,8 +166,36 @@ def cmd_doctor(argv: list[str] | None = None) -> int:
     with connect(db, read_only=True) as con:
         n = con.execute("SELECT count(*) FROM dim_series WHERE enabled").fetchone()[0]
         last = con.execute("SELECT max(as_of_date) FROM agg_regime").fetchone()[0]
+        syn_obs = con.execute(
+            "SELECT count(*) FROM fact_observation WHERE vintage_id LIKE 'synthetic@%'"
+        ).fetchone()[0]
+        syn_weekly = con.execute(
+            "SELECT count(*) FROM fact_weekly WHERE vintage_id LIKE 'synthetic@%'"
+        ).fetchone()[0]
+        agg_weeks = con.execute("SELECT count(DISTINCT as_of_date) FROM agg_module").fetchone()[0]
     print(f"warehouse: OK — {n} enabled series, last snapshot week: {last or 'none yet'}")
-    return 0
+
+    # Synthetic (--seed-offline) rows in a real warehouse: inert for a series
+    # that also has real history, but where real history is missing they become
+    # the canonical value and produce scores indistinguishable from real ones
+    # (fact_score has no vintage column). Third occurrence found 2026-07-27.
+    if syn_weekly:
+        print(f"synthetic data: ⚠️  {syn_weekly} CANONICAL row(s) are synthetic — these FEED "
+              f"SCORING. Run `python scripts/purge_synthetic.py` (dry run) to inspect.")
+    elif syn_obs:
+        print(f"synthetic data: {syn_obs} synthetic observation(s) present but none reached "
+              f"fact_weekly (inert). `python scripts/purge_synthetic.py` removes them.")
+    else:
+        print("synthetic data: none — warehouse is clean")
+
+    # The aggregate layer is only written for the week a run executes, so the
+    # report's regime path / stance history is as deep as ipos-replay made it.
+    if agg_weeks < 8:
+        print(f"aggregate history: {agg_weeks} week(s) — too shallow for the report's regime "
+              f"path and stance sparklines. Run `ipos-replay --weeks 26`.")
+    else:
+        print(f"aggregate history: {agg_weeks} week(s) of module/stance/regime rows")
+    return 1 if syn_weekly else 0
 
 
 def cmd_backfill(argv: list[str] | None = None) -> int:

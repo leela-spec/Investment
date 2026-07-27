@@ -117,6 +117,34 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-27 (latest) — Synthetic data PURGED (real data confirmed unobtainable); portfolio mapping populated; two isolation bugs fixed
+
+**Context:** operator instruction — "no invented data should be here anymore" — plus "get the data" if it exists.
+
+**1. Tried to get the real data first; it is genuinely gone.** Probed both configured sources for `HY_OAS`/`IG_OAS` over 2022-04 → 2023-08:
+- **FRED** returns nothing before **2023-07-28**, confirming the rolling-3-year truncation noted in `ipos/backfill.py`.
+- **DBnomics** — the registry's designated fallback for exactly this case — is **dead upstream**: `FRED/BAMLH0A0HYM2` and `FRED/BAMLC0A0CM` both return "no series". Recorded as a comment on both registry entries so a future session does not assume the fallback works. **Only remaining route for pre-2023-07 OAS history is a `manual_csv` drop from another provider.**
+Conclusion: the invented values could not be replaced, only removed. An honest gap beats a fabricated number.
+
+**2. Purge + full rebuild** via new `scripts/purge_synthetic.py` (dry-run by default, backs the warehouse up first). Removed **4,675 synthetic observation rows** (all 22 series — far more than the 128 canonical rows first reported) and **128 synthetic canonical rows**, then rebuilt canonical + features + scores across the **full 3,847-week history** and replayed 26 weeks of aggregates. Rebuilding everything was required, not optional: scoring is a rolling ~156-week percentile, so every week whose window overlapped the synthetic span had inherited some of it.
+**Measured effect:** this week's scores changed **not at all** (2026-07-24's window already cleared the tainted block by 7 days), but **24 of 26 weeks of Credit-module history moved by ±0.5–2.0 points**. So the contamination was real but small — and is now gone. `HY_OAS`/`IG_OAS` go from 221 canonical weeks to 157, starting honestly at 2023-07-28. Warehouse now reports **0 synthetic rows**.
+**Prevention:** `ipos-doctor` now reports synthetic-row counts (non-zero canonical rows → warning **and exit code 1**, since those feed scoring) and flags a too-shallow aggregate history.
+
+**3. `configs/portfolio_mapping.yaml` populated** from the operator's two real exports (18 ISINs; both halves checksum exactly against the totals printed in the source documents — €233,316.53 Zero, €596,124.72 Smartbroker). Documented decisions:
+- Only **EquityRisk** and **Commodities** can match a share/fund portfolio. The other six modules are macro *condition* readings (yield curve, credit spreads, CB balance sheet, surveys), not asset buckets — noted at the top of the mapping file so the mostly-zero column is understood as expected, not broken.
+- Three commodity-producer **equities** (Deutsche Rohstoff, Kinetik, Petrobras — ~€64k) assigned to **Commodities** rather than EquityRisk, on the grounds that their price is driven by the underlying commodity. Operator-confirmed. Flagged in-file as the one reviewable judgement call, since it shifts weight between two modules.
+- One position (`DE000VV9F645`, a Vontobel structured product) left **deliberately unmapped**: the PDF names only the issuer, not the underlying, so there is no honest classification. It still counts toward total value and appears in the report's "unmapped" list.
+- Combined read: **83.6% EquityRisk (aligned, tilt +0.62), 11.1% Commodities (aligned, +0.71)**, €43,760 unmapped.
+
+**4. Dropped three portfolio-mismatch rules as unactionable.** `PORTFOLIO_LIQUIDITY_MISMATCH`, `PORTFOLIO_GROWTHRISK_MISMATCH` and `PORTFOLIO_FUNDAMENTALS_MISMATCH` would tell the operator they hold "0% of the yield curve" — there is no instrument that gives you weight in a macro reading. The five surviving rules (EquityRisk, Commodities, Credit, RatesLiquidity, FX) all map to investable asset classes; **the set of rules is now the declaration of what counts as investable**, documented in-file.
+
+**5. TWO test-isolation bugs found and fixed** — both latent before, both exposed the moment a real portfolio CSV existed in `data/inbox/`:
+- **`build_golden_min` isolated the archive and exports dirs but not `portfolio_csv.INBOX`/`MAPPING_PATH`.** The golden therefore picked up the operator's real holdings — which would have made the regression test machine-dependent *and committed holdings-derived contradictions into the tracked golden file*. Now isolated.
+- **No suite-wide guard.** Added an autouse `_no_operator_portfolio` fixture in `conftest.py`, in the same spirit as the existing `_no_network` net, so no test can ever read the real inbox or mapping. Both pinned by `tests/test_isolation.py`, including an assertion that the committed golden contains no ISIN-shaped token.
+`scoring_version` again not bumped: verified the regenerated golden is **byte-identical** to the committed one after these changes.
+
+**Still open:** the report's Portfolio-vs-Stance table lists all eight modules, so six rows read 0.0% for a share portfolio. Cosmetic, but a "holdable modules only" view would read better — deferred as it needs an explicit investable-module flag in `configs/modules.yaml`.
+
 ### 2026-07-27 (later) — Report explainability pass; aggregate-layer replay added; THIRD synthetic-data instance found (latent, not shipped)
 
 **Context:** operator reviewed the weekly report and reported that hover explanations were largely absent, the regime map's quadrants were unexplained with no visible 6-month path, contradictions gave no indication of *where* the mixed signals were, and every table offered only a one-week horizon. Investigation showed three of those were already-built features that were invisible or starved of data, not missing ones.

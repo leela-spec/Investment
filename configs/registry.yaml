@@ -91,8 +91,15 @@ indicators:
     frequency: D
     unit: pct
     sources:
+      # FRED truncated the ICE BofA OAS series to a rolling ~3-year window
+      # (Apr 2026): it serves nothing before ~2023-07-28. The dbnomics mirror
+      # below was the planned fallback for older history but is DEAD as of
+      # 2026-07-27 — the API returns "no series for FRED/BAMLH0A0HYM2". So
+      # pre-2023-07 history is only recoverable via a manual_csv drop from
+      # another provider. Do NOT let a --seed-offline run fill the gap: that
+      # produced the synthetic canonical rows purged on 2026-07-27.
       - {type: fred, locator: BAMLH0A0HYM2}
-      - {type: dbnomics, locator: FRED/BAMLH0A0HYM2}
+      - {type: dbnomics, locator: FRED/BAMLH0A0HYM2}   # verified dead 2026-07-27
       - {type: manual_csv, locator: "hy_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile
@@ -106,8 +113,9 @@ indicators:
     frequency: D
     unit: pct
     sources:
+      # Same truncation + dead mirror as HY_OAS above (see its comment).
       - {type: fred, locator: BAMLC0A0CM}
-      - {type: dbnomics, locator: FRED/BAMLC0A0CM}
+      - {type: dbnomics, locator: FRED/BAMLC0A0CM}     # verified dead 2026-07-27
       - {type: manual_csv, locator: "ig_oas*.csv"}
     higher_is_better: false
     scoring_method: percentile

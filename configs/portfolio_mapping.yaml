@@ -4,14 +4,68 @@
 # (explicit, no auto-classification).
 #
 # Add a line whenever a new position is bought. Key is whatever identifier
-# your broker export uses for `instrument` (ISIN or ticker, matched verbatim);
-# value is one of the module_ids in configs/modules.yaml.
+# your broker export uses for `instrument` — for both of your brokers that is
+# the ISIN, matched verbatim. Value is one of the module_ids in
+# configs/modules.yaml.
 #
-# Example:
-#   IE00B4L5Y983: EquityRisk   # an MSCI World / S&P 500 ETF
-#   DE000A1EWWW0: Commodities  # a gold ETC
+# ---------------------------------------------------------------------------
+# NOTE ON WHICH MODULES CAN EVER MATCH A HOLDING
+# Only two of the eight modules describe things you can hold directly:
+#   EquityRisk  (stance_dim: equity)      <- shares, equity derivatives
+#   Commodities (stance_dim: commodities) <- gold, broad commodity funds
+# The other six — RatesLiquidity, GrowthRisk, Credit, Liquidity, FX,
+# Fundamentals — are macro *condition* modules built from the yield curve,
+# credit spreads, central-bank balance sheets and survey data. They are
+# signals, not asset buckets, so a share portfolio will normally light up
+# EquityRisk and Commodities only. That is expected, not a gap: the useful
+# read is "my equity weight vs. this week's equity tilt".
+# They would only ever be used if you held bond funds (RatesLiquidity),
+# credit/HY funds (Credit) or an FX position (FX).
+# ---------------------------------------------------------------------------
+#
+# Populated 2026-07-27 from the operator's two real exports:
+#   * finanzen.net Zero  — CSV (auto-ingested from data/inbox/portfolio*.csv)
+#   * Smartbroker        — PDF "Depotübersicht" only; no CSV export exists for
+#     this broker, so these rows take effect only if those positions reach a
+#     CSV. Mapping them now costs nothing and makes that automatic later.
 
-mappings: {}
+mappings:
+  # --- finanzen.net Zero (from ZERO-pos CSV export) ----------------------
+  AU0000185993: EquityRisk    # IREN Ltd — data-centre / bitcoin-mining equity
+  DE000MN4NFQ8: EquityRisk    # Morgan Stanley discount call on SoFi — equity-linked derivative
+  US0079031078: EquityRisk    # Advanced Micro Devices (AMD)
+  US67066G1040: EquityRisk    # NVIDIA Corp
+  US83406F1021: EquityRisk    # SoFi Technologies
+
+  # --- Smartbroker (from Depotübersicht PDF) -----------------------------
+  DE0008404005: EquityRisk    # Allianz SE
+  US0937121079: EquityRisk    # Bloom Energy Corp
+  US55024U1097: EquityRisk    # Lumentum Holdings
+  US5951121038: EquityRisk    # Micron Technology
+  DE000A2NB650: EquityRisk    # Mutares SE & Co. KGaA
+  DE0008430026: EquityRisk    # Münchener Rückversicherung (Munich Re)
+  NL0009805522: EquityRisk    # Nebius Group N.V.
+  DK0062498333: EquityRisk    # Novo Nordisk A/S
+
+  DE000A0S9GB0: Commodities   # Xetra-Gold (Deut. Börse Commodities) — physically-backed gold
+  LU1829218749: Commodities   # Amundi Bloomberg Equal-weight Commodity ex-Agriculture ETF
+
+  # --- REVIEW THESE THREE: commodity-producer *equities* -----------------
+  # Each is a share, but its price is driven mainly by an underlying commodity,
+  # so it arguably belongs with the commodities tilt rather than broad equity
+  # risk. Defaulted to Commodities on that reasoning; switch any of them to
+  # EquityRisk if you'd rather read them as equity exposure. This choice moves
+  # weight between the two modules and so changes what the report tells you.
+  DE000A0XYG76: Commodities   # Deutsche Rohstoff AG — oil & gas producer
+  US02215L2097: Commodities   # Kinetik Holdings — midstream energy
+  US71654V4086: Commodities   # Petróleo Brasileiro (Petrobras) — integrated oil
+
+  # --- CANNOT CLASSIFY FROM THE EXPORT ----------------------------------
+  # DE000VV9F645: ?           # Vontobel Financial Products — a structured
+  #   product / warrant. The PDF names only the issuer, not the underlying, so
+  #   there is no honest way to assign it. Left unmapped deliberately: it still
+  #   counts toward total portfolio value and appears in the report's "unmapped"
+  #   list. Tell me the underlying (or uncomment with the right module) to fix.
 
 # What to do with an instrument in the portfolio CSV that has no entry above.
 # In every case its value still counts toward total portfolio value (it's

@@ -15,8 +15,10 @@ from __future__ import annotations
 import datetime as dt
 from pathlib import Path
 
+import ipos.aggregate.portfolio as portfolio_mod
 import ipos.ai.bundle as bundle_mod
 import ipos.etl.base as etl_base
+import ipos.etl.portfolio_csv as portfolio_csv
 import ipos.export.report as report_mod
 import ipos.export.snapshot as snap_mod
 from ipos.etl.fixtures import SEED_ANCHOR, generate_series
@@ -44,6 +46,14 @@ def build_golden_min(workdir: Path, as_of: dt.date = SEED_ANCHOR) -> str:
     snap_mod.EXPORTS_DIR = workdir / "exports"
     report_mod.EXPORTS_DIR = workdir / "exports"
     bundle_mod.EXPORTS_DIR = workdir / "exports"
+    # ...INCLUDING the operator's portfolio. Without this the golden picks up
+    # whatever sits in the real data/inbox/, which would make it
+    # machine-dependent AND commit holdings-derived contradictions into the
+    # tracked golden file. The golden must stay pure synthetic fixtures.
+    inbox = workdir / "inbox"
+    inbox.mkdir(parents=True, exist_ok=True)
+    portfolio_csv.INBOX = inbox
+    portfolio_mod.MAPPING_PATH = workdir / "no_portfolio_mapping.yaml"
 
     res = run_weekly(
         as_of=as_of,

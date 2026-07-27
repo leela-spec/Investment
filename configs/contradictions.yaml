@@ -110,20 +110,10 @@ contradictions:
     summary: "Your RatesLiquidity portfolio weight and this week's suggested tilt disagree."
     when: "(portfolio_weight('RatesLiquidity') >= 10 and tilt('RatesLiquidity') <= -0.2) or (portfolio_weight('RatesLiquidity') < 10 and tilt('RatesLiquidity') >= 0.2)"
 
-  - id: PORTFOLIO_GROWTHRISK_MISMATCH
-    severity: med
-    summary: "Your GrowthRisk portfolio weight and this week's suggested tilt disagree."
-    when: "(portfolio_weight('GrowthRisk') >= 10 and tilt('GrowthRisk') <= -0.2) or (portfolio_weight('GrowthRisk') < 10 and tilt('GrowthRisk') >= 0.2)"
-
   - id: PORTFOLIO_CREDIT_MISMATCH
     severity: med
     summary: "Your Credit portfolio weight and this week's suggested tilt disagree."
     when: "(portfolio_weight('Credit') >= 10 and tilt('Credit') <= -0.2) or (portfolio_weight('Credit') < 10 and tilt('Credit') >= 0.2)"
-
-  - id: PORTFOLIO_LIQUIDITY_MISMATCH
-    severity: med
-    summary: "Your Liquidity portfolio weight and this week's suggested tilt disagree."
-    when: "(portfolio_weight('Liquidity') >= 10 and tilt('Liquidity') <= -0.2) or (portfolio_weight('Liquidity') < 10 and tilt('Liquidity') >= 0.2)"
 
   - id: PORTFOLIO_FX_MISMATCH
     severity: med
@@ -135,7 +125,12 @@ contradictions:
     summary: "Your Commodities portfolio weight and this week's suggested tilt disagree."
     when: "(portfolio_weight('Commodities') >= 10 and tilt('Commodities') <= -0.2) or (portfolio_weight('Commodities') < 10 and tilt('Commodities') >= 0.2)"
 
-  - id: PORTFOLIO_FUNDAMENTALS_MISMATCH
-    severity: low
-    summary: "Your Fundamentals portfolio weight and this week's suggested tilt disagree."
-    when: "(portfolio_weight('Fundamentals') >= 10 and tilt('Fundamentals') <= -0.2) or (portfolio_weight('Fundamentals') < 10 and tilt('Fundamentals') >= 0.2)"
+  # NOTE — no portfolio-mismatch rule for Liquidity, GrowthRisk or Fundamentals,
+  # deliberately. Those three are macro *condition* modules (central-bank
+  # balance sheet, yield-curve recession risk, consumer/labour surveys): there
+  # is no instrument that gives you "weight in the yield curve", so a
+  # "you hold 0% of something the system likes" prompt would be unactionable
+  # noise. The five above all correspond to investable asset classes (equity
+  # funds, commodity funds, credit funds, bond/duration funds, FX). The set of
+  # rules here IS the declaration of what counts as investable — add one back
+  # if you start holding that exposure.
