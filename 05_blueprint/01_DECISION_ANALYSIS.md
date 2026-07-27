@@ -117,6 +117,21 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-27 — Portfolio module built per the 2026-07-26 plan; one clarification, six ranked follow-ups identified
+
+**Context:** implemented `05_blueprint/03_PORTFOLIO_MODULE.md` in full: `ipos/etl/portfolio_csv.py` (CSV connector, optional), `ipos/aggregate/portfolio.py` (module-weight aggregation + stance-alignment read), a `portfolio` block in `snapshot.json`, and matching sections in both the HTML and markdown reports. 94 tests green (18 new), no regressions.
+
+**One clarification vs. the plan (not a design change, just underspecified in §3):** the plan didn't say whether an unmapped instrument's value counts toward the weight-% denominator under each `unmapped_policy`. Decided: it always does — `unmapped_policy` only controls whether the instrument is *listed*, never whether its euro value is silently dropped from the total (that would understate the operator's real holdings). Documented in `configs/portfolio_mapping.yaml`'s comments and `03_PORTFOLIO_MODULE.md` §8.
+
+**Six follow-ups identified during the build, ranked by impact/effort, none blocking** (full detail: `03_PORTFOLIO_MODULE.md` §8):
+1. Verify the CSV column-guessing against a *real* Smartbroker/finanzen.net zero export — the plan's schema was never checked against an actual file. Highest-priority next action for this module.
+2. Surface a large weight/tilt mismatch through the existing contradictions engine (`configs/contradictions.yaml`), not just a buried table row — reuses a mechanism that already exists rather than inventing a new one.
+3. Currency conversion for non-EUR positions, using the registry's own live `EURUSD` series — likely low real-world impact for German-broker exports, worth confirming after item 1 before building.
+4. Log the portfolio stage in `run_log` like every other pipeline stage (currently silent — an audit-trail gap, not a correctness one).
+5. Flag a stale/aging portfolio CSV (by file mtime) — the rest of the system has a whole staleness/confidence framework for this; the portfolio file currently has none.
+6. A single aggregate portfolio-level read (portfolio-weighted tilt vs. the system's own `risk_budget`) in addition to the current per-module rows — deferred because the weighting formula needs its own small decision, not just code.
+**Switch trigger:** none of these block current use (the module degrades correctly with no file present); pick up item 1 first if/when the operator does a real export, since it may invalidate assumptions in items 2–6.
+
 ### 2026-07-26 (later still) — Portfolio module planned (not built); automation-feasibility research for Smartbroker/finanzen.net zero
 
 **Context:** operator asked how to integrate real portfolio holdings into the weekly report and, specifically, whether their Smartbroker and finanzen.net zero (Germany) broker accounts could be wired in via an API, and asked for this to be automated.

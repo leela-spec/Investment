@@ -5,7 +5,7 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-07-26 · **Updated by:** implementation session (UX explainability pass + live-data root-cause audit) · **Branch of record:** `main` (direct commits only — no long-lived work branches; see §4 below)
+**Last updated:** 2026-07-27 · **Updated by:** implementation session (Portfolio vs. Stance module built) · **Branch of record:** `main` (direct commits only — no long-lived work branches; see §4 below)
 
 ---
 
@@ -21,7 +21,8 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 | **A — Implementation planning** | ✅ **DONE**: macro master plan + 9 meso plans + decision analysis + research archive |
 | **A — Phase 0 (scaffold) + Phase 1 (walking skeleton)** | ✅ **DONE** (2026-07-23): `ipos/` package, configs (golden-20), DuckDB warehouse, ETL (FRED/Stooq/manual_csv + archive + fallback), transforms+scoring, aggregation, `snapshot.json`+`report.md`, CLI, 29 tests green in ~18s. |
 | **A — Phase 2 (core value)** | ✅ **DONE** — contradictions engine, golden-snapshot harness, regime classifier + risk_scaler + policy selectors, static self-contained HTML report, LLM narration scaffolding ($0 `none`/`manual`). |
-| **A — Phase 3 (de-risk + dashboard + calendar)** | 🚧 **MOSTLY DONE** — ✅ keyless sources (DBnomics/US Treasury) so live runs need no FRED key; fallback chains; no single-sourced critical series. ✅ synthetic-leak closed (synthetic data can't be served as real — **two more instances of this exact leak found & fixed 2026-07-26, see §3 item 7**). ✅ real-ATR regime from OHLC. ✅ confidence/rates/scoring cleanups. ✅ richer dashboard (regime 2D trail, sparklines, 52w heatmap — still self-contained). ✅ free economic calendar. ✅ widened to **22 indicators** (no single-member modules). ✅ manual ($0) LLM narration wired end-to-end (`provider: file`), with markdown rendering fixed. ✅ hover-explanation glossary for every indicator/module/stance-dim/regime label (CSS-only popovers, `configs/glossary.yaml`). ✅ **`FRED_API_KEY` set (operator's own free key, in gitignored `.env`) + Yahoo Finance fallback added — first real (non-synthetic) live snapshot produced 2026-07-26.** ⬜ Windows Task Scheduler, ⬜ full 60-indicator breadth + fragile scrapes. 79 tests green. |
+| **A — Phase 3 (de-risk + dashboard + calendar)** | 🚧 **MOSTLY DONE** — ✅ keyless sources (DBnomics/US Treasury) so live runs need no FRED key; fallback chains; no single-sourced critical series. ✅ synthetic-leak closed (synthetic data can't be served as real — **two more instances of this exact leak found & fixed 2026-07-26, see §3 item 7**). ✅ real-ATR regime from OHLC. ✅ confidence/rates/scoring cleanups. ✅ richer dashboard (regime 2D trail, sparklines, 52w heatmap — still self-contained). ✅ free economic calendar. ✅ widened to **22 indicators** (no single-member modules). ✅ manual ($0) LLM narration wired end-to-end (`provider: file`), with markdown rendering fixed. ✅ hover-explanation glossary for every indicator/module/stance-dim/regime label (CSS-only popovers, `configs/glossary.yaml`). ✅ **`FRED_API_KEY` set (operator's own free key, in gitignored `.env`) + Yahoo Finance fallback added — first real (non-synthetic) live snapshot produced 2026-07-26.** ⬜ Windows Task Scheduler, ⬜ full 60-indicator breadth + fragile scrapes. |
+| **A — Portfolio vs. Stance module** (Phase-4 item, pulled forward) | ✅ **DONE (2026-07-27)** — `ipos/etl/portfolio_csv.py` + `ipos/aggregate/portfolio.py`, optional `portfolio` block in `snapshot.json`, matching sections in the HTML + markdown reports. Drop a CSV in `data/inbox/portfolio*.csv` → per-module weight vs. this week's tilt, plain-language read, unmapped-instrument flagging. Zero impact when no file is present (fail-degraded). Full design + post-build notes + 6 ranked follow-ups: `05_blueprint/03_PORTFOLIO_MODULE.md` §8. **94 tests green** (18 new). |
 
 **Active plan:** `05_blueprint/00_MASTER_PLAN.md` (v1.0, 2026-07-19) — 5 phases, ranked by impact per token/effort.
 **Current phase:** **Phase 2 (core value) — mostly complete**. Skeleton + contradictions + regime governor + static HTML report + AI scaffolding all done and testable end-to-end offline; live data now flowing for real. Remaining Phase 2 item: Windows Task Scheduler; then Phase 3 (widen to 60 indicators).
@@ -32,6 +33,7 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
 - Offline demo/tests (no network, no key): `uv sync --extra dev`; `uv run pytest -q`; `uv run ipos-init`; `uv run ipos-weekly --as-of 2026-07-17 --seed-offline` → `data/exports/snapshots/2026-07-17/{snapshot.json,report.md}`.
 - Live: `FRED_API_KEY` is already in the gitignored `.env` (loaded automatically by `ipos-*` CLI commands) → just `uv run ipos-weekly`. This machine also needed `SSL_CERT_FILE`/`REQUESTS_CA_BUNDLE` pointed at Avast's CA bundle for `uv`/`requests` to work at all (local antivirus TLS interception, unrelated to the project).
 - Backfill max OAS history early (needs network + FRED key, now available): `uv run ipos-backfill`.
+- Portfolio vs. Stance section (optional): drop a broker export as `data/inbox/portfolio*.csv` (columns `instrument,quantity,value_eur` — or `price`/`price_eur` instead of `value_eur`), map instruments to modules in `configs/portfolio_mapping.yaml`, then run `ipos-weekly` as usual. No file → section is simply omitted. Not yet verified against a real Smartbroker/finanzen.net zero export — see `05_blueprint/03_PORTFOLIO_MODULE.md` §8 item 1.
 
 ## 3. What happens next? (in order — do not reorder without recording why)
 
@@ -58,7 +60,13 @@ A **local-first, weekly Investment Process OS** on Windows: ~60 free-source indi
    1. ✅ **Done** — hover-explanation glossary (indicators/modules/stance-vector/regime), CSS-only popovers, `configs/glossary.yaml` + `ipos/report/glossary.py`.
    2. ⬜ Progressive-disclosure layout pass (F/Z-scan ordering, grouped modules, 1-line plain-language section captions) — research basis: contemporary fintech-dashboard UX guidance favors summary-first/detail-on-demand and jargon replaced by tooltips/glossary links, which item 1 already covers most of.
    3. ⬜ General polish pass once the above and the live-data fixes land.
-9. **Portfolio module — planned, zero code yet.** Full concrete design: [`05_blueprint/03_PORTFOLIO_MODULE.md`](05_blueprint/03_PORTFOLIO_MODULE.md). Compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested on next run — no live broker API is free for either, researched 2026-07-26) against the weekly suggested stance vector. Read that file before starting; it also has the researched automation-feasibility verdict for both brokers.
+9. **✅ Portfolio vs. Stance module — built 2026-07-27.** Full design + post-build notes: [`05_blueprint/03_PORTFOLIO_MODULE.md`](05_blueprint/03_PORTFOLIO_MODULE.md) §8. Compares actual holdings (CSV drop-in from Smartbroker/finanzen.net zero, auto-ingested on next run — no live broker API is free for either, researched 2026-07-26) against the weekly suggested stance vector; degrades to fully omitted with no CSV present. Ranked follow-ups (none blocking), highest first:
+   1. ⬜ Verify CSV column-guessing against a *real* broker export (never tested against one) — do this before trusting the module on real holdings.
+   2. ⬜ Surface large weight/tilt mismatches via the existing contradictions engine instead of a buried table row.
+   3. ⬜ Currency conversion for non-EUR positions (registry already carries a live `EURUSD` series).
+   4. ⬜ Log the portfolio stage in `run_log` like every other pipeline stage (currently silent, no audit trail).
+   5. ⬜ Flag a stale/aging portfolio CSV by file mtime (no staleness concept yet, unlike every indicator).
+   6. ⬜ A single aggregate portfolio-level read (portfolio-weighted tilt vs. `risk_budget`), not just per-module rows.
 
 Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprint/meso/C1…C9`.
 
@@ -94,10 +102,10 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `For next chat.md` | **Superseded** old handover (2026-02-14) — historical context only |
 | `docs/ipos-notes/*.md` | **Unreconciled 2026-04-15 draft** — a multi-analyst/cloud agent-governance framework that conflicts with D4/D6 (local-first, single-operator). Not part of the current roadmap; see `01_DECISION_ANALYSIS.md` amendment 2026-07-26 before adopting anything from it. |
 | `Everything from this chat.md` | Extraction transcript (source of truth for extraction; not the blueprint chat) |
-| `ipos/` | **Implementation package**: `config/` (pydantic + loader), `warehouse/` (DuckDB DDL + migrations + db), `etl/` (connectors + archive + fallback + fixtures), `transforms/` (canonical SQL + scoring), `aggregate/` (modules/stance/risk-budget + `regime.py` + `contradictions.py`), `export/` (snapshot + md report), `report/` (self-contained HTML), `ai/` (provider + playbook retrieval + prompt bundle), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py`, `golden.py` |
-| `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml`, `contradictions.yaml`, `ai.yaml` — single source of truth, validated at load |
+| `ipos/` | **Implementation package**: `config/` (pydantic + loader), `warehouse/` (DuckDB DDL + migrations + db), `etl/` (connectors + archive + fallback + fixtures + `portfolio_csv.py`), `transforms/` (canonical SQL + scoring), `aggregate/` (modules/stance/risk-budget + `regime.py` + `contradictions.py` + `portfolio.py`), `export/` (snapshot + md report), `report/` (self-contained HTML), `ai/` (provider + playbook retrieval + prompt bundle), `run.py` (stage runner + fail-safe), `cli.py`, `backfill.py`, `golden.py` |
+| `configs/` | `registry.yaml` (golden-20), `modules.yaml`, `weights.yaml`, `scoring_defaults.yaml`, `contradictions.yaml`, `ai.yaml`, `glossary.yaml`, `portfolio_mapping.yaml` (optional, operator-maintained) — single source of truth, validated at load |
 | `prompts/` | `weekly_checkup.md` — frozen, versioned LLM system contract |
-| `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe, contradictions, golden, regime, report-html, ai) — 52 tests, no live calls, green in ~23s; `tests/golden/` holds the regression snapshot |
+| `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe, contradictions, golden, regime, report-html, ai, portfolio, canonical, calendar, connectors, ohlc-regime) — **94 tests**, no live calls, green; `tests/golden/` holds the regression snapshot |
 | `data/` | gitignored runtime: `warehouse.duckdb`, `archive/` (append-only Parquet), `inbox/`, `exports/snapshots/<friday>/` |
 | `pyproject.toml` / `uv.lock` | uv toolchain + entry points (`ipos-init/pull/score/weekly/doctor/backfill`) |
 

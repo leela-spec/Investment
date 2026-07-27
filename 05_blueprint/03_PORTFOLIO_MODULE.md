@@ -1,6 +1,6 @@
-# Portfolio Module — Plan (not yet built)
+# Portfolio Module — Plan (built 2026-07-27)
 
-**Status:** planned 2026-07-26, **zero code written yet**. This is the concrete design to build from when this phase is picked up — do not start coding without re-reading this file first (per `HANDOVER.md` §5, plan-repair before code).
+**Status:** ✅ **built 2026-07-27**, matches this design closely (one clarification made during build, see §8). This file remains the spec of record — read it before touching the module again. Post-build notes, deviations, and ranked follow-ups: **§8** at the bottom.
 
 **Goal:** compare the operator's *actual* portfolio exposure against IPOS's *suggested* weekly stance vector, so the report answers "am I already positioned the way this week's signal suggests, and by how much am I over/under?" — not just "what does the signal say."
 
@@ -72,3 +72,25 @@ This mirrors the project's existing pattern (registry-driven, explicit config, n
 - No brokerage login/credential storage of any kind (unofficial scraping libraries for German neobrokers exist in the wild; not used here — ToS risk + credential-handling risk, inconsistent with this project's and the agent's safety posture).
 - No automatic instrument classification/mapping — the operator maintains `portfolio_mapping.yaml` explicitly, same philosophy as every other config in this repo.
 - No trade execution or rebalancing suggestions of any kind — this stays strictly a read-only comparison, consistent with `00_MASTER_PLAN.md`'s "no trade calls" principle carried through the whole system.
+
+---
+
+## 8. Post-build notes (2026-07-27)
+
+Built as designed in §3–§5, file-for-file, with the markdown report living at its actual path `ipos/export/report.py` (§4 said `ipos/report/report.py` — that path never existed; corrected here, no behavior change). All Definition-of-Done items (§5) are met and covered by `tests/test_portfolio.py` (18 tests): CSV parsing incl. price→value_eur computation, known-weight aggregation, all three `unmapped_policy` branches, the alignment-read classifier, and an integration test proving the section is included/omitted correctly.
+
+**One clarification made during build, not in the original spec:** `unmapped_policy` only controls whether an unmapped instrument is *listed* in the report. `total_value_eur` (the weight-% denominator) always includes every position's value, mapped or not — an unmapped ETF is still real money in the account and must not silently shrink the total. `warn` shows it, `ignore` hides it from the list (but still counts it in the total), `error` aborts the section. `configs/portfolio_mapping.yaml`'s comments spell this out.
+
+**Files added/changed** (exact list, for a future diff-check): `ipos/etl/portfolio_csv.py`, `ipos/aggregate/portfolio.py`, `configs/portfolio_mapping.yaml`, `tests/test_portfolio.py` (new); `ipos/export/snapshot.py`, `ipos/export/report.py`, `ipos/report/html.py`, `configs/glossary.yaml` (extended).
+
+### Ranked follow-ups (impact × effort, same ranking function as `00_MASTER_PLAN.md` §2)
+
+1. **★★★★★ / S — Verify against a real broker export.** `portfolio_csv.py`'s column-name guessing (`value_eur`/`price_eur`/etc.) was designed from the *plan's* assumed schema, never checked against an actual Smartbroker or finanzen.net zero CSV export. This is the single most likely near-term blocker to real use — a real export's headers (language, decimal separator, currency column) may not match. **Action:** operator exports one real CSV, drops it in `data/inbox/`, runs `ipos-weekly`, and we adjust `VALUE_COL_CANDIDATES`/`PRICE_COL_CANDIDATES`/decimal parsing to match reality.
+2. **★★★★☆ / S — Surface a large weight/tilt mismatch as a first-class contradiction**, not just a table row. The contradictions engine (`ipos/aggregate/contradictions.py`, `configs/contradictions.yaml`) already exists and is the report's designated "don't miss this" mechanism (top of report, card UI). A portfolio row like "Commodities: 0% weighted vs. +0.93 tilt" is exactly the kind of thing that mechanism was built for, but today it's buried in a table below the fold. Cheap to add: one more predicate class operating on `(weight_pct, tilt)` pairs instead of indicator scores.
+3. **★★★☆☆ / S — Currency handling.** `value_eur` is trusted as-is; a US-listed ETF held in EUR-quoting-but-USD-denominated form, or a raw USD cash position, isn't converted. The registry already carries a live `EURUSD` series — a `currency` column + conversion using that week's rate would close this gap. Likely low real-world impact for a German-broker CSV (exports are typically already EUR-valued) but worth confirming against the real export from item 1 before deciding whether to build it.
+4. **★★★☆☆ / S — Log the portfolio stage in `run_log`.** Every other stage in `run.py` (`pull`, `canonical`, `score`, `regime`, `aggregate`, `contradictions`, `export`) writes a `_log_stage` row; the portfolio block is built silently inside `build_snapshot` with no audit trail entry. Low cost to add a `portfolio` stage log line (found file? mapped how many? how many unmapped?) — matches the project's "everything scripted/auditable" principle.
+5. **★★☆☆☆ / S — Flag a stale/aging portfolio CSV.** There's no equivalent of the indicator staleness system for the portfolio file itself — if the operator drops one CSV and then forgets to update it for months, the report will keep comparing an old snapshot of holdings against fresh signals with no warning. A simple "portfolio last updated N days ago, based on file mtime" banner (reusing the existing `.banner.warn` CSS class) would close this without adding real complexity.
+6. **★★☆☆☆ / M — An aggregate portfolio-level read, not just per-module.** Right now the comparison is module-by-module only. A single derived number — e.g. a portfolio-weighted average tilt, compared against the system's own `risk_budget` — would answer the plan's opening question ("am I already positioned the way this week's signal suggests") at a glance, before the operator reads eight rows. Deferred because it needs a defensible weighting formula (by value? by risk-budget-weight per module?) that wasn't specified in the original design — needs a small decision, not just code.
+7. **★★☆☆☆ / M — Weight-history sparkline.** Every indicator and module already gets a 52-week score sparkline in the HTML report; the portfolio block doesn't get the same treatment even though the data exists implicitly (each week's `snapshot.json` retains that week's portfolio block, the same append-only pattern as everything else). Cosmetic/trend-visibility value only — Phase-4-optional, not urgent.
+
+None of the above block current use: the module is fully functional and degrades correctly (omitted entirely) with no portfolio file present, per the Definition of Done.
