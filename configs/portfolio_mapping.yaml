@@ -1,0 +1,22 @@
+# Instrument -> IPOS module, for the Portfolio vs. Stance report section
+# (05_blueprint/03_PORTFOLIO_MODULE.md). Operator-maintained, one-time setup
+# + occasional additions, same philosophy as every other config in this repo
+# (explicit, no auto-classification).
+#
+# Add a line whenever a new position is bought. Key is whatever identifier
+# your broker export uses for `instrument` (ISIN or ticker, matched verbatim);
+# value is one of the module_ids in configs/modules.yaml.
+#
+# Example:
+#   IE00B4L5Y983: EquityRisk   # an MSCI World / S&P 500 ETF
+#   DE000A1EWWW0: Commodities  # a gold ETC
+
+mappings: {}
+
+# What to do with an instrument in the portfolio CSV that has no entry above.
+# In every case its value still counts toward total portfolio value (it's
+# real money you hold) and toward no module's weight (it isn't mapped to one).
+#   warn  (default) - surfaced in the report as "unmapped".
+#   ignore           - left out of the report; still counted in the total.
+#   error            - aborts the portfolio section for this run.
+unmapped_policy: warn

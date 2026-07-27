@@ -38,6 +38,15 @@ concepts:
       This week's macro tilt plotted on growth (horizontal) vs.
       inflation/commodities (vertical) axes, with a fading trail showing
       recent weeks.
+  portfolio_vs_stance:
+    title: "Portfolio vs. Stance"
+    body: >
+      Your actual holdings, weighted by module and compared against this
+      week's suggested tilt for that module — are you already positioned the
+      way the signal suggests, and by how much are you over/under? Read-only;
+      never a trade or rebalancing suggestion. Appears only after a portfolio
+      CSV export is dropped in data/inbox/ (see
+      05_blueprint/03_PORTFOLIO_MODULE.md); omitted otherwise.
 
 stance_dimensions:
   equity:

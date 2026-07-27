@@ -16,6 +16,7 @@ from pathlib import Path
 import duckdb
 from jinja2 import Environment
 
+from ipos.aggregate.portfolio import portfolio_vs_stance
 from ipos.export.snapshot import EXPORTS_DIR
 from ipos.report.charts import (
     gauge_html,
@@ -209,6 +210,18 @@ _TEMPLATE = """<!doctype html>
   <td>{{ tilt(m.tilt)|safe }}</td><td class="num">{{ "%.1f"|format(m.confidence) }}</td></tr>
 {% endfor %}</tbody></table>
 
+<h2>{{ concept_tt("portfolio_vs_stance", "Portfolio vs. Stance")|safe }}</h2>
+{% if portfolio_rows %}
+<table><thead><tr><th>Module</th><th class="num">Your weight</th><th colspan="2">Suggested tilt</th><th>Read</th></tr></thead><tbody>
+{% for r in portfolio_rows %}<tr><td>{{ module_tt(r.module)|safe }}</td>
+  <td class="num">{{ "%.1f"|format(r.weight_pct) }}%</td>
+  <td>{{ tilt(r.tilt)|safe }}</td><td class="num">{{ "%+.2f"|format(r.tilt) }}</td>
+  <td>{{ r.read }}</td></tr>
+{% endfor %}</tbody></table>
+{% if s.portfolio.unmapped %}<div class="sub">Unmapped in <code>configs/portfolio_mapping.yaml</code> (not counted toward any module's weight): {% for u in s.portfolio.unmapped %}{{ u.instrument }} (€{{ "%.0f"|format(u.value_eur) }}){% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+<div class="sub">Total portfolio value: €{{ "%.0f"|format(s.portfolio.total_value_eur) }}</div>
+{% else %}<div class="sub">Drop a portfolio CSV export in <code>data/inbox/</code> (<code>portfolio*.csv</code>) to compare your actual exposure against this week's stance vector.</div>{% endif %}
+
 <h2>Indicators</h2>
 <table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">Δ1w</th><th>Trend</th><th class="num">Score</th><th>52w score</th><th class="num">Conf</th><th>Stale</th></tr></thead><tbody>
 {% for i in indicators %}<tr id="{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>
@@ -296,6 +309,7 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         if snapshot.get("interpretation") else None
     )
 
+    portfolio_rows = portfolio_vs_stance(snapshot)
     gloss = load_glossary()
 
     def concept_tt(key: str, label: str) -> str:
@@ -331,6 +345,7 @@ def render_html(con: duckdb.DuckDBPyConnection, snapshot: dict, as_of: dt.date) 
         regime_tt=regime_tt,
         stance=sorted(snapshot["overall"]["stance_vector"].items()),
         modules=sorted(snapshot["modules"], key=lambda m: m["module"]),
+        portfolio_rows=portfolio_rows,
         indicators=snapshot["indicators"],
         weeks=weeks,
         heat=heat,

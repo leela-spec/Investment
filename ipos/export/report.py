@@ -12,6 +12,7 @@ from pathlib import Path
 
 from jinja2 import Environment
 
+from ipos.aggregate.portfolio import portfolio_vs_stance
 from ipos.export.snapshot import EXPORTS_DIR
 
 _TEMPLATE = """# IPOS Weekly Report — {{ as_of }}
@@ -39,6 +40,17 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 |---|---|---|---|
 {% for m in modules_sorted %}| {{ m.module }} | {{ "%.1f"|format(m.score) }} | {{ "%+.2f"|format(m.tilt) }} | {{ "%.1f"|format(m.confidence) }} |
 {% endfor %}
+
+## Portfolio vs. Stance
+{% if portfolio_rows %}| Module | Your weight | Suggested tilt | Read |
+|---|---|---|---|
+{% for r in portfolio_rows %}| {{ r.module }} | {{ "%.1f"|format(r.weight_pct) }}% | {{ "%+.2f"|format(r.tilt) }} | {{ r.read }} |
+{% endfor %}{% if portfolio.unmapped %}
+_Unmapped in `configs/portfolio_mapping.yaml` (not counted toward any module's weight): {{ portfolio.unmapped|map(attribute='instrument')|join(", ") }}_
+{% endif %}
+_Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
+{% else %}_Drop a portfolio CSV export in `data/inbox/` (`portfolio*.csv`) to compare your actual exposure against this week's stance vector._
+{% endif %}
 
 ## Top movers (Δscore vs prior week)
 {% if top_movers %}| Indicator | Δscore 1w |
@@ -84,6 +96,8 @@ def render_report(snapshot: dict) -> str:
         flags=snapshot["flags"],
         stance_sorted=sorted(snapshot["overall"]["stance_vector"].items()),
         modules_sorted=sorted(snapshot["modules"], key=lambda m: m["module"]),
+        portfolio_rows=portfolio_vs_stance(snapshot),
+        portfolio=snapshot.get("portfolio"),
         top_movers=snapshot["top_movers"],
         contradictions=snapshot["contradictions"],
         events=snapshot.get("events", []),

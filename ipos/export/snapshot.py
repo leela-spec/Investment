@@ -16,9 +16,11 @@ from pathlib import Path
 import duckdb
 import jsonschema
 
+from ipos.aggregate.portfolio import aggregate_portfolio, load_mapping
 from ipos.config.load import REPO_ROOT
 from ipos.config.models import Registry
 from ipos.econ_calendar import events_for
+from ipos.etl.portfolio_csv import load_positions
 
 SCHEMA_VERSION = "1.0"
 EXPORTS_DIR = REPO_ROOT / "data" / "exports" / "snapshots"
@@ -134,6 +136,15 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         if e.series_id not in {i["id"] for i in indicators}
     )
 
+    # Portfolio vs. Stance (05_blueprint/03_PORTFOLIO_MODULE.md): entirely
+    # optional — omitted whenever no portfolio CSV has been dropped in
+    # data/inbox/, never a hard dependency for the rest of the report.
+    portfolio_block = None
+    positions = load_positions()
+    if positions is not None and not positions.empty:
+        mapping, unmapped_policy = load_mapping()
+        portfolio_block = aggregate_portfolio(positions, mapping, unmapped_policy)
+
     snapshot = {
         "schema_version": SCHEMA_VERSION,
         "scoring_version": defaults.scoring_version,
@@ -177,6 +188,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "synthetic_data": synthetic_data,
         },
     }
+    if portfolio_block is not None:
+        snapshot["portfolio"] = portfolio_block
     return snapshot
 
 
@@ -249,6 +262,16 @@ SNAPSHOT_SCHEMA = {
         },
         "data_quality": {"type": "object"},
         "flags": {"type": "object"},
+        "portfolio": {
+            "type": "object",
+            "description": "Optional — present only when a portfolio CSV was found in data/inbox/.",
+            "required": ["modules", "unmapped", "total_value_eur"],
+            "properties": {
+                "modules": {"type": "object"},
+                "unmapped": {"type": "array"},
+                "total_value_eur": {"type": "number"},
+            },
+        },
     },
 }
 
