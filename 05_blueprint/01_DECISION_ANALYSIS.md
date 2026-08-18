@@ -117,6 +117,18 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-08-18 — In-sample backtest proposed as a way to shorten the forecast section's wait, without violating "no retro-scoring"
+
+**Not built.** Scoped in response to an operator question: the 2026-07-29 self-scoring spec (§ below) requires ~26 weeks of *live, resolved* calls before the report section can say anything honest, because the "no retro-scoring" constraint treats scores computed over history the system already observed as non-evidence — a method can be shaped, deliberately or not, to fit history it has already seen.
+
+That constraint rules out using history to produce the headline Brier number early. It does not rule out looking at history at all — the spec's honesty-constraint #1 already permits an in-sample run "if labelled in-report as in-sample and excluded from any headline figure." `fact_weekly` holds up to 56 years of history, so an in-sample backtest is cheap to compute; the cost is entirely in labelling it correctly so it can't be mistaken for evidence.
+
+- **Proposed shape:** a `backtest()` path alongside `resolve()`/`brier()` in `ipos/forecast.py` that reconstructs the same falsifiable calls (`|tilt| ≥ 0.2`, same 4/13/26-week horizons, same benchmark series) over historical weeks the live `forecast` stage never ran against, then scores them exactly like `brier()` would.
+- **Mandatory labelling, not optional:** the report section must render this under a heading that says "in-sample backtest — not evidence the method works going forward" (or equivalent), physically separated from any live/resolved Brier table, and never blended into a single headline number. `scoring_version` still applies — a backtest run under an old version is not comparable to one under a new version.
+- **Still true from the original spec:** a baseline (`always_50`, trailing base rate) is mandatory here too, for the same reason — an in-sample Brier score alone is exactly as uninterpretable as a live one.
+- **Why not build it now:** it's a new scored surface with its own labelling/UI decisions (how prominent, how it's kept visually distinct from the live table so nobody screenshots it as if it were validated) that deserves its own pass rather than riding in on an unrelated commit.
+- **Switch trigger:** none needed — this is additive and can land whenever picked up; it does not change the live section's 26-week wait, which stands regardless.
+
 ### 2026-07-29 — Visualization audit: the gap was rendering, not chart types. Tier 0+1 built; self-scoring spec'd, not built
 
 Operator asked, before continuing the roadmap, for research into the highest-impact
