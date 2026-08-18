@@ -21,6 +21,7 @@ import ipos.etl.base as etl_base
 import ipos.etl.portfolio_csv as portfolio_csv
 import ipos.export.report as report_mod
 import ipos.export.snapshot as snap_mod
+import ipos.report.html as html_mod
 from ipos.etl.fixtures import SEED_ANCHOR, generate_series
 from ipos.run import run_weekly
 
@@ -43,9 +44,13 @@ def build_golden_min(workdir: Path, as_of: dt.date = SEED_ANCHOR) -> str:
     minified snapshot JSON as text."""
     # isolate all on-disk side effects inside workdir
     etl_base.ARCHIVE_ROOT = workdir / "archive"
+    # Every module with its own `EXPORTS_DIR` binding, `ipos.report.html`
+    # included — it was missing here until 2026-07-29, so building the golden
+    # overwrote the operator's real latest.html/report.html with fixture output.
     snap_mod.EXPORTS_DIR = workdir / "exports"
     report_mod.EXPORTS_DIR = workdir / "exports"
     bundle_mod.EXPORTS_DIR = workdir / "exports"
+    html_mod.EXPORTS_DIR = workdir / "exports"
     # ...INCLUDING the operator's portfolio. Without this the golden picks up
     # whatever sits in the real data/inbox/, which would make it
     # machine-dependent AND commit holdings-derived contradictions into the

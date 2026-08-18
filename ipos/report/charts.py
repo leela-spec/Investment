@@ -336,6 +336,165 @@ def member_strip_svg(members, *, w: int = 300) -> str:
     return "".join(parts)
 
 
+MIN_PCTILE_HISTORY_WEEKS = 52
+
+
+def pctile_strip_svg(
+    pctile: float | None,
+    *,
+    history_weeks: int = 0,
+    label: str = "",
+    w: int = 96,
+    h: int = 16,
+) -> str:
+    """Where an indicator's RAW LEVEL sits in its own rolling history: a 0-100
+    track with the interquartile band shaded, a median tick, and a dot at the
+    current percentile.
+
+    Deliberately drawn in neutral ink rather than ``score_color``. This is a
+    *level* percentile and is NOT direction-adjusted — for an inverted indicator
+    (VIXCLS, HY_OAS) a high percentile means a LOW score — so coloring it on the
+    risk ramp would assert a good/bad reading the number does not carry. Position
+    alone answers the question it exists to answer ("is this reading historically
+    extreme?").
+
+    Returns an em dash when the percentile is absent, or when there is too little
+    history to mean anything: the underlying rolling window uses min_periods=1,
+    so it happily reports a percentile computed from a handful of observations."""
+    if pctile is None:
+        return '<span class="spark-na" title="no percentile: insufficient history">—</span>'
+    if history_weeks and history_weeks < MIN_PCTILE_HISTORY_WEEKS:
+        return (
+            f'<span class="spark-na" title="{label}: only {history_weeks} weeks of '
+            f'history, too few for a percentile">—</span>'
+        )
+    p = max(0.0, min(100.0, float(pctile)))
+    pad = 3
+    def X(v): return pad + v / 100.0 * (w - 2 * pad)
+    mid = h / 2
+    weeks = min(history_weeks, 156) if history_weeks else 156
+    return (
+        f'<svg class="pstrip" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">'
+        f'<rect x="{pad}" y="{mid - 3:.1f}" width="{w - 2 * pad}" height="6" rx="3" '
+        f'class="ps-track"/>'
+        f'<rect x="{X(25):.1f}" y="{mid - 3:.1f}" width="{X(75) - X(25):.1f}" height="6" '
+        f'class="ps-iqr"/>'
+        f'<line x1="{X(50):.1f}" y1="{mid - 5:.1f}" x2="{X(50):.1f}" y2="{mid + 5:.1f}" '
+        f'class="ps-median"/>'
+        f'<circle cx="{X(p):.1f}" cy="{mid:.1f}" r="3.5" class="ps-dot"/>'
+        f"<title>{label}: level sits at the {p:.0f}th percentile of its last "
+        f"{weeks} weeks (50 = median; not direction-adjusted)</title></svg>"
+    )
+
+
+def budget_bridge_svg(
+    base: float | None, scaler: float | None, final: float | None, *, w: int = 300
+) -> str:
+    """Base risk budget -> regime scaler -> headline risk budget, as three bars on
+    one shared 0-100 axis.
+
+    The headline number is a product, not a sum (``base x scaler``), so the middle
+    row is drawn as the span between the two totals — the points the regime
+    removed — rather than as a stacked component. Everything sits on a single
+    common scale because that is the only encoding that lets a reader compare the
+    two totals accurately."""
+    if base is None or final is None:
+        return ""
+    pad, row, h = 4, 22, 76
+    def X(v): return pad + max(0.0, min(100.0, v)) / 100.0 * (w - 2 * pad)
+    cut = base - final
+    parts = [
+        f'<svg class="bridge" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">'
+    ]
+    for t in (0, 50, 100):
+        parts.append(
+            f'<line x1="{X(t):.1f}" y1="6" x2="{X(t):.1f}" y2="{h - 16}" class="br-grid"/>'
+        )
+    # row 1: base budget
+    parts.append(
+        f'<rect x="{pad}" y="10" width="{X(base) - pad:.1f}" height="12" rx="3" '
+        f'fill="{score_color(base)}" class="br-bar">'
+        f"<title>Base risk budget, before the regime scaler: {base:.1f}</title></rect>"
+        f'<text x="{X(base) + 5:.1f}" y="20" class="br-lab">base {base:.0f}</text>'
+    )
+    # row 2: what the scaler removed (or added)
+    if abs(cut) < 0.05:
+        parts.append(
+            f'<text x="{pad}" y="{10 + row + 10}" class="br-lab">'
+            f'regime scaler x{scaler if scaler is not None else 1:.2f} — no change'
+            f"</text>"
+        )
+    else:
+        x0, x1 = sorted((X(final), X(base)))
+        parts.append(
+            f'<rect x="{x0:.1f}" y="{10 + row}" width="{max(x1 - x0, 1.5):.1f}" height="12" '
+            f'rx="3" class="{"br-cut" if cut > 0 else "br-add"}">'
+            f"<title>Regime scaler x{scaler if scaler is not None else 1:.2f} "
+            f'{"removed" if cut > 0 else "added"} {abs(cut):.1f} points</title></rect>'
+            f'<text x="{x1 + 5:.1f}" y="{10 + row + 10}" class="br-lab">'
+            f'x{scaler if scaler is not None else 1:.2f} = {-cut:+.1f}</text>'
+        )
+    # row 3: headline
+    parts.append(
+        f'<rect x="{pad}" y="{10 + 2 * row}" width="{X(final) - pad:.1f}" height="12" rx="3" '
+        f'fill="{score_color(final)}" class="br-bar">'
+        f"<title>Risk budget after the regime scaler: {final:.1f}</title></rect>"
+        f'<text x="{X(final) + 5:.1f}" y="{10 + 2 * row + 10}" class="br-lab">'
+        f"<tspan class=\"br-strong\">budget {final:.0f}</tspan></text>"
+    )
+    for t in (0, 50, 100):
+        parts.append(
+            f'<text x="{X(t):.1f}" y="{h - 4}" class="br-tick" text-anchor="middle">{t}</text>'
+        )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
+def contribution_bars_svg(contributions, *, w: int = 300, row: int = 17) -> str:
+    """Which modules moved the risk budget, and by how much: one diverging bar per
+    module on a shared zero axis, ordered by magnitude.
+
+    ``contributions`` = ordered ``(module_id, contribution)`` in score points,
+    summing to the week's change in the base budget.
+
+    Deliberately NOT a cumulative waterfall. A waterfall's bars are positioned by
+    a running total, which forces the ~0-100 opening balance and the ~±3-point
+    contributions onto one axis and squashes the contributions into invisibility.
+    The question here is "which module moved it, and which way" — magnitude plus
+    polarity per category — so a zero-anchored diverging bar chart is the right
+    form, and the totals are stated as text alongside it."""
+    rows = [(m, c) for m, c in contributions if c is not None]
+    if not rows:
+        return ""
+    span = max(abs(c) for _, c in rows) or 1.0
+    labw, pad = 96, 4
+    plot = w - labw - pad
+    h = len(rows) * row + 16
+    def X(v): return labw + plot / 2 + (v / span) * (plot / 2 - 6)
+    zero = X(0)
+    parts = [
+        f'<svg class="cbars" width="{w}" height="{h}" viewBox="0 0 {w} {h}" role="img">',
+        f'<line x1="{zero:.1f}" y1="4" x2="{zero:.1f}" y2="{len(rows) * row + 2}" '
+        f'class="cb-zero"/>',
+    ]
+    for i, (module, c) in enumerate(rows):
+        y = i * row + 4
+        x0, x1 = sorted((zero, X(c)))
+        parts.append(
+            f'<text x="{labw - 6}" y="{y + 9}" class="cb-lab" text-anchor="end">{module}</text>'
+            f'<rect x="{x0:.1f}" y="{y}" width="{max(x1 - x0, 1.5):.1f}" height="11" rx="2.5" '
+            f'class="{"cb-up" if c > 0 else "cb-down"}">'
+            f"<title>{module}: {c:+.2f} score points of the budget change</title></rect>"
+        )
+    parts.append(
+        f'<text x="{zero:.1f}" y="{h - 3}" class="cb-tick" text-anchor="middle">0</text>'
+        f'<text x="{labw:.1f}" y="{h - 3}" class="cb-tick">{-span:+.1f}</text>'
+        f'<text x="{w - pad}" y="{h - 3}" class="cb-tick" text-anchor="end">{span:+.1f}</text>'
+    )
+    parts.append("</svg>")
+    return "".join(parts)
+
+
 def tilt_bar_html(value: float) -> str:
     """A [-1,+1] tilt bar: center line, fill left (neg) or right (pos)."""
     v = max(-1.0, min(1.0, value))

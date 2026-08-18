@@ -29,6 +29,7 @@ from ipos.config.load import load_registry
 from ipos.config.models import Registry
 from ipos.etl.portfolio_csv import load_positions
 from ipos.etl.pull import pull_all, pull_ohlc
+from ipos.forecast import record as record_forecasts
 from ipos.export.report import write_report
 from ipos.export.snapshot import build_snapshot, validate, write_snapshot
 from ipos.report.html import write_html
@@ -173,6 +174,23 @@ def run_weekly(
                    detail=("no portfolio CSV found" if portfolio_block is None
                            else f"modules={len(portfolio_block['modules'])} "
                                 f"unmapped={len(portfolio_block['unmapped'])}"))
+
+        # --- stage: forecast log (record-before-the-verdict) ---
+        #     Writes down this week's falsifiable calls so they can be scored
+        #     later. Nothing reads it yet by design: the logging is time-gated
+        #     and cannot be back-filled, whereas the report section can wait.
+        #     Append-only, so re-running this week never rewrites an old call.
+        #     Never fatal — a run must not fail over its own bookkeeping.
+        t0 = dt.datetime.now()
+        try:
+            fc = record_forecasts(con, aod, reg.defaults.scoring_version)
+            result.stages["forecast"] = fc
+            _log_stage(con, run_id, aod, "forecast", "OK", t0, rows_out=fc["written"],
+                       detail=(f"dims={fc['dims']}"
+                               + (f" skipped={fc['skipped']}" if fc["skipped"] else "")))
+        except Exception as exc:
+            log.warning("forecast log skipped: %s", exc)
+            _log_stage(con, run_id, aod, "forecast", "SKIPPED", t0, detail=str(exc))
 
         # --- stage: contradictions ---
         t0 = dt.datetime.now()

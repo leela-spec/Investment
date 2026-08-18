@@ -15,6 +15,15 @@ from jinja2 import Environment
 from ipos.aggregate.portfolio import portfolio_vs_stance
 from ipos.export.snapshot import EXPORTS_DIR
 
+# Whitespace-control note, kept in Python rather than a Jinja comment on purpose:
+# the environment below sets ``trim_blocks``, which eats the first newline after a
+# block tag. Any template line ENDING in ``{% endif %}`` therefore swallows the
+# line that follows it -- which silently collapsed the Policy/Degraded bullets
+# (fixed 2026-07-27) and then the Risk budget/Breadth bullets (2026-07-29). The
+# fix is Jinja's per-tag override ``{% endif +%}``, NOT an extra ``{{ nl }}``:
+# appending an expression tag stops ``{% endif %}`` from being newline-adjacent,
+# so the literal newline survives too and you get a blank line instead.
+# ``{{ nl }}`` remains correct for bullets that live entirely inside a conditional.
 _TEMPLATE = """# IPOS Weekly Report — {{ as_of }}
 
 _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code computes, LLM narrates._
@@ -23,10 +32,19 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 {% endif %}
 
 ## Overall
-- **Risk budget:** {{ "%.1f"|format(overall.risk_budget) }} / 100
+- **Risk budget:** {{ "%.1f"|format(overall.risk_budget) }} / 100{% if regime.base_risk_budget is not none %} (base {{ "%.1f"|format(regime.base_risk_budget) }} × regime scaler {{ regime.risk_scaler }}){% endif +%}
 - **Confidence:** {{ "%.1f"|format(overall.confidence) }} / 100
-- **Regime:** {{ regime.label or "n/a" }}{% if regime.confidence is not none %} (confidence {{ "%.0f"|format(regime.confidence) }}, risk_scaler {{ regime.risk_scaler }}){% endif %}{% if regime.policy_selectors %}{{ nl }}  - _Policy:_ size {{ regime.policy_selectors.position_size }} · entry {{ regime.policy_selectors.entry_style }} · trail {{ regime.policy_selectors.trailing_stop }} · stop {{ regime.policy_selectors.initial_stop }}{% endif %}{% if flags.degraded %}{{ nl }}- ⚠️ **Degraded run:** {{ data_quality.n_stale }} stale, {{ data_quality.n_missing }} missing series{% endif %}
+- **Breadth:** {% if breadth and breadth.pct_above_50 is not none %}{{ "%.0f"|format(breadth.pct_above_50) }}% of {{ breadth.n_scored }} indicators score above 50{% if breadth.pct_improving is not none %}; {{ "%.0f"|format(breadth.pct_improving) }}% improved this week{% endif %}{% else %}n/a{% endif +%}
+- **Regime:** {{ regime.label or "n/a" }}{% if regime.confidence is not none %} (confidence {{ "%.0f"|format(regime.confidence) }}, risk_scaler {{ regime.risk_scaler }}){% endif %}{% if regime.policy_selectors %}{{ nl }}  - _Policy:_ size {{ regime.policy_selectors.position_size }} · entry {{ regime.policy_selectors.entry_style }} · trail {{ regime.policy_selectors.trailing_stop }} · stop {{ regime.policy_selectors.initial_stop }}{% endif %}{% if regime.features %}{{ nl }}  - _Classifier measurements:_ {% for k, v in regime.features|dictsort %}{{ k }} = {% if v is none %}—{% else %}{{ v }}{% endif %}{% if not loop.last %} · {% endif %}{% endfor %}{% endif %}{% if flags.degraded %}{{ nl }}- ⚠️ **Degraded run:** {{ data_quality.n_stale }} stale, {{ data_quality.n_missing }} missing series{% endif %}
 
+{% if budget_attribution %}### What moved the risk budget
+Change in the **base** budget (before the regime scaler) from {{ budget_attribution.prev_as_of }}: **{{ "%+.2f"|format(budget_attribution.delta) }}** points ({{ "%.1f"|format(budget_attribution.base_from) }} → {{ "%.1f"|format(budget_attribution.base_to) }}). Contributions are additive and sum to that change.
+
+| Module | Contribution (score pts) |
+|---|---|
+{% for c in budget_attribution.contributions %}| {{ c.module }} | {{ "%+.2f"|format(c.contribution) }} |
+{% endfor %}
+{% endif %}
 ### Stance vector
 | Dimension | Tilt |
 |---|---|
@@ -41,6 +59,8 @@ _Scoring version {{ scoring_version }} · schema {{ schema_version }} · code co
 
 ## Portfolio vs. Stance
 {% if portfolio and portfolio.freshness and portfolio.freshness.stale %}> ⚠️ **Portfolio CSV is {{ portfolio.freshness.age_days }} days old** — this comparison may be out of date.
+{% endif %}
+{% if portfolio and portfolio.fx_warnings %}> ⚠️ **Currency conversion skipped** for {{ portfolio.fx_warnings|length }} position(s) — **excluded from every weight below**: {{ portfolio.fx_warnings|join(" · ") }}
 {% endif %}
 {% if portfolio_rows %}| Module | Your weight | Suggested tilt | Read |
 |---|---|---|---|
@@ -60,7 +80,7 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 {% endif %}
 
 ## Contradictions
-{% if contradictions %}{% for c in contradictions %}- **[{{ c.severity }}]** {{ c.summary }}{{ bullets(c) }}
+{% if contradictions %}{% for c in contradictions %}- **[{{ c.severity }}]** {{ c.summary }}{% if c.weeks_observed and c.weeks_observed > 1 %} _(fired {{ c.weeks_fired }} of the last {{ c.weeks_observed }} weeks)_{% endif %}{{ bullets(c) }}
 {% endfor %}{% else %}_None flagged this week._
 {% endif %}
 
@@ -74,17 +94,21 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 ## Indicators
 Δ value = change in the indicator's own units (not comparable between indicators).
 Δscore 1w/1m/1q/1y = change in the 0-100 score, which _is_ comparable.
+Level %ile = where the raw level sits in its own trailing ~3-year distribution.
+It is **not** direction-adjusted: for an inverted indicator (e.g. VIXCLS, HY_OAS)
+a high percentile means a _low_ score. `hist` = weeks of history behind it.
 
-| ID | Module | Value | Δ value 1w | Trend | Score | Δscore 1w | 1m | 1q | 1y | Conf | Stale |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-{% for i in indicators %}| {{ i.id }} | {{ i.module }} | {{ i.value }} | {{ i.delta_1w if i.delta_1w is not none else "—" }} | {{ i.trend }} | {{ "%.1f"|format(i.score) }} | {{ sd(i, "1w") }} | {{ sd(i, "4w") }} | {{ sd(i, "12w") }} | {{ sd(i, "52w") }} | {{ "%.0f"|format(i.confidence) }} | {{ "yes" if i.stale else "" }} |
+| ID | Module | Value | Δ value 1w | 4w | 12w | Level %ile | z | hist | Trend | Score | Δscore 1w | 1m | 1q | 1y | Conf | Stale |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+{% for i in indicators %}| {{ i.id }} | {{ i.module }} | {{ i.value }} | {{ i.delta_1w if i.delta_1w is not none else "—" }} | {{ i.delta_4w if i.delta_4w is not none else "—" }} | {{ i.delta_12w if i.delta_12w is not none else "—" }} | {{ "%.0f"|format(i.pctile_156w) if i.pctile_156w is not none else "—" }} | {{ "%+.2f"|format(i.z_104w) if i.z_104w is not none else "—" }} | {{ i.history_weeks or "—" }} | {{ i.trend }} | {{ "%.1f"|format(i.score) }} | {{ sd(i, "1w") }} | {{ sd(i, "4w") }} | {{ sd(i, "12w") }} | {{ sd(i, "52w") }} | {{ "%.0f"|format(i.confidence) }} | {{ "yes" if i.stale else "" }} |
 {% endfor %}
 
 ## Data quality
 - Indicators: {{ data_quality.n_indicators }}
 - Stale: {{ data_quality.n_stale }}{% if data_quality.stale_series %} ({{ data_quality.stale_series|join(", ") }}){% endif %}
 - Missing: {{ data_quality.n_missing }}{% if data_quality.missing_series %} ({{ data_quality.missing_series|join(", ") }}){% endif %}
-"""
+{% if playbook_selection %}- Playbook modules surfaced for narration: {{ playbook_selection|join(", ") }}
+{% endif %}"""
 
 
 def _score_delta(indicator: dict, horizon: str) -> str:
@@ -127,6 +151,9 @@ def render_report(snapshot: dict) -> str:
         events=snapshot.get("events", []),
         indicators=snapshot["indicators"],
         data_quality=snapshot["data_quality"],
+        breadth=snapshot.get("breadth"),
+        budget_attribution=snapshot.get("budget_attribution"),
+        playbook_selection=snapshot.get("playbook_selection"),
     )
 
 

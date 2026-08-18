@@ -60,6 +60,38 @@ def _no_operator_portfolio(monkeypatch, tmp_path):
     monkeypatch.setattr(portfolio_mod, "MAPPING_PATH", tmp_path / "_no_mapping.yaml")
 
 
+#: Every module that resolves an output path from its own ``EXPORTS_DIR`` binding.
+#: ``from ... import EXPORTS_DIR`` rebinds the name per module, so patching only
+#: ``ipos.export.snapshot`` does nothing for the others.
+_EXPORT_MODULES = (
+    "ipos.export.snapshot",
+    "ipos.export.report",
+    "ipos.report.html",
+    "ipos.ai.bundle",
+)
+
+
+@pytest.fixture(autouse=True)
+def _no_operator_exports(monkeypatch, tmp_path):
+    """Safety net, same spirit as ``_no_network``: no test ever WRITES into the
+    operator's real ``data/exports/``.
+
+    Found 2026-07-29: individual tests and ``ipos/golden.py`` each patched
+    ``EXPORTS_DIR`` on the snapshot/report/bundle modules but never on
+    ``ipos.report.html``, so ``write_html`` always wrote to the real directory —
+    running the suite silently overwrote the operator's ``latest.html`` and
+    ``report.html`` with synthetic fixture output. That is this project's
+    recurring "synthetic served as real" failure mode arriving by a new route:
+    the clobbered file still looks like a real weekly report.
+
+    Isolating all four modules centrally means a future export path cannot leak
+    just because one test forgot to patch it. Tests wanting a specific location
+    still pass ``base_dir`` or patch a module themselves, which wins over this."""
+    exports = tmp_path / "_isolated_exports"
+    for name in _EXPORT_MODULES:
+        monkeypatch.setattr(f"{name}.EXPORTS_DIR", exports, raising=True)
+
+
 @pytest.fixture
 def as_of():
     return SEED_ANCHOR

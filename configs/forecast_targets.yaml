@@ -1,0 +1,97 @@
+# Which stance dimensions make a FALSIFIABLE market claim, and how each one is
+# settled. Read by ipos/forecast.py. See 01_DECISION_ANALYSIS.md amendment
+# 2026-07-29 (item 17) for why this exists.
+#
+# The rule: a dimension only belongs here if there is a real, free series in
+# configs/registry.yaml whose movement can settle the claim mechanically, with
+# no judgement call at resolution time. Dimensions that read macro CONDITIONS
+# rather than a tradeable exposure are deliberately excluded and listed at the
+# bottom with the reason — the same distinction configs/portfolio_mapping.yaml
+# already makes for holdings. Silence there is intentional, not an oversight.
+#
+# `direction` is what the tilt asserts about the RAW series level:
+#   +1  a positive tilt claims the series should RISE
+#   -1  a positive tilt claims the series should FALL
+# Getting this backwards would score the system as wrong when it was right, so
+# each entry states the reasoning rather than just the number.
+
+# Only calls at least this strong are recorded. Below it the system is not
+# really claiming anything, and logging noise would flatter the Brier score by
+# padding it with near-50% predictions that are trivially well-calibrated.
+min_abs_tilt: 0.2
+
+# Fixed and frozen. Changing this set breaks comparability with every call
+# already logged, so treat it like scoring_version.
+horizons_weeks: [4, 13, 26]
+
+# Tilt -> probability is capped deliberately at 0.20..0.80. A Brier score
+# punishes misplaced confidence asymmetrically (90% and wrong costs 0.81 versus
+# 0.01 when right), and nothing in this system justifies a claim stronger than
+# 4-to-1. p = 0.5 + probability_span * tilt
+probability_span: 0.30
+
+targets:
+  equity:
+    series: SPX
+    direction: 1
+    note: >
+      A positive equity tilt claims broad equity risk is being rewarded, so the
+      index should outpace its own typical move. SPX rather than NDX/RUT/DAX
+      because it is the module's broad-market member and has history back to
+      1970, the deepest in the warehouse.
+
+  credit:
+    series: HY_OAS
+    direction: -1
+    note: >
+      INVERTED. A positive credit tilt claims credit conditions are improving,
+      which means high-yield spreads TIGHTEN — the option-adjusted spread falls.
+      Note this series is capped at ~3 years of history by FRED truncation, so
+      its hurdle is computed from a shorter window than the others.
+
+  duration:
+    series: DGS10
+    direction: -1
+    note: >
+      INVERTED. A positive duration tilt claims holding duration is favourable,
+      which pays off when the 10-year YIELD falls (prices rise). Resolving
+      against the yield, not a bond price, because the yield is the series we
+      actually source.
+
+  usd:
+    series: DTWEXBGS
+    direction: 1
+    note: >
+      A positive USD tilt claims dollar strength, so the Fed's broad trade-
+      weighted dollar index should rise. Deliberately this index and not ICE's
+      DXY — they are different indices (120.5 vs 101.4 on the same day,
+      established 2026-07-27) and mixing them would settle claims against a
+      number we never scored.
+
+  commodities:
+    series: COPPER
+    direction: 1
+    note: >
+      A positive commodities tilt claims cyclical commodity demand is
+      supportive. Copper rather than GOLD (which trades as a monetary/safe-haven
+      asset and often moves OPPOSITE to a risk-on commodities call) and rather
+      than WTI (front-month futures carry a roll basis vs spot, so a level
+      change is not purely a price change).
+
+# --- deliberately NOT forecast ------------------------------------------------
+# These dimensions are condition readings, not exposures. There is no series
+# whose rise or fall would make the tilt right or wrong, so any benchmark we
+# picked would be inventing a claim the system never made.
+excluded:
+  growth: >
+    Reads recession risk off the yield curve. "Growth tilt was correct" would
+    resolve against realised GDP or a recession call, neither of which is a
+    weekly free series, and resolving it against the curve itself is circular —
+    the curve IS the input.
+  liquidity: >
+    Reads central-bank balance sheet and reserves. Resolving against WALCL is
+    circular for the same reason, and the Fed's balance sheet is a policy
+    decision, not a market outcome the system could be right or wrong about.
+  fundamentals: >
+    Reads sentiment surveys and claims data. Resolving against UMCSENT would
+    score the system on predicting a survey it already reads as an input.

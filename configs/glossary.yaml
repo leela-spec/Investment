@@ -56,12 +56,81 @@ concepts:
       Positive = supportive, negative = headwind, near zero = neutral. A
       description of conditions, never a trade instruction.
   delta_value:
-    title: "Δ value (1 week)"
+    title: "Δ value (1w / 4w / 12w)"
     body: >
-      Change in the indicator's raw value since last week, in its own units.
-      Useful for the level, but NOT comparable between indicators — a
-      balance-sheet series moves in billions while a copper price moves in
-      cents. For cross-indicator comparison use the score horizons instead.
+      Change in the indicator's raw value over one, four and twelve weeks, in
+      its own units. Useful for the level, but NOT comparable between
+      indicators — a balance-sheet series moves in billions while a copper price
+      moves in cents. For cross-indicator comparison use the score horizons
+      instead.
+  level_pctile:
+    title: "Level percentile (~3 years)"
+    body: >
+      Where the indicator's RAW LEVEL sits in its own trailing distribution:
+      the dot's position on a 0-100 track, with the middle-half band shaded and
+      a tick at the median. 95 means only 5% of the last three years were
+      higher. Deliberately NOT direction-adjusted, and therefore NOT the same
+      thing as the score: for an inverted indicator such as VIXCLS or HY_OAS a
+      HIGH percentile means a LOW score. Drawn in neutral grey rather than the
+      red-blue risk ramp for exactly that reason. Shown as "—" where there is
+      under a year of history to rank against.
+  what_changed:
+    title: "What changed this week"
+    body: >
+      The week's diff, before any of the levels: how far the risk budget moved
+      and which modules moved it, whether the regime flipped, how broad the
+      signal is, which contradictions are new rather than carried over, and the
+      biggest score movers. Read this first, then the detail below.
+  breadth:
+    title: "Breadth"
+    body: >
+      What share of scored indicators sit above 50. A weighted average hides
+      this: a risk budget of 50 built from eight indicators all near 50 is a
+      very different week from one built from four at 90 and four at 10. Narrow
+      breadth behind a supportive headline number means the support rests on a
+      few series.
+  budget_attribution:
+    title: "Which modules moved the budget"
+    body: >
+      An additive breakdown of this week's change in the base risk budget, one
+      bar per module, ordered by size. Blue lifted the budget, red cut it. The
+      bars sum exactly to the stated change, so nothing is unexplained. Zero-
+      anchored bars rather than a cumulative waterfall, because the ~0-100
+      opening level and the few-point contributions do not share a usable scale.
+  base_risk_budget:
+    title: "Base risk budget"
+    body: >
+      The weighted blend of module scores BEFORE the regime's risk scaler
+      multiplies it. The headline risk budget is base × scaler, so separating
+      the two shows whether a low number came from weak conditions inside the
+      modules or from the regime governor throttling an otherwise healthy blend.
+  why_this_regime:
+    title: "Why this regime, and what it did to the budget"
+    body: >
+      The classifier's actual measurements plus the arithmetic from the base
+      budget to the headline number. This is the audit trail behind the single
+      word CHOPPY / TRENDY / MOMENTUM / UNCERTAIN — the measurements are what
+      the label was decided from, not a commentary added afterwards.
+  regime_feature:
+    title: "Classifier measurement"
+    body: >
+      One of the raw quantities the regime classifier computed from weekly price
+      data before choosing a label. Hover each name for what it measures.
+  recurrence:
+    title: "Recurrence"
+    body: >
+      How many of the last ten observed weeks this same contradiction fired in.
+      A first appearance and an eight-of-ten pattern demand different responses:
+      the first may be noise, the second is a persistent structural disagreement
+      the process keeps re-detecting.
+  playbook_selection:
+    title: "Playbook modules surfaced"
+    body: >
+      Which of the ten playbook knowledge modules were deterministically
+      retrieved for this week's LLM narration, based on the week's numbers. The
+      provenance trail for the interpretation section — it records what the
+      narrator was allowed to see, so a claim in the narration can be traced
+      back to the rule file it came from.
   score_horizons:
     title: "Score horizons — 1w / 1m / 1q / 1y"
     body: >
@@ -139,6 +208,55 @@ concepts:
       One cell per week, oldest at the left, coloured by that week's regime.
       Darker means the regime allowed more risk. A vertical tick marks each
       change, so you can read how long the current condition has held.
+
+# The regime classifier's raw measurements (ipos/aggregate/regime.py::_features),
+# surfaced under "Why this regime" so the label is auditable rather than asserted.
+regime_features:
+  efficiency_ratio:
+    title: "Efficiency ratio"
+    body: >
+      Kaufman's ratio: net distance travelled divided by the total distance
+      covered, over the lookback. 1.0 is a perfectly straight trend; near 0
+      means the market covered a lot of ground and ended up where it started.
+  overlap_index:
+    title: "Overlap index"
+    body: >
+      1 minus the efficiency ratio, so HIGH means choppy. This is the primary
+      input to the CHOPPY label — a market retracing most of its own movement.
+  atr_change_rate:
+    title: "ATR change rate"
+    body: >
+      Recent average true range divided by the prior period's. Above 1 means
+      volatility is accelerating, which is the MARKET_CONDITIONS "ATR rising
+      quickly" signal and pushes the label away from TRENDY.
+  range_overlap:
+    title: "Range overlap"
+    body: >
+      Average share of each week's high-low range that overlapped the previous
+      week's, from real OHLC bars. High overlap confirms the market is churning
+      inside one band. Blank when only closing prices were available.
+  swing_structure:
+    title: "Swing structure"
+    body: >
+      Whether the recent swing highs and lows are stepping up, stepping down, or
+      alternating without direction — the structural read behind a trend call.
+  n_swings:
+    title: "Swing count"
+    body: >
+      How many direction changes were detected in the lookback. Many swings over
+      a short window is chop; few swings with net travel is a trend.
+  retracement_ratio:
+    title: "Retracement ratio"
+    body: >
+      How deeply the market pulled back against its dominant move. Deep
+      retracements weaken a trend classification even when net travel is large.
+  atr_source:
+    title: "Volatility source"
+    body: >
+      "ohlc" means true range came from real open/high/low/close bars, which
+      captures intra-week ranges and gaps. "close" means only closing prices
+      were available, so the volatility measure is the weaker close-only
+      analogue — worth knowing before trusting the label.
 
 # Macro quadrants of the regime map (growth × inflation). Descriptive
 # regime-context education, not positioning advice.

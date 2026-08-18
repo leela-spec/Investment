@@ -6,8 +6,21 @@ from __future__ import annotations
 import re
 
 from ipos.export.snapshot import build_snapshot
+from ipos.report.charts import pctile_strip_svg
 from ipos.report.html import render_html
 from ipos.warehouse.db import connect
+
+
+def test_pctile_strip_degrades_rather_than_asserting_a_thin_percentile():
+    """`pctile_156w` uses min_periods=1, so it returns a number even from two
+    observations. Drawing that would present noise as a three-year ranking."""
+    assert "pstrip" not in pctile_strip_svg(None, history_weeks=200, label="X")
+    assert "pstrip" not in pctile_strip_svg(88.0, history_weeks=6, label="X")
+    ok = pctile_strip_svg(88.0, history_weeks=200, label="X")
+    assert 'class="pstrip"' in ok and "88th percentile" in ok
+    # neutral ink, not the red/blue risk ramp: a level percentile is not
+    # direction-adjusted, so it must not imply good/bad
+    assert "#b2182b" not in ok and "#2166ac" not in ok
 
 
 def _render(populated_db, as_of):
@@ -92,6 +105,76 @@ def test_html_every_heading_and_column_is_explained(populated_db, as_of):
         "these report headings/columns have no glossary tooltip — add an entry to "
         f"configs/glossary.yaml and wire it up, or allow-list it: {bare}"
     )
+
+
+def test_html_renders_the_what_changed_panel_and_new_history_views(populated_db, as_of):
+    """The 2026-07-29 audit's core finding: numbers the pipeline already computed
+    but never drew. These must actually reach the page."""
+    html = _render(populated_db, as_of)
+    assert "What changed this week" in html
+    assert "Why this regime" in html
+    assert 'class="pstrip"' in html          # level-percentile strips
+    assert 'class="bridge"' in html          # base -> scaler -> headline
+    # the classifier's own measurements, previously stored and never surfaced
+    assert "overlap_index" in html and "atr_change_rate" in html
+    # breadth
+    assert "above 50" in html
+
+
+def test_html_contribution_bars_state_a_sum_that_matches_the_bars(populated_db, as_of):
+    """The rendered claim "contributions sum to X" must be the actual sum of the
+    bars drawn beside it. An explanation whose arithmetic does not close is worse
+    than no explanation."""
+    db, reg = populated_db
+    with connect(db, read_only=True) as con:
+        snap = build_snapshot(con, reg, as_of)
+        snap["budget_attribution"] = {
+            "prev_as_of": "2026-07-10",
+            "base_from": 40.0, "base_to": 42.5, "delta": 2.5,
+            "contributions": [
+                {"module": "Credit", "contribution": 3.0},
+                {"module": "FX", "contribution": -0.5},
+            ],
+        }
+        html = render_html(con, snap, as_of)
+    assert 'class="cbars"' in html
+    assert "Credit: +3.00 score points" in html
+    assert "FX: -0.50 score points" in html
+    assert "sum to +2.50 points" in html
+
+
+def test_html_names_stale_series_not_just_counts(populated_db, as_of, monkeypatch):
+    """The markdown report listed stale/missing series BY NAME while the HTML
+    showed bare counts — so the dashboard was strictly less useful than its
+    chart-free twin for the one question you ask when a run degrades."""
+    db, reg = populated_db
+    with connect(db, read_only=True) as con:
+        snap = build_snapshot(con, reg, as_of)
+        snap["flags"]["degraded"] = True
+        snap["data_quality"]["stale_series"] = ["VIXCLS"]
+        snap["data_quality"]["missing_series"] = ["MADE_UP_SERIES"]
+        snap["data_quality"]["n_stale"] = 1
+        snap["data_quality"]["n_missing"] = 1
+        html = render_html(con, snap, as_of)
+    assert "MADE_UP_SERIES" in html
+    assert 'href="#ind-VIXCLS"' in html   # stale names link to their table row
+
+
+def test_html_surfaces_fx_warnings(populated_db, as_of):
+    """An unconvertible currency used to vanish from the report silently: the
+    position was dropped from every weight and `fx_warnings` was rendered by
+    nothing. Losing money from a weight without saying so is the worst failure
+    mode this report has."""
+    db, reg = populated_db
+    with connect(db, read_only=True) as con:
+        snap = build_snapshot(con, reg, as_of)
+        snap["portfolio"] = {
+            "modules": {}, "unmapped": [], "total_value_eur": 1000.0,
+            "fx_warnings": ["skipped 1 position in JPY: no EURJPY series"],
+        }
+        html = render_html(con, snap, as_of)
+    assert "no EURJPY series" in html
+    assert "excluded from every weight" in html.lower()
 
 
 def test_html_is_self_contained(populated_db, as_of):

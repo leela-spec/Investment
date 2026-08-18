@@ -117,6 +117,219 @@
 
 Per `HANDOVER.md` §5, every divergence from the v1.0 plan is recorded here with its reason before/at the time it lands in code.
 
+### 2026-07-29 — Visualization audit: the gap was rendering, not chart types. Tier 0+1 built; self-scoring spec'd, not built
+
+Operator asked, before continuing the roadmap, for research into the highest-impact
+visualizations for a financial report/status/decision framework, a check for gaps, and a
+ranking by build cost, maintenance, copycat-ability, free access, value, **evidence** of
+that value, and risk. Full audit with sources archived at
+`05_blueprint/research/2026-07-29_dashboard_visualization_audit.md`.
+
+**The finding was not "add more chart types."** The visual vocabulary was already ahead of
+most of what the research turned up — two of the research's own recommendations (Few's
+bullet-graph-over-circular-gauge, Tufte's sparklines-in-tables) were already satisfied.
+The gap was that **the pipeline computed and stored numbers that no renderer drew**:
+
+- `fact_feature.pctile_156w` / `z_104w` — computed since Phase 1 at `transforms/run.py:154`,
+  never exported to the snapshot at all, so where a reading sat in its own history was
+  invisible. This is the backbone of the most-copied institutional chart form
+  (JP Morgan's *Guide to the Markets* valuation pages).
+- `agg_regime.risk_budget_0_100` / `confidence_0_100` history — stored per week, but
+  `_regime_history` only ever selected label/confidence/scaler, so **the two headline KPIs
+  had no history anywhere in the report.**
+- `agg_regime.params_json` — already carried `base_risk_budget` and the classifier's
+  `regime_features`, so "why is this week UNCERTAIN, and how much did the scaler cut?" was
+  fully computed and wholly unanswerable from the report. Every institutional composite
+  publishes its decomposition (the OFR Financial Stress Index is the reference).
+- `portfolio.fx_warnings` — written at `run.py:164`, rendered by nothing, so an
+  unconvertible currency was **silently dropped from every module weight**. A correctness
+  bug, not a cosmetic gap, and the fourth instance of this project's recurring
+  "computed-but-not-surfaced" failure mode.
+- `data_quality.stale_series` / `missing_series` names, `flags.n_high_severity`,
+  `indicators[].delta_4w/12w`, `playbook_selection`, `interpretation_meta.model` — all
+  exported, none rendered in the HTML (some were in the markdown, making the *dashboard*
+  strictly less useful than its chart-free twin for the question you ask when a run
+  degrades).
+- Scale: `fact_score` holds ~3,847 weeks; the report charted 52. ~98% of scored history
+  was never plotted.
+
+**Decisions taken:**
+
+20. **Tier 0 + Tier 1 built** (operator-selected scope): level-percentile strips, headline
+    KPI history, a base → ×scaler → headline bridge with the classifier's measurements, a
+    "what changed this week" panel above the fold, a breadth/diffusion index, per-module
+    contribution bars, contradiction recurrence counts, and the parity/correctness fixes
+    above. No new data source, no new table, **no `scoring_version` bump** — verified with a
+    structural golden diff showing 84 added paths, 1 deliberate removal, and **0 changed
+    figures**, which is exactly the C9 condition for regenerating the golden without a bump.
+21. **`overall.risk_scaler` removed** as a dead duplicate; both renderers already read
+    `regime.risk_scaler`.
+22. **Contribution decomposition uses zero-anchored diverging bars, NOT a cumulative
+    waterfall.** A waterfall positions bars by a running total, which forces the ~0-100
+    opening balance and the ~±3-point contributions onto one axis and squashes the
+    contributions into invisibility. Contributions are defined as
+    `cₘ = (wₘ,t/Wt)·sₘ,t − (wₘ,p/Wp)·sₘ,p`, which telescopes to exactly `base_t − base_p`
+    over the union of both weeks' modules — no residual term, and a module that appeared or
+    dropped out shows as its own bar. A test asserts the bars sum to the rendered claim;
+    the plan committed to dropping the panel rather than shipping arithmetic that did not
+    close.
+23. **The level percentile is deliberately drawn in neutral grey, not the RdBu risk ramp.**
+    `pctile_156w` ranks the RAW level and is **not** direction-adjusted, so for an inverted
+    indicator (VIXCLS, HY_OAS) a high percentile means a LOW score — the golden shows
+    HY_OAS at the 91.7th level percentile with a score of 8.3. Painting it on the risk ramp
+    would assert a good/bad reading the number does not carry. A test pins both the neutral
+    ink and the inversion.
+24. **Thin-history guard on percentiles.** The rolling percentile uses `min_periods=1`, so
+    it returns a number from a handful of observations; `history_weeks` is now exported and
+    the strip renders "—" below 52 weeks rather than presenting noise as a 3-year ranking.
+25. **Tier 2 deferred** (long-history level charts with FRED `USREC` recession shading,
+    regime persistence/transition stats, drawdown, `run_log` panel, correlation matrix) and
+    **conditional analogs ("what happened next") rejected for now** — real practice, but the
+    published examples display the failure mode vividly (one write-up reports a "−189%
+    annualized" conditional return, a thin-sample artifact), and it slides from *analysis*
+    toward *advice*. Revisit only with an explicit minimum-sample rule.
+26. **Self-scoring (Brier + reliability diagram) spec'd, deliberately NOT built.** See the
+    dedicated section below. It is the highest-value item on the whole ranked list and the
+    easiest to do dishonestly.
+
+**Defects found by rendering the page and looking at it** (the dataviz procedure's last
+step, which the palette validator cannot cover): raw Python `None` leaking into the
+classifier table as text; an SVG-only `fill` class reused on HTML text; and a **pre-existing
+latent layout bug** — the 260px glossary popovers are absolutely positioned and count toward
+`scrollWidth` even while hidden, so once the indicator table grew a column the whole page
+scrolled sideways by 131px. Fixed with a pure-CSS right-anchor for the last four columns.
+Measured 0px overflow after. Known and *not* fixed: the wide data tables still overflow at a
+375px viewport. The documented remedy (an `overflow-x:auto` wrapper) would clip the glossary
+popovers, which are a core feature, and a phone was never a target for a double-click local
+file — recorded rather than traded away silently.
+
+27. **Markdown template: `{% endif +%}`, not an extra `{{ nl }}`.** `trim_blocks` eats the
+    newline after a block tag, so a line *ending* in a conditional swallows the line after
+    it. This collapsed the Policy/Degraded bullets on 2026-07-27 and then the Risk
+    budget/Breadth bullets here — each time silently, because the markdown still parsed. The
+    correct fix is Jinja's per-tag override `{% endif +%}`; appending `{{ nl }}` instead
+    stops `{% endif %}` being newline-adjacent, so the literal newline survives too and you
+    get a blank line. `{{ nl }}` stays correct for bullets living entirely inside a
+    conditional. A test (`test_markdown_overall_bullets_do_not_collapse_onto_one_line`) now
+    pins it, plus one asserting no bare `None` reaches either renderer. The explanatory note
+    lives in a Python comment, not a Jinja comment — the first attempt put it in `{#- … -#}`
+    whose prose contained `#}`, which closed the comment early and leaked the remainder into
+    the report, while the stripping form glued the first bullet to the heading.
+
+28. **Test-isolation hole on the WRITE side (found 2026-07-29 while verifying determinism).**
+    `EXPORTS_DIR` is re-bound in each importing module, and neither the per-test
+    monkeypatches in `test_portfolio.py`/`test_failsafe.py` nor `ipos/golden.py` covered
+    `ipos.report.html` — so `write_html` always wrote to the real directory and **every run
+    of the test suite silently overwrote the operator's `data/exports/latest.html` and
+    `report.html` with synthetic fixture output.** This is the project's recurring
+    "synthetic served as real" failure mode arriving by a new route: the clobbered file
+    still looks like a genuine weekly report. This is also what made a byte-comparison of
+    two CLI runs appear non-deterministic — the baseline had been replaced by a test.
+    Fixed centrally with an autouse `_no_operator_exports` fixture covering all four
+    export-writing modules (so a future export path cannot leak because one test forgot to
+    patch it), `html_mod` added to `golden.py`, and two guards in `tests/test_isolation.py`
+    — one per-module, one end-to-end asserting no mtime under `data/exports` changes.
+    **Standing lesson, third instance of the same shape:** `from x import CONST` defeats
+    single-point monkeypatching. Isolate by enumerating modules, in `conftest.py`, not
+    per-test.
+
+**Evidence-quality note, recorded because it constrains future work here.** This domain has
+almost no randomized-trial evidence. What exists is (a) genuine perception experiments on
+encoding accuracy — Cleveland & McGill's hierarchy, replicated by Heer & Bostock, with the
+important caveat from later work that only *position* is robust across tasks while
+color/size/shape are task-dependent; (b) formal scoring-rule theory for forecast evaluation;
+(c) revealed preference — what regulators and the largest asset managers actually ship.
+Tufte's data-ink ratio rests on limited qualitative evidence and a later quantitative study
+found some viewers *prefer* lower data-ink; "AI-adaptive dashboard" claims are vendor
+marketing. Consequence for us: **the score heatmap is the weakest encoding in the report**
+(color saturation) and should stay a scanning aid, never a reading surface.
+
+#### Spec — item 17: scoring the framework's own past calls
+
+**Status (2026-07-29, same session): the LOGGING half is now BUILT; the scoring/display
+half is not.** After walking through the user stories, the operator's decision was to start
+the forecast log immediately, on the argument that the *display* can wait but the *logging*
+cannot: every week run without recording the week's calls is evidence that can never be
+recovered. Delivered: migration `005_forecast.sql` (`log_forecast`),
+`configs/forecast_targets.yaml`, `ipos/forecast.py`, a `forecast` stage in `run.py`, and
+`tests/test_forecast.py` (9 tests). The first live run logged 9 calls across 3 dimensions.
+
+Design points that differ from, or sharpen, the spec below:
+
+- **Only 5 of 8 stance dimensions are forecast at all.** `growth`, `liquidity` and
+  `fundamentals` are condition readings, not exposures — resolving them against the yield
+  curve, WALCL or UMCSENT would be circular, because those series are the *inputs*. They are
+  listed in an `excluded:` block with the reason, mirroring how `portfolio_mapping.yaml`
+  already documents that only some modules map to investable assets. A test asserts no
+  dimension is both forecast and excluded, and that every exclusion carries a reason.
+- **The hurdle is the benchmark's own median move over the horizon, not "did it rise."**
+  Equities rise over most 13-week windows, so "SPX goes up" would score well with no skill
+  and make the Brier number uninterpretable. Beating your own typical move keeps the base
+  rate near 50%.
+- **`baseline_value` and `hurdle` are frozen into the row**, not looked up at resolution
+  time, so a later backfill or purge cannot move a logged call's goalposts. Pinned by
+  `test_hurdle_and_baseline_are_frozen_against_history_changing`, which rewrites the
+  benchmark's entire past and asserts the row is unchanged. This is a direct lesson from the
+  2026-07-27 purge, which moved 24 of 26 weeks of Credit scores.
+- **Append-only via `ON CONFLICT DO NOTHING`.** The pipeline is idempotent and re-runnable,
+  so without this a weights change plus a re-run would let the system silently retro-fit its
+  own track record. `test_a_logged_call_can_never_be_rewritten` flips every stance sign,
+  re-records under a different `scoring_version`, and asserts the rows are untouched.
+- **Probability is capped at 0.20–0.80.** Nothing here justifies a claim stronger than
+  4-to-1, so the tilt→probability map is not permitted to make one.
+- **`resolve()` and `brier()` were built now even though nothing displays them**, to prove
+  the frozen criteria are actually settleable — a resolution rule nobody has ever run is a
+  rule that might not work. `brier()` returns the score beside `always_50` and `base_rate`
+  because the score alone is meaningless, returns `None` rather than a flattering
+  small-sample number, and reports the set of `scoring_version`s so pooling across a bump is
+  visible.
+- **Calls below |tilt| 0.2 are not logged.** They are not really claims, and near-50%
+  predictions are trivially well-calibrated — logging them would pad and flatter the score.
+
+Still to build: the report section (a reliability diagram plus the Brier table), which needs
+~26 weeks of resolved calls before it can say anything honest. The spec below stands as
+written for that half.
+
+---
+
+Original spec, written before any code, so it could not later be built the easy,
+self-flattering way. Nothing in the report
+today indicates whether this framework's stance has historically been right or wrong, which
+for something named a *decision & analysis* framework is the most consequential omission on
+the list.
+
+**The one hard prerequisite: record before the verdict.** A forecast counts only if it was
+logged *before* its outcome window opened — dated, quantified, with a fixed horizon and an
+unambiguous resolution criterion. Implication: a new append-only `log_forecast` table written
+by the weekly run, never back-filled.
+
+- **What is forecast.** Not "the market goes up." Per stance dimension, the sign of the tilt
+  is a claim about the *next* window. Proposal: for each dimension with `|tilt| ≥ 0.2`,
+  record `P(dimension's benchmark outperforms its own trailing median over the horizon)`
+  mapped monotonically from the tilt, plus the horizon and the exact benchmark series id.
+- **Horizons.** Fixed at 4 / 13 / 26 weeks, chosen once and frozen. Resolution is mechanical
+  from `fact_weekly`, never a judgement call.
+- **Scoring.** Brier `BS = 1/N Σ (fₜ − oₜ)²` per dimension and overall, plus a reliability
+  diagram (predicted probability vs. observed frequency per bin) and a count per bin. The
+  count is not optional: a bin holding three observations must look like three
+  observations.
+- **The honesty constraints, which are the point of writing this down.**
+  1. **No retro-scoring.** Scores computed over history the system has already seen are not
+     evidence. If ever produced for calibration of the *method*, they must be labelled
+     in-report as in-sample and excluded from any headline figure.
+  2. **A baseline is mandatory.** A Brier score alone is uninterpretable. Report it beside
+     the always-50% forecast and the trailing-base-rate forecast; if the framework does not
+     beat both, the report must say so plainly.
+  3. **Report the empty state honestly.** For the first ~26 weeks after this ships there is
+     nothing to say, and the section must say "insufficient resolved forecasts (n=…)"
+     rather than showing a flattering small-sample number.
+  4. **`scoring_version` interacts.** A method change invalidates comparability of forecasts
+     made under the old version. `log_forecast` must stamp `scoring_version`, and the
+     calibration view must either segment by it or refuse to pool across a bump.
+- **Switch trigger / fallback.** If after 52 resolved weeks the framework does not beat both
+  baselines on either horizon, that is not a reason to hide the panel — it is the signal to
+  revisit scoring weights and bands, and the finding belongs in this log.
+
 ### 2026-07-27 (final) — Source audit: three DEAD sources found, market history deepened 5y → up to 56y, OAS cap proven irrecoverable
 
 **Context:** operator pushed back on accepting the OAS gap — "if the one source doesn't work and the fallback doesn't work, what do the alternatives have? Search for the most reliable fallback. Fill in all the data. If some things are not retrievable beyond a couple of years that is fine — we work with what we can get." So: exhaust the alternatives, then document the caps honestly.
