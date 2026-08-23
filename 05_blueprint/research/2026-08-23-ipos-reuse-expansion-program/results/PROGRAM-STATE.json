@@ -1,7 +1,7 @@
 {
   "program": "ipos-reuse-expansion-2026-08-23",
   "pinned_repo_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
-  "updated_utc": "2026-08-23T16:27:08.560Z",
+  "updated_utc": "2026-08-23T16:29:45.341Z",
   "status": "RESEARCHING",
   "tracks": {
     "R1": {
@@ -13,12 +13,12 @@
       "corrections": 0
     },
     "R2": {
-      "status": "IN_PROGRESS",
+      "status": "CORRECTING",
       "prompt": "ExternalAddonsResearch/prompts/R2_Can_all_required_IPOS_data_be_free.md",
       "prompt_sha": "deab369e18546256a7a47971841f07a1b8bbf933",
       "result_dir": null,
       "review_score": null,
-      "corrections": 0
+      "corrections": 1
     },
     "R3": {
       "status": "ACCEPTED",
@@ -37,7 +37,7 @@
       "corrections": 0
     },
     "R5": {
-      "status": "PENDING",
+      "status": "IN_PROGRESS",
       "prompt": "ExternalAddonsResearch/prompts/R5_Activepieces_actual_ingestion_POC.md",
       "prompt_sha": "82da69b51eca1581579731da9459291e690518ed",
       "result_dir": null,
@@ -45,7 +45,7 @@
       "corrections": 0
     },
     "R6": {
-      "status": "PENDING",
+      "status": "IN_PROGRESS",
       "prompt": "ExternalAddonsResearch/prompts/R6_Ghostfolio_POC_and_alternatives.md",
       "prompt_sha": "4043c07ae8b6974cbf98758fee315d2e3c534190",
       "result_dir": null,
