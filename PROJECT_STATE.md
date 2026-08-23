@@ -129,6 +129,7 @@ Details, file-by-file steps and **Definition of Done per cluster**: `05_blueprin
 | `ipos/forecast.py` | **The forecast log (record-before-the-verdict).** Writes each week's falsifiable calls to `log_forecast` with a frozen resolution rule, plus `resolve()`/`brier()`. Append-only: a re-run can never rewrite a past call. No display yet — deliberately |
 | `prompts/` | `weekly_checkup.md` — frozen, versioned LLM system contract |
 | `tests/` | pytest suites (config, warehouse, etl, scoring, snapshot, fail-safe, contradictions, golden, regime, report-html, ai, portfolio, canonical, calendar, connectors, ohlc-regime, isolation, forecast) — **150 tests**, no live calls, green; `tests/golden/` holds the regression snapshot. `tests/conftest.py` carries three autouse safety nets: no network, no operator portfolio, **no writes into the operator's real `data/exports/`** |
+| `ExternalAddonsResearch/` | **Research folder**: exploratory scripts, research logs, scratch notebooks, and prototypes for external open-source tools/libraries (isolated from the core package) |
 | `data/` | gitignored runtime: `warehouse.duckdb`, `archive/` (append-only Parquet), `inbox/`, `exports/snapshots/<friday>/` |
 | `pyproject.toml` / `uv.lock` | uv toolchain + entry points (`ipos-init/pull/score/weekly/doctor/backfill`) |
 
