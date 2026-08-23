@@ -1,0 +1,62 @@
+{
+  "schema_version": "ipos.research-track-manifest/1",
+  "program": "IPOS reuse-expansion research program",
+  "track_id": "R1",
+  "track_slug": "karakeep-ipos",
+  "title": "Karakeep to IPOS integration",
+  "status": "ACCEPTED",
+  "repository": {
+    "url": "https://github.com/leela-spec/Investment.git",
+    "branch_of_record": "main",
+    "effective_commit": "6353c1acb768d61a7be83477e1cc4fee55653d97"
+  },
+  "authoritative_prompt": {
+    "path": "ExternalAddonsResearch/prompts/R1_Karakeep_to_IPOS_integration.md",
+    "blob_sha": "78e0bcb32f1319ca5e84a572026bdab33cb39983",
+    "content_sha256": "b0ecf20f2d951672dc97a1cbdb21c591265236bdd1c0ac973ce905de8d0916b3"
+  },
+  "research_cutoff": "2026-08-23",
+  "started_at_utc": "2026-08-23T15:10:00Z",
+  "completed_at_utc": "2026-08-23T16:20:10Z",
+  "recommendation": "TEST_FURTHER",
+  "recommended_pattern": "OPTIONAL_READ_ONLY_KARAKEEP_SIDECAR",
+  "poc_status": "PARTIAL_PASS_SERVER_BLOCKED",
+  "poc_blockers": [
+    "Docker command unavailable",
+    "Podman command unavailable",
+    "No disposable Karakeep server or API key"
+  ],
+  "review": {
+    "required": true,
+    "method": "METHOD-BASIS independent track review",
+    "status": "ACCEPT",
+    "reviewer_score": 19,
+    "correction_count": 0
+  },
+  "deliverables": [
+    "TRACK-PLAN.md",
+    "EXECUTIVE_VERDICT.md",
+    "CURRENT_IPOS_GAP_MAP.md",
+    "KARAKEEP_CAPABILITY_MAP.md",
+    "POC_RESULTS.md",
+    "PROPOSED_INTEGRATION.md",
+    "MCDA.json",
+    "MACHINE_READABLE_DECISION.json",
+    "SOURCES.md",
+    "GAPS_AND_UNCERTAINTIES.md",
+    "REVIEW.md",
+    "TRACK-MANIFEST.json"
+  ],
+  "production_changes_made": false,
+  "github_writes_made": false,
+  "unresolved_operator_decisions": [
+    "After successful POC, decide whether the capture value justifies an always-on local service",
+    "Confirm Docker Desktop licensing/runtime choice for the operator environment"
+  ],
+  "production_gates": [
+    "Complete six-fixture live server POC",
+    "Verify duplicate provenance behavior on pinned version",
+    "Prove dump and clean-instance recovery including highlights and assets",
+    "Prove core IPOS outage isolation and byte-stable scoring/report behavior"
+  ]
+}

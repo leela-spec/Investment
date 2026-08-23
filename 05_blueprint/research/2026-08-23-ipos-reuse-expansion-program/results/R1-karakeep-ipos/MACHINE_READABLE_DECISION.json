@@ -1,0 +1,62 @@
+{
+  "schema_version": "ipos.reuse-decision/1",
+  "track_id": "R1",
+  "pinned_ipos_commit": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+  "evaluated_product": {"name":"Karakeep","version":"0.33.2","license":"AGPL-3.0"},
+  "decision": "TEST_FURTHER",
+  "target_role": ["INGESTION_INBOX","HUMAN_RESEARCH_DASHBOARD","WORKING_RAW_RESEARCH_STORE"],
+  "canonicality": {
+    "live_working_record": "KARAKEEP",
+    "durable_consumed_versions": "APPEND_ONLY_IPOS_EXPORT_MIRROR",
+    "operational_knowledge": "EXISTING_REPOSITORY_PLAYBOOK_AND_CONFIG",
+    "numeric_truth_and_scoring": "EXISTING_IPOS_DUCKDB_PIPELINE"
+  },
+  "adopt": [
+    "REST_METADATA_AND_CONTENT_READ",
+    "STABLE_BOOKMARK_AND_ASSET_IDS",
+    "MANUAL_TAGS_LISTS_NOTES",
+    "FULL_TEXT_SEARCH",
+    "VERSION_PINNED_DUMP_EXPORT"
+  ],
+  "adopt_optional": [
+    "RSS_INGESTION",
+    "HIGHLIGHTS",
+    "FULL_PAGE_ARCHIVE_SCREENSHOT_PDF_VIDEO",
+    "RULES_FOR_INBOX_HYGIENE",
+    "MCP_OR_AGENT_SKILL_FOR_HUMAN_WORKFLOW"
+  ],
+  "defer": ["WEBHOOK_EVENT_SYNC","SEMANTIC_SEARCH","OLLAMA_AI_TAGGING","DUCKDB_EVIDENCE_TABLE"],
+  "reject": [
+    "DIRECT_KARAKEEP_SQLITE_READ",
+    "KARAKEEP_AS_SCORING_SOURCE",
+    "AUTOMATIC_PLAYBOOK_RULE_PROMOTION",
+    "KARAKEEP_AS_REPORT_REPLACEMENT",
+    "CUSTOM_BOOKMARK_MANAGER",
+    "NEW_RAG_STACK"
+  ],
+  "integration": {
+    "direction": "KARAKEEP_TO_IPOS_READ_ONLY",
+    "trigger": "SCHEDULED_POLL",
+    "selection": "IPOS_INBOX_LIST_OR_OPERATOR_TAG",
+    "idempotency_key": "sha256(instance_id\\0bookmark_id\\0content_version\\0metadata_sha256)",
+    "degraded_behavior": "PRESERVE_PRIOR_EVIDENCE_VIEW_AND_CONTINUE_CORE_IPOS",
+    "production_tables_forbidden": ["fact_observation","fact_weekly","fact_score","agg_module","agg_regime","log_contradiction","log_forecast"],
+    "production_files_forbidden": ["04_playbook/modules/*","03_extract/*","configs/*"]
+  },
+  "poc": {
+    "status": "PARTIAL_PASS_SERVER_BLOCKED",
+    "observed": [
+      "OFFICIAL_CLI_INSTALLS_AND_EXPOSES_EXPECTED_COMMANDS",
+      "CLI_CONTENT_SUPPORTS_CURSOR_AND_50000_CHARACTER_CHUNKS",
+      "CLI_DUMP_AND_MIGRATE_COMMANDS_PRESENT",
+      "BOOKMARK_LIST_NETWORK_FAILURE_PRINTED_ERROR_BUT_EXITED_ZERO"
+    ],
+    "blockers": ["NO_DOCKER_OR_PODMAN","NO_WRITABLE_KARAKEEP_SERVER","NO_TEST_API_KEY"],
+    "adoption_gates": ["SIX_FIXTURE_INGEST_PASS","DUPLICATE_PROVENANCE_PASS","DUMP_PASS","CLEAN_INSTANCE_RESTORE_PASS","CORE_IPOS_ISOLATION_PASS"]
+  },
+  "mcda": {"karakeep":82.8,"baseline":72.4,"delta":10.4},
+  "operator_decisions": [
+    {"id":"R1-OD1","when":"AFTER_POC_PASS","question":"Is the optional always-on Docker sidecar worth the research workflow value?","recommended":"YES_IF_USED_WEEKLY_OR_FOR_RSS; OTHERWISE_KEEP_CURRENT_REPO_ONLY"}
+  ],
+  "confidence": 84
+}

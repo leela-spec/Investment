@@ -1,15 +1,15 @@
 {
   "program": "ipos-reuse-expansion-2026-08-23",
   "pinned_repo_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
-  "updated_utc": "2026-08-23T15:57:41.005Z",
+  "updated_utc": "2026-08-23T16:25:10.852Z",
   "status": "RESEARCHING",
   "tracks": {
     "R1": {
-      "status": "IN_PROGRESS",
+      "status": "ACCEPTED",
       "prompt": "ExternalAddonsResearch/prompts/R1_Karakeep_to_IPOS_integration.md",
       "prompt_sha": "78e0bcb32f1319ca5e84a572026bdab33cb39983",
-      "result_dir": null,
-      "review_score": null,
+      "result_dir": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/R1-karakeep-ipos",
+      "review_score": 19,
       "corrections": 0
     },
     "R2": {

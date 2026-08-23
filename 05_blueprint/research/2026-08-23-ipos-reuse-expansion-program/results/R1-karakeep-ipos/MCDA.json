@@ -1,0 +1,55 @@
+{
+  "schema_version": "ipos.mcda/1",
+  "track": "R1",
+  "scored_at": "2026-08-23",
+  "scale": "0-100 raw per criterion; weighted_total=sum(raw*weight/100)",
+  "criteria": [
+    {"id":"ipos_functional_value","weight":20},
+    {"id":"deterministic_auditable_interfaces","weight":15},
+    {"id":"provenance_preservation","weight":15},
+    {"id":"portability_exportability","weight":10},
+    {"id":"maturity_maintenance","weight":10},
+    {"id":"local_free_licensing_fit","weight":10},
+    {"id":"integration_simplicity","weight":10},
+    {"id":"failure_recovery_characteristics","weight":5},
+    {"id":"agent_cli_api_support","weight":5}
+  ],
+  "options": [
+    {
+      "id": "karakeep_optional_sidecar",
+      "scores": [
+        {"criterion":"ipos_functional_value","raw":90,"weighted":18.0,"evidence":"Fills absent URL/PDF/note/RSS capture, archive, curation and search gap without replacing implemented scoring/reporting."},
+        {"criterion":"deterministic_auditable_interfaces","raw":88,"weighted":13.2,"evidence":"Formal OpenAPI, stable IDs, cursor pagination, JSON CLI and SHA-256 readable-content version; semantic/AI paths unnecessary."},
+        {"criterion":"provenance_preservation","raw":74,"weighted":11.1,"evidence":"Strong URLs/timestamps/source/crawl metadata/assets/firstCreatedAt, but mutable objects and no documented immutable revision ledger; mirror required."},
+        {"criterion":"portability_exportability","raw":78,"weighted":7.8,"evidence":"CLI dump exports JSON/JSONL plus assets and migration/backup APIs exist, but tagged dump/migration source does not explicitly cover highlights and clean recovery is unproven."},
+        {"criterion":"maturity_maintenance","raw":90,"weighted":9.0,"evidence":"v0.33.2 current release on 2026-08-11 with active security/crawler/API/CLI development."},
+        {"criterion":"local_free_licensing_fit","raw":90,"weighted":9.0,"evidence":"AGPL-3.0 and official self-host; Windows Docker Desktop terms/use remain an operator/environment check."},
+        {"criterion":"integration_simplicity","raw":64,"weighted":6.4,"evidence":"Thin REST pull is small, but full value adds Docker web+Chrome+Meilisearch and always-on lifecycle to artifact-first IPOS."},
+        {"criterion":"failure_recovery_characteristics","raw":72,"weighted":3.6,"evidence":"Explicit crawl/feed/backup statuses, dumps and migration; restore not POC-tested and CLI command failure returned exit 0 in one observed case."},
+        {"criterion":"agent_cli_api_support","raw":94,"weighted":4.7,"evidence":"Official REST, CLI, MCP and agent skill; v0.33.1 added agent-readable content and expanded MCP."}
+      ],
+      "weighted_total":82.8,
+      "recommendation":"TEST_FURTHER",
+      "conditions":["writable-instance POC","clean restore comparison","read-only fail-open adapter","no scoring/Playbook writes"]
+    },
+    {
+      "id": "do_nothing_current_repo_only",
+      "scores": [
+        {"criterion":"ipos_functional_value","raw":25,"weighted":5.0,"evidence":"Current IPOS remains excellent for numeric processing but lacks implemented research artifact intake/search/archive."},
+        {"criterion":"deterministic_auditable_interfaces","raw":100,"weighted":15.0,"evidence":"Existing pipeline is deterministic, versioned and golden-tested."},
+        {"criterion":"provenance_preservation","raw":52,"weighted":7.8,"evidence":"Strong numerical provenance; external research is ad-hoc Markdown/files without a uniform object/version contract."},
+        {"criterion":"portability_exportability","raw":95,"weighted":9.5,"evidence":"Repository and static artifacts are highly portable."},
+        {"criterion":"maturity_maintenance","raw":85,"weighted":8.5,"evidence":"Implemented code/tests are current, but research intake is absent rather than mature."},
+        {"criterion":"local_free_licensing_fit","raw":100,"weighted":10.0,"evidence":"No new dependency/cost/service."},
+        {"criterion":"integration_simplicity","raw":100,"weighted":10.0,"evidence":"No integration work or runtime complexity."},
+        {"criterion":"failure_recovery_characteristics","raw":92,"weighted":4.6,"evidence":"Current core already fails degraded and is artifact-first."},
+        {"criterion":"agent_cli_api_support","raw":40,"weighted":2.0,"evidence":"IPOS CLI exists, but there is no research-object API/CLI/search surface."}
+      ],
+      "weighted_total":72.4,
+      "recommendation":"KEEP_AS_FALLBACK",
+      "conditions":[]
+    }
+  ],
+  "difference_points": 10.4,
+  "interpretation": "Karakeep wins on the specific missing research-intake function, but the delta is not large enough to waive a functional/restore POC or make the service load-bearing."
+}
