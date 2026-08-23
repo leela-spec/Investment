@@ -1,0 +1,96 @@
+{
+  "program": "ipos-reuse-expansion-2026-08-23",
+  "repository": "leela-spec/Investment",
+  "branch": "main",
+  "pinned_repo_sha": "79bbcda3fe211785084fc9fb9025675954786c14",
+  "run_started_utc": "2026-08-23T15:26:58.033Z",
+  "research_program_tree": [
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/AUTONOMOUS-PROGRAM-LAUNCHER.md",
+      "type": "blob",
+      "sha": "705d7bb4f4aad240f3451d2c5794e3c8d146e254"
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/METHOD-BASIS.md",
+      "type": "blob",
+      "sha": "146725254888cf9182228493e45c08e346dece0a"
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/START-CHATGPT-WORK.md",
+      "type": "blob",
+      "sha": "8ae7717047642ad059a075453755997f17071235"
+    }
+  ],
+  "authority_files": {
+    "launcher": {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/AUTONOMOUS-PROGRAM-LAUNCHER.md",
+      "sha": "705d7bb4f4aad240f3451d2c5794e3c8d146e254"
+    },
+    "method_basis": {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/METHOD-BASIS.md",
+      "sha": "146725254888cf9182228493e45c08e346dece0a"
+    },
+    "project_state": {
+      "path": "PROJECT_STATE.md",
+      "sha": "8451f0f5ab79cc0c9ea89fe37e02f541f9c432eb"
+    },
+    "decision_analysis": {
+      "path": "05_blueprint/01_DECISION_ANALYSIS.md",
+      "sha": "896f63de92afdbc1bc1a8b12bd9c2b331347b400"
+    }
+  },
+  "prompt_discovery": {
+    "complete_recursive_tree_examined": true,
+    "tree_truncated": false,
+    "code_search_corrobated": true,
+    "tracks": {
+      "R1": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R2": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R3": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R4": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R5": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R6": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R7": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R8": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      },
+      "R9": {
+        "path": null,
+        "sha": null,
+        "status": "MISSING"
+      }
+    },
+    "gate": "HUMAN_GATE_REQUIRED",
+    "reason": "No authoritative R1-R9 prompt files exist in the pinned live main tree. Launcher §2.2 forbids reconstructing R1-R8 prompts from memory or summaries."
+  }
+}

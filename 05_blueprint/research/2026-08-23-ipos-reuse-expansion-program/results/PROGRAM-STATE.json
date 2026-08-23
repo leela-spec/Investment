@@ -1,0 +1,95 @@
+{
+  "program": "ipos-reuse-expansion-2026-08-23",
+  "pinned_repo_sha": "79bbcda3fe211785084fc9fb9025675954786c14",
+  "updated_utc": "2026-08-23T15:26:58.033Z",
+  "status": "HUMAN_GATE_REQUIRED",
+  "tracks": {
+    "R1": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R2": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R3": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R4": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R5": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R6": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R7": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R8": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    },
+    "R9": {
+      "status": "HUMAN_GATE_REQUIRED",
+      "prompt": null,
+      "result_dir": null,
+      "review_score": null,
+      "corrections": 0
+    }
+  },
+  "human_gates": [
+    {
+      "id": "HG-PREFLIGHT-MISSING-PROMPTS",
+      "launcher_section": "2.2",
+      "opened_utc": "2026-08-23T15:26:58.033Z",
+      "status": "OPEN",
+      "missing_tracks": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6",
+        "R7",
+        "R8",
+        "R9"
+      ],
+      "required_action": "Commit the authoritative R1-R9 prompt files to main and provide the resulting commit SHA (or identify their exact existing paths if they were committed elsewhere)."
+    }
+  ],
+  "cross_track_review": {
+    "status": "BLOCKED_DEPENDENCY"
+  },
+  "final_outputs": []
+}
