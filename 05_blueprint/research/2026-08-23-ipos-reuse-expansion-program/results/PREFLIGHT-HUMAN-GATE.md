@@ -21,3 +21,15 @@ Launcher §2.2 states that if any R1–R8 prompt is missing or ambiguous, the co
 ## Required operator action
 
 Commit the authoritative R1–R9 prompt files to `main`, then provide the resulting commit SHA. If the files already exist under unexpected paths, provide those exact paths instead. After that, the controller can re-run prompt discovery, update the pin/re-grounding record, build the program plan, and continue autonomously.
+
+
+## Follow-up verification — 2026-08-23T15:39:12.476Z
+
+The nine track contracts were located and blob-verified, but in a different repository:
+
+- **Repository:** `leela-spec/apexai-os-meta`
+- **Commit:** `f604e5d60fe308f3314997e176508013d42d170e`
+- **Directory:** `apex-meta/AI-Snippets/`
+- **Tracks:** R1–R9 all present and readable
+
+They are not present in `leela-spec/Investment`. The gate therefore changed from “files not located” to a source-of-truth mismatch. The launcher controls `leela-spec/Investment` and permits research writes only under its results directory, so the controller will not silently copy prompt authorities or reinterpret a different repository as the project source.

@@ -1,7 +1,7 @@
 {
   "program": "ipos-reuse-expansion-2026-08-23",
   "pinned_repo_sha": "79bbcda3fe211785084fc9fb9025675954786c14",
-  "updated_utc": "2026-08-23T15:26:58.033Z",
+  "updated_utc": "2026-08-23T15:39:12.476Z",
   "status": "HUMAN_GATE_REQUIRED",
   "tracks": {
     "R1": {
@@ -73,7 +73,7 @@
       "id": "HG-PREFLIGHT-MISSING-PROMPTS",
       "launcher_section": "2.2",
       "opened_utc": "2026-08-23T15:26:58.033Z",
-      "status": "OPEN",
+      "status": "OPEN_SOURCE_REPOSITORY_MISMATCH",
       "missing_tracks": [
         "R1",
         "R2",
@@ -85,7 +85,22 @@
         "R8",
         "R9"
       ],
-      "required_action": "Commit the authoritative R1-R9 prompt files to main and provide the resulting commit SHA (or identify their exact existing paths if they were committed elsewhere)."
+      "required_action": "Choose whether apexai-os-meta commit f604e5d is the authoritative cross-repository prompt source for this run, or copy the nine prompts into leela-spec/Investment main.",
+      "located_external_source": {
+        "repository": "leela-spec/apexai-os-meta",
+        "commit": "f604e5d60fe308f3314997e176508013d42d170e",
+        "paths": [
+          "apex-meta/AI-Snippets/R1_Karakeep_to_IPOS_integration.md",
+          "apex-meta/AI-Snippets/R2_Can_all_required_IPOS_data_be_free.md",
+          "apex-meta/AI-Snippets/R3_General_Financial_Evidence_Knowledge_Base.md",
+          "apex-meta/AI-Snippets/R4_Karakeep_vs_Zotero.md",
+          "apex-meta/AI-Snippets/R5_Activepieces_actual_ingestion_POC.md",
+          "apex-meta/AI-Snippets/R6_Ghostfolio_POC_and_alternatives.md",
+          "apex-meta/AI-Snippets/R7_Build_the_Trading_Advisor_from_existing_IPOS_knowledge.md",
+          "apex-meta/AI-Snippets/R8_Merge_Karakeep_evidence_with_the_existing_operational_KB.md",
+          "apex-meta/AI-Snippets/R9_Final_implementation_plan_for_the_thin_custom_IPOS_layer.md"
+        ]
+      }
     }
   ],
   "cross_track_review": {
