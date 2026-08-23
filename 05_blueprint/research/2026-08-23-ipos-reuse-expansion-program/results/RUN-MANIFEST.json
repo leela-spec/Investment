@@ -6,19 +6,52 @@
   "run_started_utc": "2026-08-23T15:26:58.033Z",
   "research_program_tree": [
     {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program",
+      "type": "tree",
+      "sha": "0bf533abd9681c34ed05080aafc4784a0ab799e1",
+      "size": null
+    },
+    {
       "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/AUTONOMOUS-PROGRAM-LAUNCHER.md",
       "type": "blob",
-      "sha": "705d7bb4f4aad240f3451d2c5794e3c8d146e254"
+      "sha": "705d7bb4f4aad240f3451d2c5794e3c8d146e254",
+      "size": 22294
     },
     {
       "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/METHOD-BASIS.md",
       "type": "blob",
-      "sha": "146725254888cf9182228493e45c08e346dece0a"
+      "sha": "146725254888cf9182228493e45c08e346dece0a",
+      "size": 8912
     },
     {
       "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/START-CHATGPT-WORK.md",
       "type": "blob",
-      "sha": "8ae7717047642ad059a075453755997f17071235"
+      "sha": "8ae7717047642ad059a075453755997f17071235",
+      "size": 1826
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results",
+      "type": "tree",
+      "sha": "7f67e37129e8af62161e8d5e9e2cd944816cdd36",
+      "size": null
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/PREFLIGHT-HUMAN-GATE.md",
+      "type": "blob",
+      "sha": "56a47d8f443ac81daa3b259f99c9d8fb028e3378",
+      "size": 2245
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/PROGRAM-STATE.json",
+      "type": "blob",
+      "sha": "447b502923a7d07769381467df3c69a1d9aedf0e",
+      "size": 3198
+    },
+    {
+      "path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/RUN-MANIFEST.json",
+      "type": "blob",
+      "sha": "0dd0741143d0f08a66db661d7834d07b9f9e7476",
+      "size": 2709
     }
   ],
   "authority_files": {
@@ -32,7 +65,7 @@
     },
     "project_state": {
       "path": "PROJECT_STATE.md",
-      "sha": "8451f0f5ab79cc0c9ea89fe37e02f541f9c432eb"
+      "sha": "821bad4b969e05c31468d7d4502163380d8705e0"
     },
     "decision_analysis": {
       "path": "05_blueprint/01_DECISION_ANALYSIS.md",
@@ -42,55 +75,62 @@
   "prompt_discovery": {
     "complete_recursive_tree_examined": true,
     "tree_truncated": false,
-    "code_search_corrobated": true,
+    "gate": "RESOLVED",
     "tracks": {
       "R1": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R1_Karakeep_to_IPOS_integration.md",
+        "sha": "78e0bcb32f1319ca5e84a572026bdab33cb39983",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R2": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R2_Can_all_required_IPOS_data_be_free.md",
+        "sha": "deab369e18546256a7a47971841f07a1b8bbf933",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R3": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R3_General_Financial_Evidence_Knowledge_Base.md",
+        "sha": "bc0ce869817804b6cc1622792b1d04e043027668",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R4": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R4_Karakeep_vs_Zotero.md",
+        "sha": "4f2b810e09a08c17a5094eb5522304a4c24903be",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R5": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R5_Activepieces_actual_ingestion_POC.md",
+        "sha": "82da69b51eca1581579731da9459291e690518ed",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R6": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R6_Ghostfolio_POC_and_alternatives.md",
+        "sha": "4043c07ae8b6974cbf98758fee315d2e3c534190",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R7": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R7_Build_the_Trading_Advisor_from_existing_IPOS_knowledge.md",
+        "sha": "7197d54b62d880acc655bab0b27b779b3dbaffd9",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R8": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R8_Merge_Karakeep_evidence_with_the_existing_operational_KB.md",
+        "sha": "960a323de1fa7ec29a9afaabd60cdaa49f53f2fd",
+        "status": "FOUND_UNAMBIGUOUS"
       },
       "R9": {
-        "path": null,
-        "sha": null,
-        "status": "MISSING"
+        "path": "ExternalAddonsResearch/prompts/R9_Final_implementation_plan_for_the_thin_custom_IPOS_layer.md",
+        "sha": "04c254a32d4409b5761f897c52a7c20af3a24556",
+        "status": "FOUND_UNAMBIGUOUS"
       }
-    },
-    "gate": "HUMAN_GATE_REQUIRED",
-    "reason": "No authoritative R1-R9 prompt files exist in the pinned live main tree. Launcher §2.2 forbids reconstructing R1-R8 prompts from memory or summaries."
-  }
+    }
+  },
+  "effective_pinned_repo_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+  "repin_history": [
+    {
+      "prior_sha": "79bbcda3fe211785084fc9fb9025675954786c14",
+      "new_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+      "observed_utc": "2026-08-23T15:56:21.321Z",
+      "reason": "Consequential commit added the authoritative R1-R9 prompt contracts before any research track began; all tracks re-grounded to the new pin."
+    }
+  ]
 }

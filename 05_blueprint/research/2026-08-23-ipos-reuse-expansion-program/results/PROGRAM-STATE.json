@@ -1,68 +1,77 @@
 {
   "program": "ipos-reuse-expansion-2026-08-23",
-  "pinned_repo_sha": "79bbcda3fe211785084fc9fb9025675954786c14",
-  "updated_utc": "2026-08-23T15:39:12.476Z",
-  "status": "HUMAN_GATE_REQUIRED",
+  "pinned_repo_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+  "updated_utc": "2026-08-23T15:56:21.321Z",
+  "status": "RESEARCHING",
   "tracks": {
     "R1": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R1_Karakeep_to_IPOS_integration.md",
+      "prompt_sha": "78e0bcb32f1319ca5e84a572026bdab33cb39983",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R2": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R2_Can_all_required_IPOS_data_be_free.md",
+      "prompt_sha": "deab369e18546256a7a47971841f07a1b8bbf933",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R3": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R3_General_Financial_Evidence_Knowledge_Base.md",
+      "prompt_sha": "bc0ce869817804b6cc1622792b1d04e043027668",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R4": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "BLOCKED_DEPENDENCY",
+      "prompt": "ExternalAddonsResearch/prompts/R4_Karakeep_vs_Zotero.md",
+      "prompt_sha": "4f2b810e09a08c17a5094eb5522304a4c24903be",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R5": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R5_Activepieces_actual_ingestion_POC.md",
+      "prompt_sha": "82da69b51eca1581579731da9459291e690518ed",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R6": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R6_Ghostfolio_POC_and_alternatives.md",
+      "prompt_sha": "4043c07ae8b6974cbf98758fee315d2e3c534190",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R7": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "PENDING",
+      "prompt": "ExternalAddonsResearch/prompts/R7_Build_the_Trading_Advisor_from_existing_IPOS_knowledge.md",
+      "prompt_sha": "7197d54b62d880acc655bab0b27b779b3dbaffd9",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R8": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "BLOCKED_DEPENDENCY",
+      "prompt": "ExternalAddonsResearch/prompts/R8_Merge_Karakeep_evidence_with_the_existing_operational_KB.md",
+      "prompt_sha": "960a323de1fa7ec29a9afaabd60cdaa49f53f2fd",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
     },
     "R9": {
-      "status": "HUMAN_GATE_REQUIRED",
-      "prompt": null,
+      "status": "BLOCKED_DEPENDENCY",
+      "prompt": "ExternalAddonsResearch/prompts/R9_Final_implementation_plan_for_the_thin_custom_IPOS_layer.md",
+      "prompt_sha": "04c254a32d4409b5761f897c52a7c20af3a24556",
       "result_dir": null,
       "review_score": null,
       "corrections": 0
@@ -73,7 +82,7 @@
       "id": "HG-PREFLIGHT-MISSING-PROMPTS",
       "launcher_section": "2.2",
       "opened_utc": "2026-08-23T15:26:58.033Z",
-      "status": "OPEN_SOURCE_REPOSITORY_MISMATCH",
+      "status": "RESOLVED",
       "missing_tracks": [
         "R1",
         "R2",
@@ -100,7 +109,9 @@
           "apex-meta/AI-Snippets/R8_Merge_Karakeep_evidence_with_the_existing_operational_KB.md",
           "apex-meta/AI-Snippets/R9_Final_implementation_plan_for_the_thin_custom_IPOS_layer.md"
         ]
-      }
+      },
+      "resolved_utc": "2026-08-23T15:56:21.321Z",
+      "resolution": "Prompts committed to leela-spec/Investment at 6353c1acb768d61a7be83477e1cc4fee55653d97 under ExternalAddonsResearch/prompts/."
     }
   ],
   "cross_track_review": {

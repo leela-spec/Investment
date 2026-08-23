@@ -33,3 +33,8 @@ The nine track contracts were located and blob-verified, but in a different repo
 - **Tracks:** R1–R9 all present and readable
 
 They are not present in `leela-spec/Investment`. The gate therefore changed from “files not located” to a source-of-truth mismatch. The launcher controls `leela-spec/Investment` and permits research writes only under its results directory, so the controller will not silently copy prompt authorities or reinterpret a different repository as the project source.
+
+
+## Resolution — 2026-08-23T15:56:21.321Z
+
+Prompts R1–R9 were committed to `leela-spec/Investment` at `6353c1acb768d61a7be83477e1cc4fee55653d97` under `ExternalAddonsResearch/prompts/`. All nine blobs were read and SHA-recorded. The run is re-pinned before any research track began, so no mixed research state exists. Gate closed.
