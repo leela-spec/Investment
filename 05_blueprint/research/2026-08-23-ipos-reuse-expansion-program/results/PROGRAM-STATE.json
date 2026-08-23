@@ -1,11 +1,11 @@
 {
   "program": "ipos-reuse-expansion-2026-08-23",
   "pinned_repo_sha": "6353c1acb768d61a7be83477e1cc4fee55653d97",
-  "updated_utc": "2026-08-23T15:56:21.321Z",
+  "updated_utc": "2026-08-23T15:57:41.005Z",
   "status": "RESEARCHING",
   "tracks": {
     "R1": {
-      "status": "PENDING",
+      "status": "IN_PROGRESS",
       "prompt": "ExternalAddonsResearch/prompts/R1_Karakeep_to_IPOS_integration.md",
       "prompt_sha": "78e0bcb32f1319ca5e84a572026bdab33cb39983",
       "result_dir": null,
@@ -13,7 +13,7 @@
       "corrections": 0
     },
     "R2": {
-      "status": "PENDING",
+      "status": "IN_PROGRESS",
       "prompt": "ExternalAddonsResearch/prompts/R2_Can_all_required_IPOS_data_be_free.md",
       "prompt_sha": "deab369e18546256a7a47971841f07a1b8bbf933",
       "result_dir": null,
@@ -21,7 +21,7 @@
       "corrections": 0
     },
     "R3": {
-      "status": "PENDING",
+      "status": "IN_PROGRESS",
       "prompt": "ExternalAddonsResearch/prompts/R3_General_Financial_Evidence_Knowledge_Base.md",
       "prompt_sha": "bc0ce869817804b6cc1622792b1d04e043027668",
       "result_dir": null,
