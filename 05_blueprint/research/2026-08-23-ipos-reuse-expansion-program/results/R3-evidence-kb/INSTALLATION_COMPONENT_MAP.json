@@ -1,0 +1,188 @@
+{
+  "schema_version": "1.0",
+  "track": "R3",
+  "as_of": "2026-08-23",
+  "repo_pin": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+  "implementation_performed": false,
+  "recommended_architecture": "E_hybrid_neutral_store_local_search",
+  "components": [
+    {
+      "name": "content_addressed_filesystem",
+      "role": "canonical immutable originals and JSON receipts",
+      "status": "ADOPT_NOW_DESIGN",
+      "required": true,
+      "license": "n/a",
+      "deployment": "local directories with backup/encryption chosen by operator",
+      "custom_work": "object-path convention, atomic writer, receipt JSON Schema, restore test",
+      "production_change_now": false
+    },
+    {
+      "name": "SQLite_FTS5",
+      "role": "rebuildable metadata/entity index and BM25 full-text search",
+      "status": "ADOPT_NOW_DESIGN",
+      "required": true,
+      "license": "public domain",
+      "source": "https://www.sqlite.org/fts5.html",
+      "deployment": "in-process local database; verify runtime is compiled with FTS5",
+      "custom_work": "schema, indexer, query CLI, integrity/rebuild tests",
+      "production_change_now": false
+    },
+    {
+      "name": "Karakeep",
+      "role": "capture, triage, notes, highlights and review interface",
+      "status": "ADOPT_NOW_INTERFACE_SUBJECT_TO_EXISTING_DEPLOYMENT_CHECK",
+      "required": false,
+      "license": "AGPL-3.0",
+      "source": "https://github.com/karakeep-app/karakeep",
+      "deployment": "reuse existing local deployment if available; do not install during R3",
+      "custom_work": "bounded official-API exporter and neutral evidence-id link",
+      "production_change_now": false
+    },
+    {
+      "name": "Karakeep_MCP",
+      "role": "optional agent interface to concrete Karakeep operations",
+      "status": "ADOPT_NOW_OPTIONAL_INTERFACE",
+      "required": false,
+      "license": "AGPL-3.0 as part of Karakeep",
+      "source": "https://github.com/karakeep-app/karakeep/blob/main/apps/mcp/README.md",
+      "deployment": "only after API credentials/permissions are explicitly approved",
+      "custom_work": "none for canonical ingestion; direct API remains preferred for deterministic job",
+      "production_change_now": false
+    },
+    {
+      "name": "Docling",
+      "role": "default local document parser",
+      "status": "TEST_FURTHER_THEN_ADOPT",
+      "required": true,
+      "license": "MIT",
+      "source": "https://github.com/docling-project/docling",
+      "deployment": "pin in isolated environment after compatibility/resource POC; standard pipeline only",
+      "custom_work": "deterministic router, config/version/output receipt, corpus fixtures",
+      "production_change_now": false
+    },
+    {
+      "name": "Zotero_and_translators",
+      "role": "optional scholarly capture, bibliographic metadata, annotation and citations",
+      "status": "TEST_FURTHER_OPTIONAL",
+      "required": false,
+      "license": "AGPL-3.0 ecosystem",
+      "source": "https://github.com/zotero/zotero",
+      "deployment": "desktop/local; adopt only if academic workflow justifies a second UI",
+      "custom_work": "neutral-id field/export and attachment-hash reconciliation",
+      "production_change_now": false
+    },
+    {
+      "name": "GROBID",
+      "role": "scholarly citation/reference TEI extraction",
+      "status": "TEST_FURTHER_ROUTED_FALLBACK",
+      "required": false,
+      "license": "Apache-2.0",
+      "source": "https://github.com/grobidOrg/grobid",
+      "deployment": "local service/container only if evaluation beats default parser for citations",
+      "custom_work": "document-type routing and TEI normalization",
+      "production_change_now": false
+    },
+    {
+      "name": "OCRmyPDF_Tesseract",
+      "role": "image-only PDF OCR",
+      "status": "TEST_FURTHER_ROUTED_FALLBACK",
+      "required": false,
+      "license": "MPL-2.0 and Apache-2.0",
+      "source": "https://ocrmypdf.readthedocs.io/en/latest/",
+      "deployment": "local CLI with pinned versions/languages only if scan corpus exists",
+      "custom_work": "image-only detection, command receipt and QA status",
+      "production_change_now": false
+    },
+    {
+      "name": "Apache_Tika",
+      "role": "broad MIME/text/metadata fallback",
+      "status": "DEFER_UNTIL_FORMAT_GAP",
+      "required": false,
+      "license": "Apache-2.0",
+      "source": "https://tika.apache.org/3.3.0/formats.html",
+      "deployment": "local CLI/server only if Docling evaluation leaves a format gap",
+      "custom_work": "router adapter",
+      "production_change_now": false
+    },
+    {
+      "name": "DuckDB",
+      "role": "optional batch analytics over exported evidence manifests",
+      "status": "DEFER_READ_ONLY_ANALYTICS",
+      "required": false,
+      "license": "MIT",
+      "source": "https://duckdb.org/docs/stable/core_extensions/full_text_search",
+      "deployment": "reuse existing runtime only; separate evidence lifecycle from operational warehouse",
+      "custom_work": "none until a query need exists",
+      "production_change_now": false
+    },
+    {
+      "name": "ArchiveBox",
+      "role": "optional multi-format/WARC-grade web preservation",
+      "status": "DEFER_UNTIL_REPLAY_REQUIREMENT",
+      "required": false,
+      "license": "MIT",
+      "source": "https://github.com/ArchiveBox/ArchiveBox",
+      "deployment": "not now",
+      "custom_work": "neutral export adapter if later adopted",
+      "production_change_now": false
+    },
+    {
+      "name": "Tantivy",
+      "role": "embedded scale-up search engine",
+      "status": "DEFER_UNTIL_SQLITE_BENCHMARK_FAILURE",
+      "required": false,
+      "license": "MIT",
+      "source": "https://github.com/quickwit-oss/tantivy",
+      "deployment": "not now",
+      "custom_work": "Rust/binding schema and index synchronization",
+      "production_change_now": false
+    },
+    {
+      "name": "Meilisearch_Typesense_vector_database",
+      "role": "network search/semantic service",
+      "status": "REJECT_BASELINE",
+      "required": false,
+      "license": "varies; Meilisearch current repository is MIT AND BUSL-1.1",
+      "deployment": "none",
+      "custom_work": "not justified",
+      "production_change_now": false
+    },
+    {
+      "name": "embeddings_or_LLM_pipeline",
+      "role": "optional semantic retrieval and derived synthesis",
+      "status": "DEFER_UNTIL_EVALUATED_RECALL_GAP",
+      "required": false,
+      "license": "model/provider specific",
+      "deployment": "none",
+      "custom_work": "only a rebuildable derived-record contract if later approved",
+      "production_change_now": false
+    }
+  ],
+  "minimal_custom_glue": [
+    "evidence receipt JSON Schema and content-addressed object writer",
+    "Karakeep accepted-item exporter",
+    "deterministic parser router and derivative receipts",
+    "identifier/URL normalization and exact deduplication",
+    "reviewed entity alias/source-classification rules",
+    "SQLite metadata/FTS indexer and query CLI",
+    "per-source rights/update registry",
+    "read-only IPOS evidence-result contract"
+  ],
+  "explicitly_not_custom": [
+    "capture user interface",
+    "PDF parser or OCR engine",
+    "citation manager",
+    "crawler platform",
+    "search server",
+    "vector database",
+    "autonomous truth or contradiction engine"
+  ],
+  "preimplementation_human_decisions": [
+    "storage, encryption and backup location",
+    "private/licensed evidence policy",
+    "source allowlist and resource quotas",
+    "existing Karakeep deployment and Zotero need",
+    "isolated parser/capture POC corpus and pass thresholds",
+    "read-only evidence interface and separate promotion governance"
+  ]
+}

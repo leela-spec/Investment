@@ -1,0 +1,115 @@
+{
+  "schema_version": "1.0",
+  "track": "R3",
+  "as_of": "2026-08-23",
+  "repo_pin": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+  "scale": "Each criterion score is an integer from 0 through that criterion's weight; total is the sum out of 100.",
+  "weights": {
+    "evidence_provenance": 20,
+    "source_preservation_export": 15,
+    "retrieval_quality": 15,
+    "local_free": 10,
+    "deterministic_operation": 10,
+    "breadth_supported_evidence": 10,
+    "automation_interfaces": 10,
+    "maturity": 5,
+    "maintenance_simplicity": 5
+  },
+  "assumptions": [
+    "Personal/local research scale; no multi-tenant search requirement.",
+    "Originals and neutral metadata must survive replacement of any UI application.",
+    "AI and embeddings are optional and cannot be source truth.",
+    "Existing operational IPOS DuckDB and knowledge files remain separate.",
+    "Scores are research judgments, not production benchmarks."
+  ],
+  "options": [
+    {
+      "id": "A",
+      "name": "Karakeep-centric evidence library",
+      "scores": {
+        "evidence_provenance": 15,
+        "source_preservation_export": 10,
+        "retrieval_quality": 13,
+        "local_free": 10,
+        "deterministic_operation": 7,
+        "breadth_supported_evidence": 8,
+        "automation_interfaces": 9,
+        "maturity": 4,
+        "maintenance_simplicity": 4
+      },
+      "total": 80,
+      "rationale": "Strong capture/search/API and local deployment; weaker neutral content identity, structured financial metadata and app-independent export."
+    },
+    {
+      "id": "B",
+      "name": "Zotero-centric evidence library",
+      "scores": {
+        "evidence_provenance": 17,
+        "source_preservation_export": 13,
+        "retrieval_quality": 11,
+        "local_free": 10,
+        "deterministic_operation": 9,
+        "breadth_supported_evidence": 7,
+        "automation_interfaces": 8,
+        "maturity": 5,
+        "maintenance_simplicity": 4
+      },
+      "total": 84,
+      "rationale": "Excellent scholarly metadata/citations and mature translators; narrower general-document/data/web-version coverage and official export limitations."
+    },
+    {
+      "id": "C",
+      "name": "Karakeep plus Zotero",
+      "scores": {
+        "evidence_provenance": 18,
+        "source_preservation_export": 13,
+        "retrieval_quality": 14,
+        "local_free": 10,
+        "deterministic_operation": 8,
+        "breadth_supported_evidence": 10,
+        "automation_interfaces": 9,
+        "maturity": 5,
+        "maintenance_simplicity": 2
+      },
+      "total": 89,
+      "rationale": "Broadest mature UI combination, but two canonical libraries create identity, synchronization, backup and search maintenance costs."
+    },
+    {
+      "id": "D",
+      "name": "Filesystem/Markdown plus deterministic search",
+      "scores": {
+        "evidence_provenance": 20,
+        "source_preservation_export": 15,
+        "retrieval_quality": 13,
+        "local_free": 10,
+        "deterministic_operation": 10,
+        "breadth_supported_evidence": 9,
+        "automation_interfaces": 7,
+        "maturity": 4,
+        "maintenance_simplicity": 4
+      },
+      "total": 92,
+      "rationale": "Best neutral preservation and determinism with simple FTS, but lacks a polished capture/review workflow and needs small glue."
+    },
+    {
+      "id": "E",
+      "name": "Hybrid evidence store plus local search index",
+      "scores": {
+        "evidence_provenance": 20,
+        "source_preservation_export": 15,
+        "retrieval_quality": 15,
+        "local_free": 10,
+        "deterministic_operation": 10,
+        "breadth_supported_evidence": 10,
+        "automation_interfaces": 10,
+        "maturity": 4,
+        "maintenance_simplicity": 3
+      },
+      "total": 97,
+      "rationale": "Neutral immutable truth plus replaceable Karakeep/Zotero views, local FTS and routed parsers maximizes evidence qualities; boundary glue and integration tests remain."
+    }
+  ],
+  "ranking": ["E", "D", "C", "B", "A"],
+  "recommended": "E",
+  "sensitivity": "E leads D by 5. If capture integration is not adopted, E degrades safely to D because the canonical object/manifest contract is unchanged."
+}

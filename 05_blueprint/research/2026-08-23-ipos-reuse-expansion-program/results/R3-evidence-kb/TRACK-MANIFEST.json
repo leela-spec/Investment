@@ -1,0 +1,136 @@
+{
+  "schema_version": "1.0",
+  "track_id": "R3",
+  "track_name": "General Financial Evidence Knowledge Base",
+    "status": "ACCEPTED",
+  "started_at": "2026-08-23T14:30:00Z",
+  "completed_at": "2026-08-23T16:19:02Z",
+  "repository": {
+    "slug": "leela-spec/Investment",
+    "branch_requested": "main",
+    "effective_pin": "6353c1acb768d61a7be83477e1cc4fee55653d97",
+    "local_checkout": "/workspace/scratch/9c5a4256e46f/repo_r3",
+    "writes_to_repository": false
+  },
+  "authority": {
+    "launcher_path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/AUTONOMOUS-PROGRAM-LAUNCHER.md",
+    "launcher_blob_sha1": "705d7bb4f4aad240f3451d2c5794e3c8d146e254",
+    "method_basis_path": "05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/METHOD-BASIS.md",
+    "method_basis_blob_sha1": "146725254888cf9182228493e45c08e346dece0a",
+    "prompt_path": "ExternalAddonsResearch/prompts/R3_General_Financial_Evidence_Knowledge_Base.md",
+    "prompt_blob_sha1": "bc0ce869817804b6cc1622792b1d04e043027668",
+    "other_track_prompts_read": false
+  },
+  "repo_grounding": {
+    "files_or_areas_inspected": [
+      "PROJECT_STATE.md",
+      "05_blueprint/00_MASTER_PLAN.md",
+      "03_extract/indicators.jsonl",
+      "03_extract/rules.jsonl",
+      "03_extract/process.jsonl",
+      "04_playbook/modules/",
+      "configs/ai.yaml",
+      "configs/registry.yaml",
+      "configs/contradictions.yaml",
+      "ipos/warehouse/",
+      "ipos/aggregate/contradictions.py",
+      "ipos/golden.py",
+      "tests/test_warehouse.py",
+      "tests/test_contradictions.py",
+      "tests/test_golden.py"
+    ],
+    "boundary_conclusion": "External evidence is a read-only sidecar and must not be collapsed into operational extracts, playbook, configs, scoring, governors or the operational DuckDB lifecycle."
+  },
+  "research": {
+    "as_of": "2026-08-23",
+    "primary_source_first": true,
+    "source_inventory_entries": 77,
+    "current_repository_heads_checked": [
+      "docling-project/docling@e1cb2b234c48ff29746b0f2f843d07f8e23905a0",
+      "karakeep-app/karakeep@7ca5ee236b96cd659096b1530c5be3fdcd8e4470",
+      "zotero/translators@56eaac33b15494b35dc3dbf86039350e4e1a9166",
+      "zirui-song/claude-skills@ab1129a886287aa6c19e544c9f218cb4214816a3",
+      "herbertkokholm/zotero-mcp@82ae5cc0b1b6ed5fec373724b8ef2ff38e8d8421"
+    ],
+    "citation_verification": "Consequential claims are linked to official documentation, regulator/institution pages or first-party source/license files; community sources support only evaluation of themselves.",
+    "poc": {
+      "status": "NOT_REQUIRED",
+      "reason": "R3 does not explicitly request a POC. Installation and production mutation were outside this track."
+    }
+  },
+  "decision": {
+    "recommended_option": "E",
+    "name": "hybrid evidence store plus local search index",
+    "mcda_score": 97,
+    "runner_up": "D",
+    "runner_up_score": 92,
+    "summary": "Immutable content-addressed originals and JSON receipts are canonical; SQLite FTS5 is the rebuildable unified index; Karakeep is the capture/review UI; Zotero is optional for papers; Docling is the default parser subject to an isolated test; AI and embeddings remain optional derivatives."
+  },
+  "outputs": [
+    {
+      "path": "EVIDENCE_KB_REQUIREMENTS.md",
+      "sha256": "91d83a23d55b6c791327386573fbf87fd9f93f8be337f1d5fa16a1207b1a0776"
+    },
+    {
+      "path": "TOOL_LANDSCAPE.md",
+      "sha256": "6ecd00b03ce73743e53a522c992547b7ad68cf3b8681a0b5a8051e5591d2517d"
+    },
+    {
+      "path": "BATTLE_TESTED_SKILLS.md",
+      "sha256": "fd3297dfe3aa605192815d874a5b361926b809c9a418832ef28dd37f0f0cd7b4"
+    },
+    {
+      "path": "DOWNLOADABLE_FINANCIAL_CORPORA.md",
+      "sha256": "2e1e2b234de95ef0a7266f6ac0bb906475668efac8c628dfcb168875ffd8df7a"
+    },
+    {
+      "path": "KB_ARCHITECTURE_OPTIONS.md",
+      "sha256": "ac06abc2d1af2e77a95e8a96e32404f2ae39be515405dc9f156e8a83662755a2"
+    },
+    {
+      "path": "MCDA.json",
+      "sha256": "969e20c3afa0893d0d90413ef2ed9463cb438c80e7ab4fe5e739141ffa10caa1"
+    },
+    {
+      "path": "RECOMMENDATION.md",
+      "sha256": "02a3e82f573a0b44276eca1d2b5c3c10619c12142e8168d1717842cea6c83e70"
+    },
+    {
+      "path": "INSTALLATION_COMPONENT_MAP.json",
+      "sha256": "4ca0eee8a6a79d32827480b0190c2b257e3f6d5a70d99b977beff1108db9d180"
+    },
+    {
+      "path": "SOURCES.md",
+      "sha256": "65c82fcb7bf112c540c7c5184b5f2108aa475dbeb51793a532dd710fe6c42de3"
+    },
+        {
+            "path": "GAPS_AND_UNCERTAINTIES.md",
+      "sha256": "1a8b797e6a7aa1466018fd124a37f651e21d7a10efb6bb030f5e82a37d0e6ce5"
+    },
+    {
+      "path": "TRACK-PLAN.md",
+      "sha256": "8b4a23e298bc637cd7dd5141d7388f032629fb8ba19e029ee9fec7aaba02bff1"
+    },
+    {
+      "path": "REVIEW.md",
+      "sha256": "d7043bc032180d1508cd0e4bb99c75bc64d1c5d4ccb6fed0180eb890de3479b1"
+    }
+  ],
+  "validation": {
+    "required_deliverables_present": true,
+    "json_parse": "PASS",
+    "mcda_weights_sum": 100,
+    "mcda_totals_recalculated": "PASS",
+    "all_five_architecture_options_compared": true,
+    "embeddings_required": false,
+    "production_changes": false,
+    "blockers": []
+  },
+    "review": {
+        "independent_review_status": "ACCEPT",
+        "reviewer_score": 17,
+        "correction_count": 0,
+        "review_file": "REVIEW.md",
+        "self_review_note": "Researcher checked completeness, JSON validity, score arithmetic, source-role separation and explicit uncertainties; independent review then accepted the track with documented qualifications."
+    }
+}
