@@ -1,0 +1,1400 @@
+# IPOS Long-Term Mega-System Expansion - 120-indicator registry.
+#
+# Expands configs/registry.yaml (golden-20 walking skeleton) to 120 indicators
+# across Equity, Rates, Credit, FX, Commodities, CFTC COT positioning
+# (commercial / speculator net longs), ISM subindices and global liquidity.
+#
+# SCHEMA: identical to configs/registry.yaml and validated against the pydantic
+# models in ipos/config/models.py (RegistryEntry: extra='forbid'). Load with:
+#   from pathlib import Path
+#   from ipos.config.load import load_registry
+#   reg = load_registry(Path('configs'))   # after swapping registry.yaml, or a temp dir
+#
+# CONVENTIONS (inherited from the golden-20 file):
+# * `higher_is_better` is relative to risk-on / macro-supportive.
+# * scoring_method: percentile (rank in trailing window), zscore (tanh-damped),
+#   band (explicit thresholds; directionality encoded IN the band scores).
+# * Curve bands follow rules.jsonl convention: <0 -> 20 ... >=1.0 -> 90.
+# * `needs_verification: true` marks source codes not yet confirmed live;
+#   run ipos-doctor before treating them as critical. NEVER let --seed-offline
+#   fill missing rows for any series here (see the HY_OAS history-cap audit in
+#   configs/registry.yaml).
+# * COT series are wired as manual_csv drops from the free CFTC API until a
+#   native connector exists; ISM subindices use their official FRED codes.
+
+indicators:
+
+  # ===== Equity =====
+  - series_id: SPX
+    name: "S&P 500"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^spx"}
+      - {type: yahoo, locator: "^GSPC"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    critical: true
+    playbook_refs: [MARKET_CONDITIONS]
+  - series_id: NDX
+    name: "Nasdaq 100"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^ndx"}
+      - {type: yahoo, locator: "^NDX"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: RUT
+    name: "Russell 2000"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^rut"}
+      - {type: yahoo, locator: "^RUT"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: DJIA
+    name: "Dow Jones Industrial Average"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^dji"}
+      - {type: yahoo, locator: "^DJI"}
+      - {type: fred, locator: DJIA}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: VIXCLS
+    name: "CBOE VIX"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: fred, locator: VIXCLS}
+      - {type: stooq, locator: "^vix"}
+      - {type: yahoo, locator: "^VIX"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: VXV
+    name: "CBOE VIX3M"
+    asset_class: Equity
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "^VIX3M"}
+      - {type: stooq, locator: vix3m}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: EquityRisk
+    needs_verification: true
+  - series_id: TERM_VIX
+    name: "VIX term structure slope (VIX3M/VIX)"
+    asset_class: Equity
+    frequency: D
+    unit: ratio
+    sources:
+      - {type: manual_csv, locator: "vix_term_*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    needs_verification: true
+  - series_id: SPX_200DMA_BREADTH
+    name: "% S&P 500 members above 200d MA"
+    asset_class: Equity
+    frequency: W
+    unit: pct
+    sources:
+      - {type: manual_csv, locator: "breadth_spx200*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    playbook_refs: [TECH_MOVING_AVERAGES]
+  - series_id: SPX_RISK_PREMIUM_ERP
+    name: "Equity risk premium (1/y - US10Y)"
+    asset_class: Equity
+    frequency: W
+    unit: pct
+    sources:
+      - {type: manual_csv, locator: "erp*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: PUTCALL_CBOE
+    name: "CBOE equity put/call ratio"
+    asset_class: Equity
+    frequency: D
+    unit: ratio
+    sources:
+      - {type: manual_csv, locator: "putcall_cboe*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: EquityRisk
+    playbook_refs: [SENTIMENT_POSITIONING]
+  - series_id: DAX
+    name: "DAX"
+    asset_class: Equity
+    region: "EU"
+    frequency: D
+    unit: index
+    sources:
+      - {type: stooq, locator: "^dax"}
+      - {type: yahoo, locator: "^GDAXI"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: CAC40
+    name: "CAC 40"
+    asset_class: Equity
+    region: "EU"
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "^FCHI"}
+      - {type: stooq, locator: "^cac"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: FTSE100
+    name: "FTSE 100"
+    asset_class: Equity
+    region: "UK"
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "^FTSE"}
+      - {type: stooq, locator: "^ftm"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: NIKKEI
+    name: "Nikkei 225"
+    asset_class: Equity
+    region: "JP"
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "^N225"}
+      - {type: stooq, locator: "^nkx"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: HSI
+    name: "Hang Seng"
+    asset_class: Equity
+    region: "HK"
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "^HSI"}
+      - {type: stooq, locator: "^hsi"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: SHCOMP
+    name: "Shanghai Composite"
+    asset_class: Equity
+    region: "CN"
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "000001.SS"}
+      - {type: stooq, locator: "^shc"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: EEM
+    name: "MSCI Emerging Markets ETF"
+    asset_class: Equity
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: EEM}
+      - {type: stooq, locator: "eem.us"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: EFA
+    name: "MSCI EAFE ETF"
+    asset_class: Equity
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: EFA}
+      - {type: stooq, locator: "efa.us"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: W5000
+    name: "Wilshire 5000 total market"
+    asset_class: Equity
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: WILL5000PRFC}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: NASDAQCOM
+    name: "NASDAQ Composite"
+    asset_class: Equity
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: NASDAQCOM}
+      - {type: yahoo, locator: "^IXIC"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+  - series_id: NYSE_ADV_DEC_50DMA
+    name: "NYSE advance-decline 50d MA"
+    asset_class: Equity
+    frequency: W
+    unit: count
+    sources:
+      - {type: manual_csv, locator: "nyse_advdec*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    playbook_refs: [TECH_VOLUME_CONFIRMATION]
+  - series_id: SPX_TURNOVER
+    name: "S&P 500 dollar volume turnover"
+    asset_class: Equity
+    frequency: W
+    unit: ratio
+    sources:
+      - {type: manual_csv, locator: "spx_turnover*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: EquityRisk
+    playbook_refs: [TECH_VOLUME_CONFIRMATION]
+
+  # ===== Rates =====
+  - series_id: DGS1
+    name: "1y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS1}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS2
+    name: "2y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS2}
+      - {type: ustreasury, locator: BC_2YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS3
+    name: "3y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS3}
+      - {type: ustreasury, locator: BC_3YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS5
+    name: "5y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS5}
+      - {type: ustreasury, locator: BC_5YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS7
+    name: "7y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS7}
+      - {type: ustreasury, locator: BC_7YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS10
+    name: "10y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS10}
+      - {type: ustreasury, locator: BC_10YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS20
+    name: "20y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS20}
+      - {type: ustreasury, locator: BC_20YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: DGS30
+    name: "30y Treasury yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DGS30}
+      - {type: ustreasury, locator: BC_30YEAR}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+  - series_id: T10Y2Y
+    name: "10y-2y Treasury curve"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T10Y2Y}
+      - {type: ustreasury, locator: BC_10YEAR-BC_2YEAR}
+    higher_is_better: true
+    scoring_method: band
+    scoring_params:
+      bands:
+        - {upper: 0.0, score: 20}
+        - {upper: 0.5, score: 45}
+        - {upper: 1.0, score: 70}
+        - {upper: null, score: 90}
+    module_id: GrowthRisk
+    critical: true
+  - series_id: T10Y3M
+    name: "10y-3m Treasury curve"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T10Y3M}
+      - {type: ustreasury, locator: BC_10YEAR-BC_3MONTH}
+    higher_is_better: true
+    scoring_method: band
+    scoring_params:
+      bands:
+        - {upper: 0.0, score: 20}
+        - {upper: 0.5, score: 45}
+        - {upper: 1.0, score: 70}
+        - {upper: null, score: 90}
+    module_id: GrowthRisk
+  - series_id: T10YIE
+    name: "10y breakeven inflation"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T10YIE}
+      - {type: ustreasury, locator: BC_10YRIYEAR}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: T5YIE
+    name: "5y breakeven inflation"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: T5YIE}
+      - {type: ustreasury, locator: BC_5YRIYEAR}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: DFII10
+    name: "10y TIPS real yield"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DFII10}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: DFF
+    name: "Effective Fed Funds rate"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: DFF}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: SOFR
+    name: "Secured Overnight Financing Rate"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: SOFR}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: US10Y_STOOQ
+    name: "US 10y yield (market, Stooq)"
+    asset_class: Rates
+    frequency: D
+    unit: pct
+    sources:
+      - {type: stooq, locator: "10usy.b"}
+      - {type: yahoo, locator: "^TNX"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+    needs_verification: true
+
+  # ===== Credit =====
+  - series_id: HY_OAS
+    name: "US High Yield OAS"
+    asset_class: Credit
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLH0A0HYM2}
+      - {type: manual_csv, locator: "hy_oas*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+    critical: true
+    playbook_refs: [SENTIMENT_POSITIONING]
+  - series_id: IG_OAS
+    name: "US Investment Grade OAS"
+    asset_class: Credit
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLC0A0CM}
+      - {type: manual_csv, locator: "ig_oas*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+  - series_id: CCC_OAS
+    name: "US CCC OAS"
+    asset_class: Credit
+    frequency: W
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLH0A3HYC}
+      - {type: manual_csv, locator: "ccc_oas*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+  - series_id: BB_OAS
+    name: "US BB-rated OAS"
+    asset_class: Credit
+    frequency: W
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLH0A1HYBB}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+  - series_id: EM_HY_OAS
+    name: "EM corporate HY OAS"
+    asset_class: Credit
+    frequency: W
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMLEMHBHYCRPIOAS}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+  - series_id: EU_HY_OAS
+    name: "Euro HY OAS"
+    asset_class: Credit
+    region: "EU"
+    frequency: W
+    unit: pct
+    sources:
+      - {type: fred, locator: BAMELB0HY0M2}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Credit
+  - series_id: TED_SPREAD
+    name: "TED spread (LIBOR-Tbill)"
+    asset_class: Credit
+    frequency: D
+    unit: pct
+    sources:
+      - {type: fred, locator: TEDRATE}
+      - {type: manual_csv, locator: "ted*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+    needs_verification: true
+  - series_id: CP_SPREAD_3M
+    name: "3m commercial paper - Tbill spread"
+    asset_class: Credit
+    frequency: W
+    unit: pct
+    sources:
+      - {type: fred, locator: CP3M}
+      - {type: manual_csv, locator: "cp_spread*.csv"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+    needs_verification: true
+
+  # ===== FX =====
+  - series_id: DTWEXBGS
+    name: "Trade-weighted USD (broad goods)"
+    asset_class: FX
+    frequency: D
+    unit: index
+    sources:
+      - {type: fred, locator: DTWEXBGS}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: FX
+  - series_id: EURUSD
+    name: "EUR/USD"
+    asset_class: FX
+    frequency: D
+    unit: rate
+    sources:
+      - {type: stooq, locator: eurusd}
+      - {type: yahoo, locator: "EURUSD=X"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: FX
+  - series_id: USDJPY
+    name: "USD/JPY"
+    asset_class: FX
+    frequency: D
+    unit: rate
+    sources:
+      - {type: stooq, locator: usdjpy}
+      - {type: yahoo, locator: "JPY=X"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: FX
+  - series_id: GBPUSD
+    name: "GBP/USD"
+    asset_class: FX
+    frequency: D
+    unit: rate
+    sources:
+      - {type: stooq, locator: gbpusd}
+      - {type: yahoo, locator: "GBPUSD=X"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: FX
+  - series_id: AUDUSD
+    name: "AUD/USD"
+    asset_class: FX
+    frequency: D
+    unit: rate
+    sources:
+      - {type: stooq, locator: audusd}
+      - {type: yahoo, locator: "AUDUSD=X"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: FX
+  - series_id: DX_Y
+    name: "ICE Dollar Index proxy (DX-Y)"
+    asset_class: FX
+    frequency: D
+    unit: index
+    sources:
+      - {type: yahoo, locator: "DX-Y.NYB"}
+      - {type: stooq, locator: "dx.f"}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: FX
+    needs_verification: true
+  - series_id: EM_FX_ETF
+    name: "Emerging market FX ETF (CEW)"
+    asset_class: FX
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: CEW}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: FX
+  - series_id: JPY_REAL_EFF
+    name: "JPY real effective exchange rate"
+    asset_class: FX
+    region: "JP"
+    frequency: M
+    unit: index
+    sources:
+      - {type: dbnomics, locator: "BIS/REER/JPN"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: FX
+    needs_verification: true
+
+  # ===== Commodities =====
+  - series_id: WTI
+    name: "WTI crude oil spot"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: fred, locator: DCOILWTICO}
+      - {type: stooq, locator: "cl.f"}
+      - {type: yahoo, locator: "CL=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: BRENT
+    name: "Brent crude oil spot"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: fred, locator: DCOILBRENTEU}
+      - {type: yahoo, locator: "BZ=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: HH_NATGAS
+    name: "Henry Hub natural gas"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: fred, locator: DHHNGSP}
+      - {type: yahoo, locator: "NG=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: GOLD
+    name: "Gold spot"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: stooq, locator: xauusd}
+      - {type: yahoo, locator: "GC=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: SILVER
+    name: "Silver spot"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: stooq, locator: xagusd}
+      - {type: yahoo, locator: "SI=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: COPPER
+    name: "Copper futures"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: stooq, locator: "hg.f"}
+      - {type: yahoo, locator: "HG=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+    needs_verification: true
+  - series_id: WHEAT
+    name: "Wheat futures"
+    asset_class: Commodities
+    frequency: D
+    unit: usd_cents
+    sources:
+      - {type: fred, locator: PWHEAMTUSDM}
+      - {type: stooq, locator: "zw.f"}
+      - {type: yahoo, locator: "ZW=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: CORN
+    name: "Corn futures"
+    asset_class: Commodities
+    frequency: D
+    unit: usd_cents
+    sources:
+      - {type: fred, locator: PMAIZMTUSDM}
+      - {type: stooq, locator: "zc.f"}
+      - {type: yahoo, locator: "ZC=F"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: DBC
+    name: "Broad commodity ETF (DBC)"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: DBC}
+      - {type: stooq, locator: "dbc.us"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: XLE
+    name: "Energy sector ETF"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: XLE}
+      - {type: stooq, locator: "xle.us"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+  - series_id: DBA
+    name: "Agriculture ETF (DBA)"
+    asset_class: Commodities
+    frequency: D
+    unit: usd
+    sources:
+      - {type: yahoo, locator: DBA}
+      - {type: stooq, locator: "dba.us"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Commodities
+
+  # ===== Positioning =====
+  - series_id: COT_SPX_COMM
+    name: "CFTC COT S&P 500 futures: Commercial net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_spx_comm_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_SPX_SPEC
+    name: "CFTC COT S&P 500 futures: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_spx_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_10Y_COMM
+    name: "CFTC COT 10y T-note: Commercial net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_10y_comm_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_10Y_SPEC
+    name: "CFTC COT 10y T-note: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_10y_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_ED_SPEC
+    name: "CFTC COT SOFR futures: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_ed_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_USD_IDX_SPEC
+    name: "CFTC COT USD index: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_usd_idx_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_JPY_COMM
+    name: "CFTC COT JPY futures: Commercial net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_jpy_comm_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_EUR_COMM
+    name: "CFTC COT EUR futures: Commercial net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_eur_comm_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_CRUDE_SPEC
+    name: "CFTC COT WTI crude: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_crude_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_GOLD_COMM
+    name: "CFTC COT gold: Commercial net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_gold_comm_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Credit
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_COPPER_SPEC
+    name: "CFTC COT copper: Speculator net long"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_copper_spec_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+  - series_id: COT_AGG_SPEC_Z
+    name: "Aggregate managed-money net position z-score"
+    asset_class: Positioning
+    frequency: W
+    unit: contracts
+    sources:
+      - {type: manual_csv, locator: "cot/cot_agg_spec_z_*.csv"}
+      - {type: manual_csv, locator: "cot/deaggregated_*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Fundamentals
+    playbook_refs: [SENTIMENT_POSITIONING]
+    needs_verification: true
+
+  # ===== Macro =====
+  - series_id: ISM_PMI
+    name: "ISM Manufacturing PMI composite"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPM}
+      - {type: manual_csv, locator: "ism/ism_pmi*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_NEW_ORDERS
+    name: "ISM Manufacturing New Orders"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMNOI}
+      - {type: manual_csv, locator: "ism/ism_new_orders*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_PRICES
+    name: "ISM Manufacturing Prices Paid"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMPRI}
+      - {type: manual_csv, locator: "ism/ism_prices*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_EMPLOYMENT
+    name: "ISM Manufacturing Employment"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMEI}
+      - {type: manual_csv, locator: "ism/ism_employment*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_INVENTORIES
+    name: "ISM Manufacturing Inventories"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMNMI}
+      - {type: manual_csv, locator: "ism/ism_inventories*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_SUPPLIER_DELIV
+    name: "ISM Supplier Deliveries"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMSDI}
+      - {type: manual_csv, locator: "ism/ism_supplier_deliv*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_BACKLOG
+    name: "ISM Order Backlog"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMKC}
+      - {type: manual_csv, locator: "ism/ism_backlog*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+    needs_verification: true
+  - series_id: ISM_NEW_EXPORT_ORDERS
+    name: "ISM New Export Orders"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMXOI}
+      - {type: manual_csv, locator: "ism/ism_new_export_orders*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+  - series_id: ISM_NONMAN_PMI
+    name: "ISM Services (non-manufacturing) PMI"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: NAPMPI}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Fundamentals
+    needs_verification: true
+
+  # ===== Liquidity =====
+  - series_id: WALCL
+    name: "Fed balance sheet (total assets)"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: WALCL}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: WRESBAL
+    name: "Reserve balances at the Fed"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: WRESBAL}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: RRP_REVERSE_REPO
+    name: "Overnight reverse repo facility usage"
+    asset_class: Liquidity
+    frequency: D
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: RRPONTSYD}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: TGA_BALANCE
+    name: "Treasury General Account balance"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: WTREGEN}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: NET_LIQ_FED
+    name: "Net liquidity = Fed assets - RRP - TGA"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: manual_csv, locator: "net_liq*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: BOGMBASE
+    name: "Adjusted monetary base"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: BOGMBASE}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: M2_SL
+    name: "M2 money supply"
+    asset_class: Liquidity
+    frequency: M
+    unit: usd_billions
+    sources:
+      - {type: fred, locator: M2SL}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: ECB_M3
+    name: "ECB euro-area M3 annual growth"
+    asset_class: Liquidity
+    region: "EU"
+    frequency: M
+    unit: pct
+    sources:
+      - {type: dbnomics, locator: "ECB/BSI/M.U2.Y.V.M20.X.1.U2.2300.Z01.A"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+    needs_verification: true
+  - series_id: ECB_ASSETS
+    name: "ECB consolidated balance sheet total"
+    asset_class: Liquidity
+    region: "EU"
+    frequency: W
+    unit: eur_millions
+    sources:
+      - {type: dbnomics, locator: "ECB/EXR/W.TOTL.EUR"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+    needs_verification: true
+  - series_id: BOJ_BASE_MONEY
+    name: "Bank of Japan monetary base"
+    asset_class: Liquidity
+    region: "JP"
+    frequency: W
+    unit: jpy_billions
+    sources:
+      - {type: dbnomics, locator: "BOJ/MD/MD11"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+    needs_verification: true
+  - series_id: PBOC_M2_CN
+    name: "China M2 growth"
+    asset_class: Liquidity
+    region: "CN"
+    frequency: M
+    unit: pct
+    sources:
+      - {type: dbnomics, locator: "IMF/IFS/CN.FMB_XDC"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+    needs_verification: true
+  - series_id: GLOBAL_M2_PROXY
+    name: "Global M2 proxy (US+ECB+BOJ+PBOC)"
+    asset_class: Liquidity
+    frequency: W
+    unit: usd_trillions
+    sources:
+      - {type: manual_csv, locator: "global_m2*.csv"}
+    higher_is_better: true
+    scoring_method: zscore
+    module_id: Liquidity
+  - series_id: NFCI
+    name: "Chicago Fed National Financial Conditions Index"
+    asset_class: Liquidity
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: NFCI}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+  - series_id: ANFCI_PROXY
+    name: "Chicago Fed adjusted NFCI (credit leg)"
+    asset_class: Liquidity
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: NFCICREDIT}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+    needs_verification: true
+  - series_id: CB_POLICY_RATE_BLEND
+    name: "Blended G4 policy rate"
+    asset_class: Liquidity
+    frequency: M
+    unit: pct
+    sources:
+      - {type: manual_csv, locator: "g4_policy_rates*.csv"}
+    higher_is_better: false
+    scoring_method: zscore
+    module_id: RatesLiquidity
+    needs_verification: true
+
+  # ===== Macro =====
+  - series_id: UMCSENT
+    name: "UMich consumer sentiment"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: UMCSENT}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: ICSA
+    name: "Initial jobless claims"
+    asset_class: Macro
+    frequency: W
+    unit: count
+    sources:
+      - {type: fred, locator: ICSA}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: UNRATE
+    name: "US unemployment rate"
+    asset_class: Macro
+    frequency: M
+    unit: pct
+    sources:
+      - {type: fred, locator: UNRATE}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: PAYEMS
+    name: "Nonfarm payrolls"
+    asset_class: Macro
+    frequency: M
+    unit: thousands
+    sources:
+      - {type: fred, locator: PAYEMS}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: CPIAUCSL_YOY
+    name: "CPI headline YoY"
+    asset_class: Macro
+    frequency: M
+    unit: pct
+    sources:
+      - {type: fred, locator: CPIAUCSL}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: CPILFESL_YOY
+    name: "Core CPI YoY"
+    asset_class: Macro
+    frequency: M
+    unit: pct
+    sources:
+      - {type: fred, locator: CPILFESL}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: PCEPI_CORE_YOY
+    name: "Core PCE YoY"
+    asset_class: Macro
+    frequency: M
+    unit: pct
+    sources:
+      - {type: fred, locator: PCEPILFE}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: RSAFS
+    name: "Retail sales"
+    asset_class: Macro
+    frequency: M
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: RSAFS}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: HOUST
+    name: "Housing starts"
+    asset_class: Macro
+    frequency: M
+    unit: thousands
+    sources:
+      - {type: fred, locator: HOUST}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: PERMIT
+    name: "Building permits"
+    asset_class: Macro
+    frequency: M
+    unit: thousands
+    sources:
+      - {type: fred, locator: PERMIT}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: INDPRO
+    name: "Industrial production index"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: INDPRO}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: BUSINV_SALES
+    name: "Inventory-to-sales ratio"
+    asset_class: Macro
+    frequency: M
+    unit: ratio
+    sources:
+      - {type: fred, locator: ISRATIO}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: SAHM_RULE
+    name: "Sahm recession indicator"
+    asset_class: Macro
+    frequency: M
+    unit: pp
+    sources:
+      - {type: fred, locator: SAHMREALTIME}
+    higher_is_better: false
+    scoring_method: band
+    scoring_params:
+      bands:
+        - {upper: 0.5, score: 70}
+        - {upper: null, score: 25}
+    module_id: GrowthRisk
+    needs_verification: true
+  - series_id: CFNAI_MA3_PROXY
+    name: "Chicago Fed national activity (monthly)"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: CFNAI}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: GrowthRisk
+  - series_id: PHIL_FED_DIFF
+    name: "Philly Fed diffusion index"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: fred, locator: PHILDIFF}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+  - series_id: CONF_BOARD_LEI
+    name: "Conference Board Leading Economic Index"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: manual_csv, locator: "lei_confboard*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: GrowthRisk
+    needs_verification: true
+  - series_id: GLOBAL_PMI_BLEND
+    name: "Global manufacturing PMI blend (JPMorgan)"
+    asset_class: Macro
+    frequency: M
+    unit: index
+    sources:
+      - {type: manual_csv, locator: "global_pmi*.csv"}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+    needs_verification: true
+  - series_id: US_CHINA_TRADE_GAP
+    name: "US-China trade balance"
+    asset_class: Macro
+    frequency: M
+    unit: usd_millions
+    sources:
+      - {type: fred, locator: BOPGTNA}
+    higher_is_better: true
+    scoring_method: percentile
+    module_id: Fundamentals
+    needs_verification: true
+
+  # ===== Liquidity =====
+  - series_id: STLFSI4
+    name: "St. Louis Fed Financial Stress Index v4"
+    asset_class: Liquidity
+    frequency: W
+    unit: index
+    sources:
+      - {type: fred, locator: STLFSI4}
+    higher_is_better: false
+    scoring_method: percentile
+    module_id: RatesLiquidity
+    needs_verification: true

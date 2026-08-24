@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPOS — Interactive Macro Risk Explorer & Scenario Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between antialiased">
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-50 px-8 py-5 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-indigo-500 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-emerald-500/20">I</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white flex items-center space-x-2">
+                    <span>IPOS Quantitative Macro Explorer</span>
+                    <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 mono">v2.4 (120 Series)</span>
+                </h1>
+                <p class="text-xs text-slate-400 mono">Investment Process Operating System • Real-Time Scenario Engine</p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-4">
+            <div class="text-right hidden sm:block">
+                <div class="text-xs text-slate-400 mono">Active Regime</div>
+                <div class="text-sm font-bold text-amber-400 font-mono">CHOPPY / RISK-OFF (0.60x)</div>
+            </div>
+            <div class="h-8 w-px bg-slate-800"></div>
+            <div class="text-right hidden sm:block">
+                <div class="text-xs text-slate-400 mono">Headline Risk Budget</div>
+                <div class="text-sm font-bold text-emerald-400 font-mono">42 / 100</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-10 flex-grow w-full space-y-8">
+        <!-- Top Metrics Row -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="text-xs text-slate-400 mono mb-1">REGIME CLASSIFICATION</div>
+                <div class="text-2xl font-bold text-amber-400 mb-1">CHOPPY (Late-Cycle)</div>
+                <div class="text-xs text-slate-500">Hysteresis buffer active (3w confirmation)</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="text-xs text-slate-400 mono mb-1">BREADTH / DIFFUSION</div>
+                <div class="text-2xl font-bold text-indigo-400 mb-1">54% Expanding</div>
+                <div class="text-xs text-slate-500">65 of 120 indicators above 50-pt midline</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="text-xs text-slate-400 mono mb-1">CONTRADICTIONS FIRED</div>
+                <div class="text-2xl font-bold text-rose-400 mb-1">4 Active Divergences</div>
+                <div class="text-xs text-slate-500">VIX low vs. HY Credit Spread widening</div>
+            </div>
+            <div class="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 shadow-sm">
+                <div class="text-xs text-slate-400 mono mb-1">RECOMMENDED POSTURE</div>
+                <div class="text-2xl font-bold text-emerald-400 mb-1">DEFENSIVE / HEDGED</div>
+                <div class="text-xs text-slate-500">Overweight T-Bills, Gold, Utilities</div>
+            </div>
+        </section>
+
+        <!-- Interactive Scenario Simulator & 2D Phase Space -->
+        <section class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: Scenario Buttons -->
+            <div class="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                <div>
+                    <h3 class="text-lg font-bold text-white mb-2 flex items-center space-x-2">
+                        <span>Macro Stress-Test Scenarios</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mb-6">Select a scenario to dynamically re-weight macro indicators and view the resulting asset allocation shift.</p>
+                    
+                    <div class="space-y-3">
+                        <button onclick="setScenario('debt')" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/60 transition flex justify-between items-center group">
+                            <div>
+                                <div class="font-bold text-sm text-white group-hover:text-amber-400 transition">A. Big Debt Cycle / Fiscal Dominance</div>
+                                <div class="text-xs text-slate-400">Probability: 28% • Confidence: 76</div>
+                            </div>
+                            <span class="text-xs text-amber-400 font-mono">28%</span>
+                        </button>
+
+                        <button onclick="setScenario('usd')" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/60 transition flex justify-between items-center group">
+                            <div>
+                                <div class="font-bold text-sm text-white group-hover:text-indigo-400 transition">B. USD Weakness & Capital Rotation</div>
+                                <div class="text-xs text-slate-400">Probability: 24% • Confidence: 67</div>
+                            </div>
+                            <span class="text-xs text-indigo-400 font-mono">24%</span>
+                        </button>
+
+                        <button onclick="setScenario('tariffs')" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/60 transition flex justify-between items-center group">
+                            <div>
+                                <div class="font-bold text-sm text-white group-hover:text-rose-400 transition">C. Tariffs / Sticky Stagflation</div>
+                                <div class="text-xs text-slate-400">Probability: 21% • Confidence: 61</div>
+                            </div>
+                            <span class="text-xs text-rose-400 font-mono">21%</span>
+                        </button>
+
+                        <button onclick="setScenario('ai')" class="w-full text-left p-4 rounded-xl border border-slate-700 bg-slate-800/60 hover:bg-slate-700/60 transition flex justify-between items-center group">
+                            <div>
+                                <div class="font-bold text-sm text-white group-hover:text-emerald-400 transition">D. AI Productivity vs. Demand Shock</div>
+                                <div class="text-xs text-slate-400">Probability: 27% • Confidence: 48</div>
+                            </div>
+                            <span class="text-xs text-emerald-400 font-mono">27%</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="pt-6 border-t border-slate-800 text-xs text-slate-500 mono">
+                    Advisor Engine: 126 Rules • 44 Process Steps Active
+                </div>
+            </div>
+
+            <!-- Right: Dynamic Asset Allocation Tilt Chart & Phase Space -->
+            <div class="lg:col-span-2 bg-slate-900/50 border border-slate-800 rounded-3xl p-6 shadow-sm flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-bold text-white">Dynamic Asset Allocation Stance vs. Baseline</h3>
+                        <span id="scenarioLabel" class="text-xs font-mono text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20">Scenario: Big Debt Cycle</span>
+                    </div>
+                    <div class="h-64 w-full">
+                        <canvas id="stanceChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-5 gap-3 pt-6 border-t border-slate-800 text-center text-xs mono">
+                    <div class="p-2 rounded-lg bg-slate-800/40">
+                        <div class="text-slate-400 text-[10px]">T-BILLS / CASH</div>
+                        <div id="valCash" class="text-emerald-400 font-bold mt-0.5">+35% (OW)</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-800/40">
+                        <div class="text-slate-400 text-[10px]">GOLD / METALS</div>
+                        <div id="valGold" class="text-emerald-400 font-bold mt-0.5">+20% (OW)</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-800/40">
+                        <div class="text-slate-400 text-[10px]">EQUITIES (US)</div>
+                        <div id="valEquities" class="text-rose-400 font-bold mt-0.5">-25% (UW)</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-800/40">
+                        <div class="text-slate-400 text-[10px]">EX-US / ASIA</div>
+                        <div id="valExUS" class="text-indigo-400 font-bold mt-0.5">+15% (OW)</div>
+                    </div>
+                    <div class="p-2 rounded-lg bg-slate-800/40">
+                        <div class="text-slate-400 text-[10px]">LONG BONDS</div>
+                        <div id="valBonds" class="text-rose-400 font-bold mt-0.5">-45% (UW)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 120-Indicator Module Heatmap Breakdown -->
+        <section class="bg-slate-900/50 border border-slate-800 rounded-3xl p-6 shadow-sm">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="text-lg font-bold text-white">120-Indicator Module Breakdown</h3>
+                    <p class="text-xs text-slate-400">Scores normalized 0–100 (0 = Extreme Risk-Off / Bearish, 100 = Extreme Risk-On / Bullish)</p>
+                </div>
+                <span class="text-xs mono text-slate-400">DuckDB Warehouse Synced</span>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">EQUITY</div>
+                    <div class="text-lg font-bold text-amber-400 my-1">46</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-amber-400 h-full" style="width: 46%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">RATES</div>
+                    <div class="text-lg font-bold text-rose-400 my-1">32</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-rose-400 h-full" style="width: 32%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">CREDIT</div>
+                    <div class="text-lg font-bold text-rose-400 my-1">28</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-rose-400 h-full" style="width: 28%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">FX / USD</div>
+                    <div class="text-lg font-bold text-indigo-400 my-1">58</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-indigo-400 h-full" style="width: 58%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">COMMODITIES</div>
+                    <div class="text-lg font-bold text-emerald-400 my-1">72</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-emerald-400 h-full" style="width: 72%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">COT POSITION</div>
+                    <div class="text-lg font-bold text-amber-400 my-1">41</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-amber-400 h-full" style="width: 41%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">ISM / MACRO</div>
+                    <div class="text-lg font-bold text-rose-400 my-1">37</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-rose-400 h-full" style="width: 37%"></div>
+                    </div>
+                </div>
+                <div class="p-3 rounded-xl bg-slate-800/40 border border-slate-700/50 text-center">
+                    <div class="text-[11px] text-slate-400 mono">LIQUIDITY</div>
+                    <div class="text-lg font-bold text-rose-400 my-1">29</div>
+                    <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                        <div class="bg-rose-400 h-full" style="width: 29%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="border-t border-slate-800 py-6 px-8 text-center text-xs text-slate-500 mono">
+        IPOS Quantitative Process OS • Windows Task Scheduler Sync: Saturdays 05:00 AM • Free Keyless Engine
+    </footer>
+
+    <script>
+        const ctx = document.getElementById('stanceChart').getContext('2d');
+        const stanceChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Cash/Bills', 'Gold/Metals', 'US Equities', 'Ex-US / Asia', 'Long Bonds', 'Commodities'],
+                datasets: [
+                    {
+                        label: 'Standard Benchmark 60/40',
+                        data: [10, 0, 45, 15, 30, 0],
+                        backgroundColor: '#334155'
+                    },
+                    {
+                        label: 'IPOS Dynamic Risk Tilt',
+                        data: [35, 20, 20, 15, 0, 10],
+                        backgroundColor: '#10b981'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'JetBrains Mono' } } }
+                },
+                scales: {
+                    x: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }, grid: { color: '#1e293b' } },
+                    y: { ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono' } }, grid: { color: '#1e293b' } }
+                }
+            }
+        });
+
+        const scenarios = {
+            debt: {
+                label: 'Scenario: Big Debt Cycle / Fiscal Dominance',
+                data: [35, 20, 20, 15, 0, 10],
+                cash: '+35% (OW)', gold: '+20% (OW)', eq: '-25% (UW)', exus: '+15% (OW)', bonds: '-45% (UW)'
+            },
+            usd: {
+                label: 'Scenario: USD Weakness & Capital Rotation',
+                data: [20, 25, 15, 30, 0, 10],
+                cash: '+20% (OW)', gold: '+25% (OW)', eq: '-30% (UW)', exus: '+30% (OW)', bonds: '-30% (UW)'
+            },
+            tariffs: {
+                label: 'Scenario: Tariffs / Sticky Stagflation',
+                data: [30, 25, 10, 10, 0, 25],
+                cash: '+30% (OW)', gold: '+25% (OW)', eq: '-35% (UW)', exus: '+10% (NE)', bonds: '-45% (UW)'
+            },
+            ai: {
+                label: 'Scenario: AI Productivity vs. Demand Shock',
+                data: [25, 15, 35, 15, 0, 10],
+                cash: '+25% (OW)', gold: '+15% (OW)', eq: '+35% (OW)', exus: '+15% (OW)', bonds: '-30% (UW)'
+            }
+        };
+
+        function setScenario(key) {
+            const s = scenarios[key];
+            document.getElementById('scenarioLabel').innerText = s.label;
+            stanceChart.data.datasets[1].data = s.data;
+            stanceChart.update();
+
+            document.getElementById('valCash').innerText = s.cash;
+            document.getElementById('valGold').innerText = s.gold;
+            document.getElementById('valEquities').innerText = s.eq;
+            document.getElementById('valExUS').innerText = s.exus;
+            document.getElementById('valBonds').innerText = s.bonds;
+        }
+    </script>
+</body>
+</html>
