@@ -1,0 +1,62 @@
+{
+  "schema_version": "ipos.mcda/1",
+  "track": "R1",
+  "scored_at": "2026-08-27",
+  "scale": "0-100 raw per criterion; weighted_total = sum(raw * weight / 100)",
+  "criteria": [
+    { "id": "ipos_functional_value", "weight": 20, "description": "Fills absent qualitative research intake & link-rot preservation gap" },
+    { "id": "deterministic_auditable_interfaces", "weight": 15, "description": "REST/OpenAPI, stable UUIDs, SHA-256 content hashes, formal schema" },
+    { "id": "provenance_preservation", "weight": 15, "description": "Original URLs, timestamps, author, crawl metadata, asset files" },
+    { "id": "portability_exportability", "weight": 10, "description": "CLI dump, account backup ZIPs, JSON/JSONL export, asset preservation" },
+    { "id": "maturity_maintenance", "weight": 10, "description": "v0.33.2 release activity, active GitHub repository, security fixes" },
+    { "id": "local_free_licensing_fit", "weight": 10, "description": "GNU AGPL-3.0 open-source license; self-hosted via Docker" },
+    { "id": "integration_simplicity", "weight": 10, "description": "Thin REST pull sidecar vs. always-on Docker stack lifecycle" },
+    { "id": "failure_recovery_characteristics", "weight": 5, "description": "Fail-open sidecar boundary; disaster recovery & migration path" },
+    { "id": "agent_cli_api_support", "weight": 5, "description": "Official REST API, CLI, OpenAPI spec, optional MCP server / skill" }
+  ],
+  "options": [
+    {
+      "id": "karakeep_optional_sidecar",
+      "name": "Karakeep Read-Only REST Sidecar Adapter",
+      "scores": [
+        { "criterion": "ipos_functional_value", "raw": 90, "weighted": 18.0, "evidence": "Fills absent URL, PDF, note, and RSS qualitative research intake gap without touching numeric engine." },
+        { "criterion": "deterministic_auditable_interfaces", "raw": 88, "weighted": 13.2, "evidence": "Formal OpenAPI schema, Bearer auth, cursor pagination, SHA-256 contentVersion hashes." },
+        { "criterion": "provenance_preservation", "raw": 74, "weighted": 11.1, "evidence": "Preserves URLs, timestamps, crawl status, and assets; IPOS append-only mirror provides immutable ledger." },
+        { "criterion": "portability_exportability", "raw": 78, "weighted": 7.8, "evidence": "CLI dump exports JSON/JSONL + assets; API backups exist; clean restore requires operator test." },
+        { "criterion": "maturity_maintenance", "raw": 90, "weighted": 9.0, "evidence": "v0.33.2 current release (August 2026) with active maintenance and security updates." },
+        { "criterion": "local_free_licensing_fit", "raw": 90, "weighted": 9.0, "evidence": "GNU AGPL-3.0 license fit; free self-hosting via Docker on local host." },
+        { "criterion": "integration_simplicity", "raw": 64, "weighted": 6.4, "evidence": "Thin REST adapter is simple, but Karakeep adds always-on Docker container services to artifact-first IPOS." },
+        { "criterion": "failure_recovery_characteristics", "raw": 72, "weighted": 3.6, "evidence": "Fail-open design ensures core IPOS runs cleanly if Karakeep crashes or is uninstalled." },
+        { "criterion": "agent_cli_api_support", "raw": 94, "weighted": 4.7, "evidence": "Official REST API, OpenAPI schema, CLI, and MCP server available." }
+      ],
+      "weighted_total": 82.8,
+      "recommendation": "TEST_FURTHER",
+      "conditions": [
+        "Writable-instance POC on Docker Desktop",
+        "Clean migration & restore verification",
+        "Read-only fail-open REST adapter boundary",
+        "Zero writes to DuckDB scoring tables or Playbook rules"
+      ]
+    },
+    {
+      "id": "do_nothing_current_repo_only",
+      "name": "Do-Nothing / Baseline (Current Repository Only)",
+      "scores": [
+        { "criterion": "ipos_functional_value", "raw": 25, "weighted": 5.0, "evidence": "Excellent numeric computation and static report generation, but lacks qualitative research intake/search." },
+        { "criterion": "deterministic_auditable_interfaces", "raw": 100, "weighted": 15.0, "evidence": "Existing numeric engine is 100% deterministic, SQL/Python based, and golden snapshot tested." },
+        { "criterion": "provenance_preservation", "raw": 52, "weighted": 7.8, "evidence": "Strong numerical provenance (vintage IDs, raw Parquet archive); external research remains ad-hoc." },
+        { "criterion": "portability_exportability", "raw": 95, "weighted": 9.5, "evidence": "Single repository, DuckDB database file, and static Plotly HTML reports are highly portable." },
+        { "criterion": "maturity_maintenance", "raw": 85, "weighted": 8.5, "evidence": "Implemented IPOS core pipeline and tests are mature and verified green." },
+        { "criterion": "local_free_licensing_fit", "raw": 100, "weighted": 10.0, "evidence": "Zero external services, zero license risk, zero recurring token costs." },
+        { "criterion": "integration_simplicity", "raw": 100, "weighted": 10.0, "evidence": "Zero new dependencies, zero server configuration." },
+        { "criterion": "failure_recovery_characteristics", "raw": 92, "weighted": 4.6, "evidence": "Artifact-first architecture fails degraded by design; no server dependencies." },
+        { "criterion": "agent_cli_api_support", "raw": 40, "weighted": 2.0, "evidence": "IPOS CLI exists for numeric runs; no qualitative research API/CLI surface." }
+      ],
+      "weighted_total": 72.4,
+      "recommendation": "KEEP_AS_FALLBACK",
+      "conditions": []
+    }
+  ],
+  "difference_points": 10.4,
+  "interpretation": "Karakeep score (82.8) exceeds baseline (72.4) by 10.4 points due to solving the qualitative research intake gap. However, because baseline IPOS is mature and serverless, Karakeep must remain an optional sidecar rather than a load-bearing dependency."
+}
