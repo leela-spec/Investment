@@ -1,0 +1,30 @@
+schema_version: "1.0"
+module_id: "M08"
+title: "Video/audio acquisition, transcription, and candidate chart-frame extraction"
+status: "PLANNED"
+depends_on: ["M05"]
+objective: "Use proven media tools to turn approved video research into timestamped transcript + candidate visual evidence without inventing a media platform."
+authoritative_sources:
+  - {url: "https://github.com/yt-dlp/yt-dlp", verify_before_execution: true}
+  - {url: "https://github.com/SYSTRAN/faster-whisper", verify_before_execution: true}
+  - {url: "https://www.scenedetect.com/docs/latest/", verify_before_execution: true}
+  - {url: "https://ffmpeg.org/documentation.html", verify_before_execution: true}
+steps:
+  - {id: "M08-S01", action: "Install/pin yt-dlp through its documented release/package path and verify against one public test video."}
+  - {id: "M08-S02", action: "Use ffmpeg/ffprobe from supported install; record exact version."}
+  - {id: "M08-S03", action: "Install faster-whisper in isolated Python environment; select a model after one quality/speed fixture, not by assumption."}
+  - {id: "M08-S04", action: "Install PySceneDetect and use its CLI/API for content-based scene candidates; do not write custom shot-detection algorithms."}
+  - {id: "M08-S05", action: "Pipeline: URL -> immutable source metadata -> media/audio -> timestamped transcript -> scene candidate frames -> manifest with source timestamps."}
+  - {id: "M08-S06", action: "Hermes vision may classify candidate frames as chart/table/diagram/non-relevant; it must not invent unreadable numbers."
+    }
+  - {id: "M08-S07", action: "Persist content hashes, tool versions, stderr, and output manifest so reruns are resumable and deduplicated."}
+tests:
+  - {id: "M08-T01", expected: "public fixture downloads and produces audio"}
+  - {id: "M08-T02", expected: "transcript includes monotonic timestamps and non-empty text"}
+  - {id: "M08-T03", expected: "scene candidate extraction produces timestamp-linked images"}
+  - {id: "M08-T04", expected: "rerun of same source does not silently create a second canonical item"}
+  - {id: "M08-T05", expected: "unsupported/private video fails clearly and routes to SYSTEM rather than bypassing access controls"}
+pass_conditions:
+  - "One end-to-end video fixture yields evidence-ready transcript + frame manifest."
+  - "No screenshot OCR is used as primary numeric authority."
+rollback: "Remove module virtual environment/cache; preserve immutable source manifest and receipts."
