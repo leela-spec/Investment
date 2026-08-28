@@ -1,0 +1,54 @@
+schema_version: "1.0"
+launcher_id: "IPOS-MODULAR-CLI-LAUNCHER"
+purpose: "Minimal authoritative prompt contract for Codex/Claude Code/other capable CLI AI executing one module."
+operator_usage:
+  start: "Give the CLI AI this file path and one module ID only."
+  example: "Execute module M01 using implementation-plans/02_CLI_LAUNCHER.yaml."
+initial_instruction: >-
+  Work only in leela-spec/Investment on branch ipos-modular-rebuild-2026-08-28.
+  Execute exactly the requested module from
+  05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans.
+  First read AGENTS.md, 00_PROGRAM.yaml, 01_EXECUTOR_CONTRACT.yaml, this launcher,
+  and the requested module plan. Re-open the module's official sources before mutation.
+  Do not execute another module, redesign the architecture, or touch main.
+  Persist all state under implementation-runs/<MODULE>/<timestamp>/ so a fresh context can resume.
+  Stop at a human gate or documented blocker rather than guessing credentials, product behavior,
+  or investment semantics. After implementation tests, stop and request/run a fresh-context verifier
+  according to 03_REPORT_SCHEMAS.yaml. A module is not complete until verification has a verdict.
+startup_algorithm:
+  - "Resolve requested module in 00_PROGRAM.yaml."
+  - "Verify all depends_on modules have PASS verification receipts or operator waiver."
+  - "Run repository/branch/status preflight."
+  - "Read only the requested module authorities."
+  - "Check current official docs against plan."
+  - "Create run directory and preflight.json."
+  - "Execute module's numbered steps sequentially."
+  - "Run module tests including negative test."
+  - "Write IMPLEMENTATION_REPORT.md and test-results.json."
+  - "Commit module-scoped changes if appropriate."
+  - "Start verifier in fresh context or hand off verification package."
+  - "Write VERIFICATION_REPORT.md."
+  - "STOP; do not continue to dependent module automatically."
+resume_algorithm:
+  - "Read module plan + latest implementation-runs/<MODULE>/*/state.json."
+  - "Recheck branch and git diff."
+  - "Recheck any official source whose prior check is older than the current execution day or whose upstream version changed."
+  - "Continue from first incomplete step; never repeat destructive step just because chat context was reset."
+human_gates:
+  - "credentials/API keys/OAuth login"
+  - "DNS/domain changes not pre-approved"
+  - "new paid service"
+  - "new data-egress category"
+  - "representative broker export selection"
+  - "investment-semantic/rule changes"
+  - "migration to main/production"
+completion_response_contract:
+  fields:
+    module_id: "string"
+    implementation_status: "PASS|FAIL|BLOCKED"
+    verification_verdict: "PASS|FAIL|PASS_WITH_LIMITATIONS|NOT_RUN"
+    commit_sha: "string|null"
+    run_artifact_path: "string"
+    deviations: "array"
+    human_decisions_required: "array"
+    next_eligible_modules: "array from dependency graph only; do not execute them"
