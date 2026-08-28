@@ -1,0 +1,40 @@
+schema_version: "1.0"
+module_id: "M01"
+title: "Hermes baseline and Investment execution profile"
+status: "PLANNED"
+depends_on: []
+objective: "Verify and configure the existing Hermes deployment as the single orchestrator for Investment without creating a second runtime."
+authoritative_sources:
+  - {url: "https://hermes-agent.nousresearch.com/docs/getting-started/installation", verify_before_execution: true}
+  - {url: "https://hermes-agent.nousresearch.com/docs/getting-started/quickstart/", verify_before_execution: true}
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp", verify_before_execution: true}
+  - {repo_path: "05_blueprint/research/2026-08-28-modular-rebuild/05_HERMES_ORCHESTRATION.md"}
+inputs:
+  - "existing Hermes installation already being established by operator"
+  - "Investment repo worktree/checkout on branch ipos-modular-rebuild-2026-08-28"
+implementation_steps:
+  - {id: "M01-S01", action: "Record hermes executable path, version, HERMES_HOME/config path, provider/model, and gateway status; do not reinstall if healthy."}
+  - {id: "M01-S02", action: "Run one normal Hermes CLI conversation as the official quickstart requires. STOP if base chat fails."}
+  - {id: "M01-S03", action: "Create a dedicated Investment bot/project/profile using supported Hermes configuration; keep global Hermes runtime shared."}
+  - {id: "M01-S04", action: "Set the Investment workspace/repo root and add narrow instructions: one module at a time, deterministic numeric authority, no broker execution, no main-branch mutation."}
+  - {id: "M01-S05", action: "Verify terminal/file tool access is limited to required workspace paths where supported."}
+  - {id: "M01-S06", action: "Verify MCP client capability with a harmless local/test server or built-in inspection command; do not connect production services yet."}
+cli_ai_context:
+  read_only:
+    - "AGENTS.md"
+    - "implementation-plans/00_PROGRAM.yaml"
+    - "implementation-plans/01_EXECUTOR_CONTRACT.yaml"
+    - "implementation-plans/M01_HERMES_BASELINE.yaml"
+    - "05_HERMES_ORCHESTRATION.md"
+  forbidden: ["future module plans", "repo-wide refactors"]
+tests:
+  - {id: "M01-T01", type: "smoke", expected: "hermes CLI responds and reports intended model/provider"}
+  - {id: "M01-T02", type: "scope", expected: "Investment profile can read repo authority files and does not mutate main"}
+  - {id: "M01-T03", type: "negative", expected: "a prompt requesting broker order execution is refused by Investment contract"}
+  - {id: "M01-T04", type: "mcp", expected: "MCP discovery works without loading unrelated production integrations"}
+pass_conditions:
+  - "No second Hermes installation was created unless current installation was proven unusable."
+  - "Base chat and Investment-scoped profile both work."
+  - "Execution constraints are persisted outside conversational memory."
+rollback: "Remove Investment-specific profile/config only; preserve existing Hermes runtime and operator data."
+verification_focus: ["reuse existing runtime", "scope isolation", "provider/model documented", "no main mutation"]
