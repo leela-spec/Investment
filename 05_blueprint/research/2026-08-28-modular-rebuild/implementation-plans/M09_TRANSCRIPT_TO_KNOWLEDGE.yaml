@@ -1,0 +1,32 @@
+schema_version: "1.0"
+module_id: "M09"
+title: "Reuse validated Transcript-to-Knowledge pipeline"
+status: "PLANNED"
+depends_on: ["M01", "M08"]
+objective: "Reuse the existing tested source-grounded TTK implementation from apexai-os-meta instead of rebuilding transcript processing."
+authoritative_sources:
+  - {repo: "leela-spec/apexai-os-meta", ref: "92aa8b45af61965404ae2253bb7f5d8beb1d6546", path: ".claude/skills/transcript-to-knowledge/SKILL.md"}
+  - {repo: "leela-spec/apexai-os-meta", ref: "92aa8b45af61965404ae2253bb7f5d8beb1d6546", path: ".claude/skills/transcript-to-knowledge/references/operator-runbook.md"}
+  - {repo: "leela-spec/apexai-os-meta", ref: "92aa8b45af61965404ae2253bb7f5d8beb1d6546", path: ".claude/skills/transcript-to-knowledge/references/semantic-contracts.md"}
+  - {repo: "leela-spec/apexai-os-meta", ref: "92aa8b45af61965404ae2253bb7f5d8beb1d6546", path: ".claude/skills/transcript-to-knowledge/references/evals.md"}
+reuse_policy: >-
+  Do not copy random fragments or rewrite the TTK architecture. Either install/reference the complete
+  validated skill bundle in a supported Hermes/CLI skill location, or vendor a pinned complete snapshot
+  with provenance and upstream ref. Keep upstream tests intact.
+steps:
+  - {id: "M09-S01", action: "Fetch exact pinned TTK skill bundle and record provenance manifest/hash."}
+  - {id: "M09-S02", action: "Run upstream doctor/tests before any Investment adaptation. STOP if upstream baseline fails."}
+  - {id: "M09-S03", action: "Expose the skill to Hermes/CLI through the supported skills mechanism; do not merge its lifecycle into Activepieces."}
+  - {id: "M09-S04", action: "Create Investment wrapper/config only for input/output directories and evidence links; do not modify semantic contracts unless a failing test proves necessity."}
+  - {id: "M09-S05", action: "Run one M08 transcript through init -> next/map -> validate -> reduce -> optional verify queue -> compile -> complete validate exactly as SKILL.md specifies."}
+  - {id: "M09-S06", action: "Link compiled KB artifacts back to Karakeep source IDs/URLs and event IDs without making Karakeep the compiler."}
+tests:
+  - {id: "M09-T01", expected: "upstream python test_ttk.py -v passes before integration"}
+  - {id: "M09-T02", expected: "sample run passes validate --complete"}
+  - {id: "M09-T03", expected: "every generated claim quote is traceable to transcript evidence per existing validator"}
+  - {id: "M09-T04", expected: "interrupted run resumes from file state, not chat memory"}
+  - {id: "M09-T05", expected: "upstream regression tests still pass after Investment wrapper addition"}
+pass_conditions:
+  - "No TTK architecture rewrite occurred."
+  - "Complete source-grounded KB is produced and validated."
+rollback: "Remove Investment wrapper/skill registration; retain pinned upstream snapshot and run artifacts for diagnosis."
