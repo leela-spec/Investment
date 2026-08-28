@@ -1,0 +1,77 @@
+schema_version: "1.0"
+report_contract_id: "IPOS-MODULAR-REPORTS-V1"
+run_directory: "implementation-runs/<MODULE_ID>/<YYYYMMDD-HHMMSS>/"
+required_files:
+  preflight.json:
+    required_keys: ["module_id", "repo", "branch", "head_sha", "dirty_before", "official_source_checks", "dependency_verdicts", "started_at"]
+  before.json:
+    required_keys: ["versions", "services", "config_hashes", "network_exposure", "rollback_snapshot"]
+  state.json:
+    required_keys: ["module_id", "current_step", "completed_steps", "pending_steps", "blocked", "last_updated"]
+  test-results.json:
+    type: "array"
+    item_required_keys: ["test_id", "result", "expected", "observed", "evidence_path"]
+  after.json:
+    required_keys: ["versions", "services", "config_hashes", "network_exposure", "created_artifacts", "changed_files"]
+implementation_report:
+  filename: "IMPLEMENTATION_REPORT.md"
+  mandatory_sections:
+    - "# Module and verdict"
+    - "## Target"
+    - "## Official sources rechecked"
+    - "## Before state"
+    - "## Changes made"
+    - "## Commands/actions executed"
+    - "## Tests run"
+    - "## Failures/retries"
+    - "## Deviations from plan"
+    - "## Secrets/data-egress review"
+    - "## Rollback procedure"
+    - "## Files/artifacts"
+    - "## Handoff to verifier"
+  prohibited_claims:
+    - "works" 
+    - "fully tested"
+    - "production ready"
+    - "secure"
+  rule: "Any such claim requires explicit evidence/test IDs immediately adjacent or it must be rewritten."
+verification_report:
+  filename: "VERIFICATION_REPORT.md"
+  mandatory_sections:
+    - "# Independent verification verdict"
+    - "## Scope"
+    - "## Implementer artifacts reviewed"
+    - "## Official sources rechecked"
+    - "## Git diff/config review"
+    - "## Tests independently rerun"
+    - "## Negative/failure tests"
+    - "## Security/privacy/data-egress checks"
+    - "## Rollback/recovery check"
+    - "## Pass-condition matrix"
+    - "## Deviations and residual risks"
+    - "## Verdict"
+    - "## Next-module gate"
+  verdicts:
+    PASS: "All mandatory pass conditions demonstrated; no unresolved high-severity issue."
+    PASS_WITH_LIMITATIONS: "Core pass conditions demonstrated, but explicitly bounded non-blocking limitation remains and operator acceptance is required before dependent production use."
+    FAIL: "One or more mandatory pass conditions not demonstrated or evidence contradicts implementation report."
+  pass_condition_matrix_item:
+    fields: ["condition", "result", "evidence", "notes"]
+verifier_independence:
+  preferred: "fresh CLI AI session/subagent with no hidden implementer conversation state"
+  minimum: "clear context reset; verifier receives module plan + run artifacts + git diff only"
+  forbidden:
+    - "verifier silently fixes defects"
+    - "verifier accepts implementer's PASS without rerunning safe tests"
+    - "verifier marks inaccessible/manual checks as PASS without operator evidence"
+blocking_report:
+  filename: "BLOCKED.md"
+  mandatory_sections:
+    - "# Blocker"
+    - "## Exact step"
+    - "## Expected according to official source"
+    - "## Observed evidence"
+    - "## Attempts (max two materially different attempts)"
+    - "## Why guessing/workaround is rejected"
+    - "## Safe options"
+    - "## Human input required"
