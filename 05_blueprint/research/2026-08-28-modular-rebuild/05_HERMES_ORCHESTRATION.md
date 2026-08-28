@@ -93,16 +93,18 @@ Provisional preferred implementation:
 - private Telegram group;
 - both human users explicitly allowlisted;
 - Hermes bot added to the group;
-- separate group topics for Alerts, Research, Weekly Review and General discussion where useful;
+- separate group topics for Actions, Alerts, Research, Weekly Review and System/General discussion where useful;
 - automated investment events delivered by Hermes into the appropriate topic;
 - follow-up questions continue in the shared topic context.
 
-This communication layer receives:
-- analyst buy/sell/reduce/watch alerts;
-- newly processed research with material portfolio impact;
-- TradingView/local technical alerts;
-- pipeline failures requiring operator attention;
-- weekly portfolio review outputs.
+Message classes:
+- `ACTION` — buy/sell/reduce/add/watch recommendation or other operator decision/task;
+- `ALERT` — technical/market condition such as a price, support/resistance or indicator trigger;
+- `RESEARCH` — newly processed evidence or analysis;
+- `REVIEW` — scheduled portfolio/IPOS review;
+- `SYSTEM` — ingestion, data or infrastructure problem.
+
+`ACTION` and `ALERT` are deliberately distinct: an alert reports that a market condition occurred; an action reports that a portfolio decision may be required.
 
 Hermes must distinguish source recommendations from system recommendations. An analyst email saying BUY or SELL is evidence to evaluate, not an instruction to execute.
 

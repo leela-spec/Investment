@@ -30,6 +30,7 @@ Every external event should normalize into one of:
 
 - EMAIL_RESEARCH
 - EMAIL_ANALYST_SIGNAL
+- ACTION
 - VIDEO_RESEARCH
 - DOCUMENT_RESEARCH
 - MARKET_ALERT
@@ -91,23 +92,21 @@ Downstream processing is identical to WEB.DE after normalization.
 
 ## US-EMAIL-03 — Analyst action signal
 
-When an email contains a BUY, SELL, REDUCE, ADD, HOLD or WATCH recommendation:
+When an approved source explicitly issues a BUY, SELL, REDUCE, ADD, HOLD or WATCH recommendation:
 
-1. Preserve the original source.
-2. Extract the analyst's recommendation as a source claim.
-3. Resolve the affected instrument deterministically.
-4. Check whether the instrument is held or relevant to current portfolio exposures.
-5. Retrieve current deterministic market/IPOS state.
-6. Compare the source claim with IPOS policy and existing evidence.
-7. Classify the system disposition:
-    - NO_ACTION
-    - WATCH
-    - REVIEW_BUY
-    - REVIEW_SELL
-    - RISK_REVIEW
-8. Hermes notifies the shared operator channel when material.
+1. Preserve/link the original source.
+2. Extract the instrument, action, source and short stated reason.
+3. Immediately send an `ACTION` message through Hermes to the shared operator channel.
+4. Add the recommendation to the open Action/Watch register.
 
-A source recommendation is never automatically converted into a system recommendation or trade.
+Default processing stops here.
+
+A deeper portfolio/IPOS analysis runs only when:
+- an operator requests `analyze`;
+- Hermes identifies an exceptional high-impact case;
+- or the item remains relevant for the periodic portfolio review.
+
+A source recommendation is never automatically converted into a trade.
 
 ## US-VIDEO-01 — Video research acquisition
 
@@ -219,20 +218,57 @@ Examples:
 
 Events use the same normalized MARKET_ALERT contract as TradingView alerts.
 
-## US-TV-04 — Support/resistance monitoring
+## US-TV-04 — Manual chart-level monitoring
 
-Two cases remain distinct.
+TradingView remains the primary human chart-analysis environment.
 
-A. Pine/indicator-generated level:
+Standard indicators and generic price conditions should be monitored locally where possible.
 
-- test whether TradingView Watchlist/Pine alert mechanisms can monitor it efficiently.
+For manually created chart geometry:
 
-B. Manually drawn TradingView level:
+### Horizontal support/resistance
+Store the exact price level in a small local chart-level registry and monitor:
+- approaching threshold;
+- touch;
+- crossing up;
+- crossing down.
 
-- retain TradingView-native alert for critical levels; or
-- explicitly copy the level into a small canonical local level registry for local monitoring.
+### Fibonacci
+Store the confirmed anchor points and required Fibonacci levels. Calculate and monitor the resulting prices locally.
 
-Do not assume an undocumented automatic drawing-sync API.
+### Trendline/channel
+Store the confirmed time/price anchor coordinates required to reproduce the line geometry and monitor the calculated current line value locally.
+
+TradingView-native drawing alerts remain available for a small number of critical drawings, but the architecture must not depend on purchasing enough TradingView alert capacity to cover the complete portfolio.
+
+Do not assume that TradingView drawing objects can currently be exported through a supported machine-readable API.
+
+## US-ACTION-01 — Open Action / Watch register
+
+Maintain one minimal durable view of unresolved investment items.
+
+Two primary classes:
+
+- `ACTION` — something may require an operator decision, such as BUY, SELL, REDUCE, ADD or REBALANCE;
+- `WATCH` — something should remain under observation but currently requires no action.
+
+Minimum fields:
+- instrument/topic;
+- action or watch condition;
+- source;
+- created_at;
+- short reason;
+- status: OPEN | DONE | DISMISSED | EXPIRED;
+- source/evidence reference where applicable.
+
+The register is not a new analytical platform.
+
+Hermes uses it to answer questions such as:
+- "What do we need to do?"
+- "What are we watching?"
+- "Which analyst recommendations remain unresolved?"
+
+Open items are also summarized in the periodic portfolio review.
 
 ## US-PORT-01 — Portfolio refresh
 

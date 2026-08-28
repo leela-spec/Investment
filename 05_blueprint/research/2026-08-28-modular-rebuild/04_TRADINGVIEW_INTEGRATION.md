@@ -98,6 +98,31 @@ Both TradingView and local scanner events should normalize into the same market-
 
 Do not assume that manually drawn TradingView support/resistance levels can be automatically synchronized into the local system. This remains a POC gate.
 
+## Future development — TradingView chart-analysis automation
+
+Status: `FUTURE_RESEARCH_NOT_CURRENT_ARCHITECTURE`
+
+The user's TradingView workflow contains substantial discretionary drawing state including:
+- manually drawn support/resistance;
+- diagonal trendlines;
+- channels;
+- Fibonacci structures;
+- other visual annotations.
+
+Current supported chart-data export is not treated as a machine-readable export of this drawing geometry.
+
+Therefore the current architecture does not attempt to automatically reproduce the full TradingView chart state.
+
+Future research may evaluate:
+1. whether TradingView introduces a supported drawing/layout API or export;
+2. screenshot + Hermes vision for candidate drawing extraction;
+3. operator-confirmed conversion of detected drawings into exact local geometry;
+4. controlled extraction of exact drawing coordinates through supported UI mechanisms.
+
+Any screenshot/vision approach must require operator confirmation before the extracted geometry becomes an active deterministic alert.
+
+Unsupported reverse engineering of TradingView's private layout representation is not part of the default architecture.
+
 ## Relationship with TA-Lib
 
 TradingView and TA-Lib are complementary:
