@@ -1,0 +1,26 @@
+schema_version: "1.0"
+module_id: "M02"
+title: "Hermes shared Telegram channel and authenticated webhook intake"
+status: "PLANNED"
+depends_on: ["M01"]
+objective: "Create the shared operator communication line and a supported authenticated ingress into Hermes."
+authoritative_sources:
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/messaging/telegram", verify_before_execution: true}
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/messaging/webhooks", verify_before_execution: true}
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/sessions", verify_before_execution: true}
+steps:
+  - {id: "M02-S01", action: "Configure Telegram through Hermes supported gateway setup; use operator-created bot token via secret store/env, never Git."}
+  - {id: "M02-S02", action: "Create/authorize private group for the two operators and Hermes; verify allowlist/member behavior."}
+  - {id: "M02-S03", action: "Create topics where supported: Actions, Alerts, Research, Weekly Review, System/General."}
+  - {id: "M02-S04", action: "Configure Hermes webhook route with current supported authentication/HMAC mechanism."}
+  - {id: "M02-S05", action: "Map message classes ACTION|ALERT|RESEARCH|REVIEW|SYSTEM to target topic/channel without embedding investment logic in the gateway."}
+tests:
+  - {id: "M02-T01", expected: "Hermes sends a test message to group and both operators can see it"}
+  - {id: "M02-T02", expected: "operator follow-up remains in shared conversation/topic context"}
+  - {id: "M02-T03", expected: "valid signed webhook produces SYSTEM test notification"}
+  - {id: "M02-T04", expected: "invalid/unsigned webhook is rejected and does not create notification"}
+  - {id: "M02-T05", expected: "unauthorized Telegram user cannot invoke investment bot functions"}
+pass_conditions:
+  - "Shared group works without creating separate per-user investment state."
+  - "Webhook auth has a demonstrated negative test."
+rollback: "Disable Hermes webhook route; revoke bot token; remove Investment bot from group."
