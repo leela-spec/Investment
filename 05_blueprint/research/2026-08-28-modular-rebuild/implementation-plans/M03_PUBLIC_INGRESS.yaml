@@ -1,0 +1,23 @@
+schema_version: "1.0"
+module_id: "M03"
+title: "Minimal public ingress for external webhooks"
+status: "PLANNED"
+depends_on: ["M01"]
+objective: "Expose only the minimum HTTPS endpoints required for external webhook producers, with no direct public exposure of Hermes internals or databases."
+authoritative_sources:
+  - {url: "https://caddyserver.com/docs/automatic-https", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/docs/install/options/docker-compose", verify_before_execution: true}
+steps:
+  - {id: "M03-S01", action: "Inventory current server/network/Tailscale/reverse-proxy state; reuse an existing supported HTTPS edge if one already exists."}
+  - {id: "M03-S02", action: "If no suitable edge exists, deploy a minimal Caddy reverse proxy using official package/container guidance; do not introduce Kubernetes or a second proxy stack."}
+  - {id: "M03-S03", action: "Create a dedicated HTTPS hostname/path for Activepieces public triggers; keep admin UI private where feasible."}
+  - {id: "M03-S04", action: "Do not expose Hermes, databases, Redis, Karakeep admin, or OpenBB directly through this module."}
+  - {id: "M03-S05", action: "Record DNS/TLS/reverse-proxy configuration and rollback commands without secrets."}
+tests:
+  - {id: "M03-T01", expected: "HTTPS endpoint presents valid TLS and reaches only intended test handler"}
+  - {id: "M03-T02", expected: "direct access to internal service ports from public internet is denied"}
+  - {id: "M03-T03", expected: "unknown paths do not proxy to internal apps"}
+pass_conditions:
+  - "Only required ingress is public."
+  - "TLS renewal mechanism is documented/testable."
+rollback: "Remove route/DNS entry and restore prior proxy configuration from snapshot."
