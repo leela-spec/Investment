@@ -1,0 +1,128 @@
+schema_version: "1.0"
+program_id: "IPOS-MODULAR-REBUILD-IMPLEMENTATION"
+title: "IPOS modular infrastructure implementation program"
+status: "PLANNED_NOT_STARTED"
+created_at: "2026-08-28"
+target:
+  repository: "leela-spec/Investment"
+  branch: "ipos-modular-rebuild-2026-08-28"
+  project_root: "05_blueprint/research/2026-08-28-modular-rebuild"
+  plan_root: "05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans"
+  run_root: "05_blueprint/research/2026-08-28-modular-rebuild/implementation-runs"
+mission: >-
+  Assemble the approved Investment infrastructure from proven products and supported
+  interfaces. Preserve the existing IPOS policy as unique investment IP. Do not build
+  commodity platforms that already exist.
+governing_axioms:
+  - "Reuse proven software before custom code."
+  - "Official installation and integration guidance outranks model intuition."
+  - "Deterministic code owns numeric computation; AI orchestrates, interprets, and narrates."
+  - "One module is implemented and verified before dependent modules proceed."
+  - "No undocumented API, reverse engineering, or browser automation when a supported interface exists."
+  - "No automatic broker execution in this program."
+  - "Do not merge, rewrite, or migrate the existing production IPOS runtime until M19 passes and the operator explicitly approves migration."
+research_policy:
+  verified_on: "2026-08-28"
+  source_priority:
+    - "official product documentation"
+    - "official upstream repository/release documentation"
+    - "existing validated user-owned implementation"
+    - "Investment repository authority files"
+  disallowed_as_authority:
+    - "uncited model memory"
+    - "unverified blog tutorials"
+    - "undocumented community hacks"
+  freshness_rule: >-
+    Before executing any installation plan, the CLI AI must re-open the cited official
+    install page and check whether the command, supported version, or configuration shape
+    has changed. Material drift changes the plan status to NEEDS_RESEARCH before execution.
+operator_decisions_frozen:
+  orchestrator: "existing Hermes Agent deployment"
+  portfolio_ui: "Wealthfolio desktop/local is sufficient"
+  portfolio_ingestion: "operator-provided CSV/PDF -> deterministic local normalization"
+  research_custody: "Karakeep"
+  transcript_knowledge: "reuse validated Transcript-to-Knowledge implementation"
+  market_visual_workbench: "existing TradingView subscription"
+  action_message_class: "distinct from technical ALERT"
+  weekly_outputs:
+    - "portfolio/dashboard review"
+    - "written investment memo"
+    - "ranked actions"
+    - "proposed target weights"
+  automatic_broker_execution: false
+architecture_improvements_frozen:
+  - id: "A01"
+    decision: "Use Activepieces Tables for the minimal Action/Watch register instead of creating another database."
+    rationale: "The event platform already includes structured tables, CRUD, triggers, CSV export, and MCP tooling."
+  - id: "A02"
+    decision: "Use Activepieces MCP flow-building/testing tools where available instead of browser-click automation."
+    rationale: "Keeps implementation on a supported machine interface and makes CLI-AI execution auditable."
+  - id: "A03"
+    decision: "Use Hermes no-agent cron for deterministic technical watchdog jobs."
+    rationale: "Scheduled scripts can run with zero model tokens; empty stdout can remain silent while failures are surfaced."
+  - id: "A04"
+    decision: "Keep full automatic extraction of discretionary TradingView drawings as FUTURE_RESEARCH."
+    rationale: "No verified supported machine-readable drawing export is part of the current architecture."
+  - id: "A05"
+    decision: "Reuse the existing validated TTK skill rather than rebuild transcript-to-knowledge."
+    rationale: "A tested source-grounded deterministic control loop already exists in leela-spec/apexai-os-meta."
+execution_order:
+  waves:
+    - wave: 0
+      purpose: "Executor controls and existing Hermes baseline"
+      modules: ["M01"]
+    - wave: 1
+      purpose: "Communication, ingress, event platform, evidence platform"
+      modules: ["M02", "M03", "M04", "M07"]
+      parallelism: "Only modules without shared host/network mutations may run in parallel."
+    - wave: 2
+      purpose: "Event flows, media/knowledge, portfolio data, market data, deterministic libraries"
+      modules: ["M05", "M06", "M08", "M09", "M10", "M11", "M13", "M14"]
+    - wave: 3
+      purpose: "Portfolio UI and market-event integrations"
+      modules: ["M12", "M15", "M16", "M17"]
+    - wave: 4
+      purpose: "Investment review orchestration"
+      modules: ["M18"]
+    - wave: 5
+      purpose: "Full acceptance and freeze recommendation"
+      modules: ["M19"]
+    - wave: 90
+      purpose: "Explicitly non-blocking future research"
+      modules: ["M90"]
+modules:
+  - {id: "M01", file: "M01_HERMES_BASELINE.yaml", depends_on: []}
+  - {id: "M02", file: "M02_HERMES_TELEGRAM_WEBHOOKS.yaml", depends_on: ["M01"]}
+  - {id: "M03", file: "M03_PUBLIC_INGRESS.yaml", depends_on: ["M01"]}
+  - {id: "M04", file: "M04_ACTIVEPIECES_PLATFORM.yaml", depends_on: ["M03"]}
+  - {id: "M05", file: "M05_ACTIVEPIECES_EMAIL_EVENT_FLOWS.yaml", depends_on: ["M02", "M04", "M07"]}
+  - {id: "M06", file: "M06_ACTION_WATCH_REGISTER.yaml", depends_on: ["M02", "M04"]}
+  - {id: "M07", file: "M07_KARAKEEP.yaml", depends_on: ["M01"]}
+  - {id: "M08", file: "M08_MEDIA_PIPELINE.yaml", depends_on: ["M05"]}
+  - {id: "M09", file: "M09_TRANSCRIPT_TO_KNOWLEDGE.yaml", depends_on: ["M01", "M08"]}
+  - {id: "M10", file: "M10_OPENBB_ODP.yaml", depends_on: ["M01"]}
+  - {id: "M11", file: "M11_PORTFOLIO_NORMALIZER.yaml", depends_on: []}
+  - {id: "M12", file: "M12_WEALTHFOLIO.yaml", depends_on: ["M11"]}
+  - {id: "M13", file: "M13_RISKFOLIO.yaml", depends_on: ["M11"]}
+  - {id: "M14", file: "M14_TALIB_TECHNICAL_ENGINE.yaml", depends_on: ["M10"]}
+  - {id: "M15", file: "M15_TRADINGVIEW_EVENT_BRIDGE.yaml", depends_on: ["M02", "M04"]}
+  - {id: "M16", file: "M16_LOCAL_TECHNICAL_WATCHDOG.yaml", depends_on: ["M02", "M10", "M14"]}
+  - {id: "M17", file: "M17_MANUAL_CHART_LEVELS.yaml", depends_on: ["M16"]}
+  - {id: "M18", file: "M18_WEEKLY_REVIEW.yaml", depends_on: ["M02", "M06", "M07", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16"]}
+  - {id: "M19", file: "M19_END_TO_END_ACCEPTANCE.yaml", depends_on: ["M18"]}
+  - {id: "M90", file: "M90_TRADINGVIEW_CHART_AUTOMATION_FUTURE.yaml", depends_on: []}
+program_stop_conditions:
+  - "Any executor is on branch main or any branch other than ipos-modular-rebuild-2026-08-28."
+  - "A required credential, DNS name, mailbox permission, Telegram group permission, or representative broker export is unavailable."
+  - "Official documentation contradicts a material plan assumption."
+  - "A module requires undocumented reverse engineering to meet its pass condition."
+  - "A module would expose broker credentials or other secrets in Git, test logs, or verification artifacts."
+completion_definition:
+  required:
+    - "M01-M19 each have verification verdict PASS or an operator-approved explicit waiver."
+    - "M19 full synthetic end-to-end acceptance passes, including failure injection."
+    - "Recurring cost and data-egress inventory are updated from observed implementation."
+    - "Every live integration has a tested recovery/rollback route."
+    - "No production migration to main occurred implicitly."
+  excluded:
+    - "M90 is not required for program completion."
