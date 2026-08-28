@@ -1,0 +1,37 @@
+schema_version: "1.0"
+module_id: "M16"
+title: "Scalable local technical watchdog"
+status: "PLANNED"
+depends_on: ["M02", "M10", "M14"]
+objective: "Monitor large symbol sets for standardized technical conditions without consuming TradingView alert slots or LLM tokens on every check."
+authoritative_sources:
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/features/cron", verify_before_execution: true}
+  - {url: "https://github.com/TA-Lib/ta-lib-python", verify_before_execution: true}
+design:
+  runtime: "deterministic local script"
+  scheduler: "Hermes no-agent cron if current docs support command/no-agent jobs; otherwise existing OS scheduler"
+  output_rule: "No stdout/no event on normal no-change run; compact JSON event only on state transition or error."
+  state: "small local state file/database containing last condition state per symbol; not conversational memory"
+standard_conditions:
+  - "percentage move threshold"
+  - "MA50/MA200 crossings/state"
+  - "RSI/Stochastic conditions"
+  - "ATR/momentum expansion"
+  - "volume breakout/confirmation where data quality supports it"
+steps:
+  - {id: "M16-S01", action: "Define monitoring universe from canonical holdings + explicit watchlist config. Do not infer universe from all securities in research corpus."}
+  - {id: "M16-S02", action: "Implement scanner using M10 OHLCV + M14 indicators with pure condition functions and explicit per-condition config."}
+  - {id: "M16-S03", action: "Persist last state to emit transitions (approach/cross/clear) rather than repeating identical alerts every poll."}
+  - {id: "M16-S04", action: "Schedule through Hermes no-agent cron where supported so ordinary checks consume zero model calls; otherwise use system scheduler and invoke Hermes only on emitted event/error."}
+  - {id: "M16-S05", action: "Route emitted MARKET_ALERT JSON into Hermes ACTION/ALERT communication path; technical monitor only emits ALERT."}
+  - {id: "M16-S06", action: "Add source freshness/data-staleness guards; stale market data suppresses actionable alert and emits SYSTEM warning instead."}
+tests:
+  - {id: "M16-T01", expected: "synthetic price series triggers each configured transition exactly once"}
+  - {id: "M16-T02", expected: "unchanged condition across repeated runs emits no duplicate alert"}
+  - {id: "M16-T03", expected: "stale/missing input emits SYSTEM/error, not false market ALERT"}
+  - {id: "M16-T04", expected: "scheduled no-change run invokes no LLM when no-agent mode is used"}
+  - {id: "M16-T05", expected: "monitoring 100+ synthetic symbols completes within recorded resource/time budget"}
+pass_conditions:
+  - "Broad standardized monitoring scales independently of TradingView quota."
+  - "No LLM is needed for ordinary polling/calculation."
+rollback: "Disable cron/scheduler job and remove local state; no TradingView settings are affected."
