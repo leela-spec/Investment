@@ -85,6 +85,27 @@ Required configuration decision before production:
 - whether a local model is used for restricted-data tasks;
 - which MCP outputs are allowed into the model context.
 
+## Operator communication channel
+
+The target operating model includes one shared investment communication channel for the two human portfolio operators and Hermes.
+
+Provisional preferred implementation:
+- private Telegram group;
+- both human users explicitly allowlisted;
+- Hermes bot added to the group;
+- separate group topics for Alerts, Research, Weekly Review and General discussion where useful;
+- automated investment events delivered by Hermes into the appropriate topic;
+- follow-up questions continue in the shared topic context.
+
+This communication layer receives:
+- analyst buy/sell/reduce/watch alerts;
+- newly processed research with material portfolio impact;
+- TradingView/local technical alerts;
+- pipeline failures requiring operator attention;
+- weekly portfolio review outputs.
+
+Hermes must distinguish source recommendations from system recommendations. An analyst email saying BUY or SELL is evidence to evaluate, not an instruction to execute.
+
 ## Token-efficiency posture
 
 Use Hermes Tool Search/progressive disclosure when the MCP tool surface becomes large. Avoid exposing all OpenBB/Karakeep/portfolio tools on every turn.

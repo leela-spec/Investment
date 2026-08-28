@@ -2,6 +2,17 @@
 
 These questions are intentionally separated from implementation so work can continue without guessing.
 
+## Resolved operator decisions — 2026-08-28
+
+- Hermes may receive portfolio/private investment context for now; do not impose a new privacy restriction at this stage.
+- Raw transactions are not categorically local-only.
+- Karakeep may use Hermes for semantic analysis where appropriate instead of requiring a separate Karakeep inference policy.
+- TradingView may contain cost-basis information if useful; necessity remains to be evaluated.
+- Reuse the Hermes installation already being established as the system-wide orchestrator; do not deploy a separate Hermes runtime for Investment by default.
+- Wealthfolio desktop/local application is sufficient for the current portfolio UX.
+- Required review outputs are all four: dashboard review, investment memo, ranked actions, and proposed target weights.
+- Whether approved decisions may produce deterministic broker order CSVs remains unresolved.
+
 ## A. Privacy / data egress
 
 1. **Portfolio-to-LLM boundary:** May Hermes send exact holdings, quantities, market values and P/L to the configured cloud LLM, or should it receive only redacted/aggregated portfolio facts?

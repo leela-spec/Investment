@@ -116,6 +116,57 @@ Test existing subscription capabilities, no new spend:
 Pass condition:
 - TradingView meaningfully improves technical monitoring without becoming a private portfolio dependency.
 
+## P5A — Common event-ingestion POC
+
+Test Activepieces self-hosted as the narrow common event router.
+
+Inputs:
+- one WEB.DE mailbox through standard IMAP;
+- one Gmail mailbox through the native Gmail connector;
+- one TradingView webhook.
+
+Required flow:
+1. detect source event;
+2. preserve source identity and timestamp;
+3. normalize into a common event envelope;
+4. deduplicate retries;
+5. route evidence to Karakeep where applicable;
+6. HMAC-sign the outbound event;
+7. send it to an authenticated Hermes webhook route;
+8. verify Hermes can deliver the resulting notification to the shared investment communication channel.
+
+Activepieces must not:
+- calculate investment indicators;
+- decide portfolio weights;
+- become the knowledge base;
+- act as the primary AI reasoning layer.
+
+Pass condition:
+- the same downstream Hermes workflow can consume WEB.DE, Gmail and TradingView events without source-specific custom integration code.
+
+## P5B — Transcript-to-knowledge media POC
+
+Input:
+- one representative analyst video linked from an email.
+
+Pipeline:
+1. preserve the email and video URL as source evidence;
+2. archive/reference the video in Karakeep;
+3. obtain local audio using a proven media downloader;
+4. produce a timestamped transcript with the selected Whisper-compatible transcription engine;
+5. detect scene changes and export representative frames with PySceneDetect/FFmpeg;
+6. identify and retain useful chart/table/diagram frames;
+7. run the existing Transcript-to-Knowledge workflow over the transcript;
+8. produce Macro, Meso and Micro knowledge artifacts with source-grounded quotes;
+9. run a Hermes portfolio-impact review against current holdings and IPOS policy;
+10. notify the shared investment channel only when the result is materially relevant or explicitly requested.
+
+Pass condition:
+- Karakeep remains source/evidence custody;
+- Transcript-to-Knowledge remains knowledge transformation;
+- Hermes performs semantic portfolio-impact interpretation;
+- no source claim silently becomes an IPOS rule or trade instruction.
+
 ## P6 — Karakeep evidence POC
 
 Test self-hosted/local configuration:

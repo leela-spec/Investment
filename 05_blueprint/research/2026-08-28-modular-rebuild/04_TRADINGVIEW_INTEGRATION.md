@@ -38,11 +38,20 @@ TradingView alert
       |
       | HTTPS webhook, non-sensitive JSON
       v
-Hermes-controlled endpoint / deterministic event inbox
+Activepieces self-hosted
+      |
+      | validate / normalize / deduplicate / HMAC-sign
+      v
+Hermes authenticated webhook route
       |
       v
-"re-run review" or "inspect symbol" workflow
+"re-run review" / "inspect symbol" workflow
+      |
+      v
+Hermes investment communication channel
 ```
+
+Activepieces is used here as an existing event-routing product, not as an investment engine. It also provides the common intake layer for WEB.DE IMAP and Gmail research workflows.
 
 Good alert payloads:
 - symbol;
@@ -65,6 +74,29 @@ Pine can be used for TradingView-native deterministic alert conditions and visua
 Boundary:
 - Pine scripts are a platform-specific view/alert layer.
 - Canonical IPOS policy must stay in the local repository, not become a hidden Pine-only implementation.
+
+## Alert scaling strategy
+
+TradingView alert capacity is treated as scarce.
+
+Use TradingView-native alerts for capabilities that depend on TradingView state:
+- manually drawn support/resistance and trendlines;
+- TradingView-only/Pine conditions;
+- selected time-critical symbol-specific events.
+
+Prefer TradingView Watchlist Alerts where one common condition should apply to many symbols.
+
+Use a separate local deterministic scanner for broad recurring conditions that do not need TradingView-specific state, for example:
+- price move thresholds;
+- MA50/MA200 conditions;
+- RSI/Stochastic;
+- ATR/momentum;
+- volume conditions;
+- canonical locally stored support/resistance levels.
+
+Both TradingView and local scanner events should normalize into the same market-event contract before Hermes sees them.
+
+Do not assume that manually drawn TradingView support/resistance levels can be automatically synchronized into the local system. This remains a POC gate.
 
 ## Relationship with TA-Lib
 

@@ -45,7 +45,7 @@ This project intentionally does **not** modify the current production IPOS imple
 | Portfolio optimization | Riskfolio-Lib | PROVISIONAL_ADOPT |
 | Technical calculation | TA-Lib where deterministic computation is needed | CONDITIONAL |
 | Market technical workbench | Existing TradingView Pro subscription | ADOPT_EXISTING |
-| Intake automation | None by default; Activepieces only if a proven gap remains | HOLD |
+| Intake automation | Activepieces self-hosted for email/webhook event intake and routing only | PROVISIONAL_POC |
 | Custom dashboard | None by default | DROP_DEFAULT |
 | LangGraph | None | DROP |
 | OpenClaw | None in this architecture | HOLD/REPLACED_BY_HERMES |
