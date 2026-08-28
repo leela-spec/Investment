@@ -1,0 +1,35 @@
+schema_version: "1.0"
+module_id: "M04"
+title: "Activepieces self-hosted event platform"
+status: "PLANNED"
+depends_on: ["M03"]
+objective: "Deploy Activepieces Community Edition as the deterministic external-event intake/routing platform, not as an investment engine."
+authoritative_sources:
+  - {url: "https://www.activepieces.com/docs/install/overview", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/docs/install/options/docker-compose", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/docs/install/production", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/docs/install/configuration/environment-variables", verify_before_execution: true}
+steps:
+  - {id: "M04-S01", action: "Recheck production guidance and choose Docker Compose for persistent self-hosted POC unless official docs now recommend a materially better single-host production path."}
+  - {id: "M04-S02", action: "Pin a tested release/image tag; do not deploy :latest in the final persistent config."}
+  - {id: "M04-S03", action: "Generate env/secrets outside Git. Configure AP_FRONTEND_URL to the M03 HTTPS endpoint."
+    }
+  - {id: "M04-S04", action: "Deploy using official Docker Compose shape, including PostgreSQL/Redis when production guidance requires them; use named volumes/backups."}
+  - {id: "M04-S05", action: "Restrict admin access; create an Investment project/space and minimum service connections only."}
+  - {id: "M04-S06", action: "Enable the official Activepieces MCP interface/tools if current docs support secure flow management; use it for subsequent CLI-AI flow construction instead of browser automation."}
+  - {id: "M04-S07", action: "Create backup/export procedure for flows, connections metadata, tables, and database volumes according to official docs."}
+non_goals:
+  - "No IPOS scoring or portfolio math in Activepieces."
+  - "No LLM-generated investment decisions inside flows."
+  - "No broker connectivity."
+tests:
+  - {id: "M04-T01", expected: "health/UI is reachable through intended route and survives container restart"}
+  - {id: "M04-T02", expected: "simple test webhook flow receives one event and returns expected response"}
+  - {id: "M04-T03", expected: "MCP/tool listing works if enabled and cannot expose connection secrets"}
+  - {id: "M04-T04", expected: "database/volume backup artifact can be created and restore procedure is documented"}
+  - {id: "M04-T05", expected: "internal database and Redis ports are not publicly reachable"}
+pass_conditions:
+  - "Persistent restart-safe deployment works."
+  - "External trigger URL works through M03."
+  - "No unsupported automation interface is required for future flow creation."
+rollback: "Stop compose stack, preserve backup, remove public route, keep volumes until operator approves deletion."
