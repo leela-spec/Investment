@@ -1,0 +1,35 @@
+schema_version: "1.0"
+module_id: "M05"
+title: "WEB.DE and Gmail event-ingestion flows"
+status: "PLANNED"
+depends_on: ["M02", "M04", "M07"]
+objective: "Build two supported email intake flows that normalize approved investment emails, preserve evidence, and notify Hermes without embedding deep portfolio analysis in the intake path."
+authoritative_sources:
+  - {url: "https://www.activepieces.com/pieces/imap", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/pieces/gmail", verify_before_execution: true}
+  - {url: "https://hilfe.web.de/pop-imap/imap/imap-serverdaten.html", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/pieces/http", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/pieces/webhook", verify_before_execution: true}
+flow_contract:
+  normalized_event_fields: ["event_id", "source", "source_message_id", "sender", "subject", "received_at", "body_ref", "attachment_refs", "urls", "classification_hint", "ingested_at"]
+  classifications: ["EMAIL_RESEARCH", "EMAIL_ANALYST_SIGNAL", "VIDEO_RESEARCH", "DOCUMENT_RESEARCH"]
+steps:
+  - {id: "M05-S01", action: "Create a fixture mailbox/message set with one research email, one explicit BUY/SELL email, one video link, one attachment, one duplicate, and one irrelevant message."}
+  - {id: "M05-S02", action: "Configure WEB.DE IMAP connection using SSL/993 per current official settings; credentials remain in Activepieces connection store."}
+  - {id: "M05-S03", action: "Configure Gmail through the native Gmail piece; prefer approved sender/label scoping rather than full-account semantic scanning when practical."}
+  - {id: "M05-S04", action: "Build flows through Activepieces supported UI/MCP/API only. Normalize both sources into the same event shape."}
+  - {id: "M05-S05", action: "Create idempotency key from provider message ID/source; reject duplicate delivery from producing duplicate downstream actions."}
+  - {id: "M05-S06", action: "Store/link original content in Karakeep where appropriate and pass references rather than repeatedly pasting full source text downstream."}
+  - {id: "M05-S07", action: "Send compact signed event to Hermes webhook. Explicit analyst BUY/SELL/REDUCE/ADD/WATCH triggers immediate ACTION notification only; deep analysis is deferred unless requested."}
+  - {id: "M05-S08", action: "Route processing failures to SYSTEM notification with safe retry metadata."}
+tests:
+  - {id: "M05-T01", expected: "WEB.DE fixture reaches Hermes exactly once"}
+  - {id: "M05-T02", expected: "Gmail fixture reaches Hermes exactly once"}
+  - {id: "M05-T03", expected: "duplicate fixture does not create second ACTION/RESEARCH event"}
+  - {id: "M05-T04", expected: "explicit SELL email yields immediate ACTION message without requiring IPOS/Riskfolio run"}
+  - {id: "M05-T05", expected: "irrelevant mail is ignored or classified non-actionable without operator spam"}
+  - {id: "M05-T06", expected: "mailbox auth failure produces SYSTEM failure notification"}
+pass_conditions:
+  - "Both mail systems share one downstream event contract."
+  - "No custom mail server/parser platform was built."
+rollback: "Disable flows and revoke mailbox connections; preserve flow export and non-secret test receipts."
