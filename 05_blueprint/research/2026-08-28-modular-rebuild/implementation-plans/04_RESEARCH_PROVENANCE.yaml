@@ -1,0 +1,54 @@
+schema_version: "1.0"
+research_date: "2026-08-28"
+purpose: "Record the external official-source research used to shape implementation plans; execution still requires a same-day recheck."
+verified_facts:
+  - component: "Hermes Agent"
+    official_url: "https://hermes-agent.nousresearch.com/docs/getting-started/installation"
+    facts:
+      - "Official installers exist for Linux/macOS/WSL and native Windows; Desktop installer is recommended on Windows/macOS."
+      - "Official quickstart says normal chat must work before layering gateway/cron/features."
+  - component: "Hermes cron"
+    official_url: "https://hermes-agent.nousresearch.com/docs/user-guide/features/cron"
+    facts:
+      - "Fresh-session scheduled jobs are supported."
+      - "No-agent script mode runs without LLM/provider involvement, delivers stdout, stays silent on empty stdout, and alerts on non-zero exit/timeout."
+  - component: "Activepieces"
+    official_url: "https://www.activepieces.com/docs/install/options/docker-compose"
+    facts:
+      - "Official Docker Compose install requires Git and Docker Compose v2 and supports a persistent self-hosted deployment."
+      - "AP_FRONTEND_URL must reflect the externally reachable webhook URL for triggers."
+  - component: "Activepieces MCP"
+    official_url: "https://www.activepieces.com/docs/mcp/overview"
+    facts:
+      - "Official MCP server includes discovery, flow management/building, tables, testing/runs, and can be exposed behind a reverse-proxy path prefix."
+  - component: "Activepieces Tables"
+    official_url: "https://www.activepieces.com/pieces/tables"
+    facts:
+      - "Built-in Tables supports create/find/get/update/delete records and CSV table download."
+  - component: "Karakeep"
+    official_url: "https://docs.karakeep.app/installation/docker/"
+    facts:
+      - "Official self-hosted Docker Compose installation exists with documented env/secrets."
+  - component: "OpenBB ODP"
+    official_url: "https://docs.openbb.co/odp/python/installation"
+    facts:
+      - "Official install supports isolated Python environments and PyPI package 'openbb'."
+      - "Docs recommend avoiding system/base Python and list Python 3.10-3.14 compatibility at research date."
+  - component: "Transcript-to-Knowledge"
+    official_or_user_owned_ref: "leela-spec/apexai-os-meta@92aa8b45af61965404ae2253bb7f5d8beb1d6546:.claude/skills/transcript-to-knowledge/SKILL.md"
+    facts:
+      - "Existing user-owned implementation provides deterministic doctor/init/next/validate/reduce/verify/compile lifecycle."
+      - "Existing implementation has explicit tests and file-derived resumability."
+  - component: "TradingView"
+    official_url: "https://www.tradingview.com/support/"
+    facts:
+      - "Webhooks and technical/drawing alerts are supported, but manually drawn geometry is not assumed to have a supported machine-readable export."
+      - "Actual account alert quotas must be inspected from the operator account at implementation time."
+research_decisions:
+  - "Do not build workflows via browser automation when Activepieces MCP can build/test flows."
+  - "Do not create a new Action/Watch database when Activepieces Tables passes the POC."
+  - "Do not wake an LLM for every technical poll when Hermes no-agent cron can run deterministic scripts."
+  - "Do not rebuild TTK; reuse and regression-test the validated skill."
+  - "Do not make OpenBB ODP mandatory if the POC shows direct free-provider adapters are simpler."
+  - "Do not customize Wealthfolio internals if supported import/MCP seams fail."
+  - "Do not implement full TradingView drawing automation until M90 research proves a supported reliable mechanism."
