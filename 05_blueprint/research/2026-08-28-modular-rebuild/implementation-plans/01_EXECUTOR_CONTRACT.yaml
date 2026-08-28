@@ -1,0 +1,95 @@
+schema_version: "1.0"
+contract_id: "IPOS-CLI-EXECUTOR-V1"
+purpose: "Common execution discipline for every implementation module."
+required_executor_behavior:
+  preflight:
+    - "Confirm repository == leela-spec/Investment."
+    - "Confirm branch == ipos-modular-rebuild-2026-08-28. STOP otherwise."
+    - "Read only: AGENTS.md, this contract, 00_PROGRAM.yaml, the current module plan, and files explicitly listed by that plan."
+    - "Do not perform repo-wide semantic exploration unless the module explicitly requires it."
+    - "Re-open every official source marked verify_before_execution and compare current install/integration instructions with the plan."
+    - "Write implementation-runs/<module>/<timestamp>/preflight.json before making mutations."
+  context_management:
+    max_active_module_count: 1
+    rules:
+      - "Do not load future module plans into working context except dependency IDs and output contracts from 00_PROGRAM.yaml."
+      - "When context becomes large, checkpoint state to run/state.json and restart with only authority files + module plan + state.json."
+      - "Do not use conversation memory as execution state. Files and tool outputs are authority."
+      - "Summarize long logs into receipts; preserve raw logs by path rather than pasting them into prompts."
+      - "Prefer deterministic discovery commands and exact paths over exploratory prose."
+  implementation_loop:
+    - "PREFLIGHT: verify prerequisites and source freshness."
+    - "SNAPSHOT: record before-state, versions, config file hashes, and rollback path."
+    - "INSTALL/CONFIGURE: follow the current official path; smallest reversible step first."
+    - "SMOKE TEST: prove the component starts/responds before integration work."
+    - "INTEGRATE: connect exactly one upstream/downstream seam at a time."
+    - "NEGATIVE TEST: intentionally test at least one expected failure or denied action."
+    - "REGRESSION TEST: rerun module acceptance tests after integration."
+    - "CHECKPOINT: persist artifacts, commands, versions, and unresolved deviations."
+    - "STOP: do not start the next module."
+  anti_drift:
+    forbidden:
+      - "Inventing a substitute architecture because installation is inconvenient."
+      - "Replacing an approved product without a documented blocker and operator decision."
+      - "Adding frameworks, databases, queues, vector stores, graph stores, or custom web UIs unless the module requires them."
+      - "Silently changing IPOS rules, thresholds, or investment semantics."
+      - "Automatic broker execution."
+      - "Putting secrets in Git, markdown, fixtures, screenshots, or verification logs."
+    when_blocked: >-
+      Stop the module and write BLOCKED.md containing: exact failed step, observed evidence,
+      official-source expectation, attempts made (maximum two materially different attempts),
+      safest next options, and whether a human credential/decision is required.
+  mutation_policy:
+    - "Prefer configuration and upstream-supported mechanisms over custom code."
+    - "If custom code is required, keep it module-scoped, deterministic where possible, tested, and smaller than the integration it replaces."
+    - "Never modify production/main implicitly."
+  test_evidence:
+    required_files:
+      - "preflight.json"
+      - "commands.log or equivalent structured command receipt"
+      - "before.json"
+      - "after.json"
+      - "test-results.json"
+      - "IMPLEMENTATION_REPORT.md"
+      - "VERIFICATION_REPORT.md"
+    test_result_shape:
+      module_id: "string"
+      test_id: "string"
+      result: "PASS|FAIL|BLOCKED|SKIP"
+      expected: "string"
+      observed: "string"
+      evidence_path: "string|null"
+      notes: "string|null"
+verification_model:
+  rule: "Implementation and final verification must be logically separated."
+  preferred: "Use a fresh CLI-AI context/subagent for verification with read/test access but no implementation mandate."
+  verifier_reads:
+    - "module plan"
+    - "implementation report"
+    - "git diff for module changes"
+    - "test receipts"
+    - "current official docs for consequential assumptions"
+  verifier_must:
+    - "rerun acceptance tests where safe"
+    - "check that pass conditions are actually demonstrated"
+    - "check secrets/data-egress constraints"
+    - "check rollback/recovery procedure"
+    - "classify verdict PASS|FAIL|PASS_WITH_LIMITATIONS"
+  verifier_must_not:
+    - "fix implementation while verifying"
+verification_report_template:
+  sections:
+    - "Verdict"
+    - "Scope verified"
+    - "Official-source recheck"
+    - "Tests rerun"
+    - "Observed evidence"
+    - "Deviations"
+    - "Security/privacy checks"
+    - "Rollback/recovery check"
+    - "Residual risks"
+    - "Next module gate"
+commit_policy:
+  - "Commit only after module tests pass or a BLOCKED state is intentionally persisted."
+  - "One implementation module per commit where practical."
+  - "Commit message should start with implementation module ID, e.g. 'M04: deploy Activepieces POC'."
