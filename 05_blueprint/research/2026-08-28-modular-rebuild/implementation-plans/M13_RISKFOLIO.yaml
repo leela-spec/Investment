@@ -1,0 +1,27 @@
+schema_version: "1.0"
+module_id: "M13"
+title: "Riskfolio-Lib deterministic portfolio optimization"
+status: "PLANNED"
+depends_on: ["M11"]
+objective: "Use Riskfolio-Lib as a local deterministic optimizer under explicit IPOS constraints; Hermes may explain but not replace solver output."
+authoritative_sources:
+  - {url: "https://riskfolio-lib.readthedocs.io/en/latest/", verify_before_execution: true}
+  - {url: "https://github.com/dcajasn/Riskfolio-Lib", verify_before_execution: true}
+steps:
+  - {id: "M13-S01", action: "Create isolated Python environment and install a pinned current Riskfolio-Lib release plus solver dependencies using official guidance."}
+  - {id: "M13-S02", action: "Create fixed synthetic return matrix and explicit constraints fixture."
+    }
+  - {id: "M13-S03", action: "Implement thin wrapper accepting canonical returns/constraints and producing weights + diagnostics JSON; no UI."}
+  - {id: "M13-S04", action: "Test minimum-risk, risk-budget/risk-parity, CVaR-style constrained portfolio. Add Black-Litterman only if views are explicitly supplied by upstream policy, never inferred by wrapper."}
+  - {id: "M13-S05", action: "Pin solver/settings and random seed where any algorithm uses randomness; record solver status and constraint residuals."}
+  - {id: "M13-S06", action: "Map IPOS hard governors to explicit numeric constraints only after rule semantics are already deterministic; do not let Hermes translate prose into live constraints ad hoc."}
+tests:
+  - {id: "M13-T01", expected: "same fixed inputs produce same weights within solver tolerance"}
+  - {id: "M13-T02", expected: "weights satisfy sum, bounds, and explicit IPOS constraints"}
+  - {id: "M13-T03", expected: "infeasible constraints return explicit infeasible/error status"}
+  - {id: "M13-T04", expected: "small input perturbation produces documented sensitivity report"}
+  - {id: "M13-T05", expected: "wrapper runs with network disabled"}
+pass_conditions:
+  - "Reproducible target weights and diagnostics exist."
+  - "No AI arithmetic or hidden portfolio objective exists."
+rollback: "Remove isolated environment/wrapper; canonical M11 data and IPOS policy remain untouched."
