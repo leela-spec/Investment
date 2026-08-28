@@ -79,8 +79,8 @@ execution_order:
       purpose: "Event flows, media/knowledge, portfolio data, market data, deterministic libraries"
       modules: ["M05", "M06", "M08", "M09", "M10", "M11", "M13", "M14"]
     - wave: 3
-      purpose: "Portfolio UI and market-event integrations"
-      modules: ["M12", "M15", "M16", "M17"]
+      purpose: "Portfolio UI, IPOS adapters, and market-event integrations"
+      modules: ["M12", "M12P", "M15", "M16", "M17"]
     - wave: 4
       purpose: "Investment review orchestration"
       modules: ["M18"]
@@ -103,12 +103,13 @@ modules:
   - {id: "M10", file: "M10_OPENBB_ODP.yaml", depends_on: ["M01"]}
   - {id: "M11", file: "M11_PORTFOLIO_NORMALIZER.yaml", depends_on: []}
   - {id: "M12", file: "M12_WEALTHFOLIO.yaml", depends_on: ["M11"]}
+  - {id: "M12P", file: "M12P_IPOS_POLICY_INTEGRATION.yaml", depends_on: ["M10", "M11", "M14"]}
   - {id: "M13", file: "M13_RISKFOLIO.yaml", depends_on: ["M11"]}
   - {id: "M14", file: "M14_TALIB_TECHNICAL_ENGINE.yaml", depends_on: ["M10"]}
   - {id: "M15", file: "M15_TRADINGVIEW_EVENT_BRIDGE.yaml", depends_on: ["M02", "M04"]}
   - {id: "M16", file: "M16_LOCAL_TECHNICAL_WATCHDOG.yaml", depends_on: ["M02", "M10", "M14"]}
   - {id: "M17", file: "M17_MANUAL_CHART_LEVELS.yaml", depends_on: ["M16"]}
-  - {id: "M18", file: "M18_WEEKLY_REVIEW.yaml", depends_on: ["M02", "M06", "M07", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16"]}
+  - {id: "M18", file: "M18_WEEKLY_REVIEW.yaml", depends_on: ["M02", "M06", "M07", "M09", "M10", "M11", "M12", "M12P", "M13", "M14", "M15", "M16"]}
   - {id: "M19", file: "M19_END_TO_END_ACCEPTANCE.yaml", depends_on: ["M18"]}
   - {id: "M90", file: "M90_TRADINGVIEW_CHART_AUTOMATION_FUTURE.yaml", depends_on: []}
 program_stop_conditions:
@@ -119,7 +120,7 @@ program_stop_conditions:
   - "A module would expose broker credentials or other secrets in Git, test logs, or verification artifacts."
 completion_definition:
   required:
-    - "M01-M19 each have verification verdict PASS or an operator-approved explicit waiver."
+    - "M01-M19 plus M12P each have verification verdict PASS or an operator-approved explicit waiver."
     - "M19 full synthetic end-to-end acceptance passes, including failure injection."
     - "Recurring cost and data-egress inventory are updated from observed implementation."
     - "Every live integration has a tested recovery/rollback route."
