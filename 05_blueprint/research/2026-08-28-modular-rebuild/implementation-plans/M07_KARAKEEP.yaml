@@ -1,0 +1,28 @@
+schema_version: "1.0"
+module_id: "M07"
+title: "Karakeep self-hosted evidence custody"
+status: "PLANNED"
+depends_on: ["M01"]
+objective: "Deploy Karakeep as research/evidence archive with supported API/MCP access; do not turn it into the portfolio or numeric authority."
+authoritative_sources:
+  - {url: "https://docs.karakeep.app/installation/docker/", verify_before_execution: true}
+  - {url: "https://docs.karakeep.app/integrations/mcp/", verify_before_execution: true}
+  - {url: "https://docs.karakeep.app/configuration/", verify_before_execution: true}
+  - {url: "https://docs.karakeep.app/", verify_before_execution: true}
+steps:
+  - {id: "M07-S01", action: "Deploy current official Docker Compose configuration with release pinned/documented and secrets outside Git."}
+  - {id: "M07-S02", action: "Verify URL, PDF/file, RSS, search, tags/highlights, and duplicate behavior using synthetic/public research fixtures."}
+  - {id: "M07-S03", action: "Enable optional video archiving only if current official yt-dlp integration is stable and storage policy is accepted; otherwise store canonical URL/reference only."}
+  - {id: "M07-S04", action: "Create read-first Hermes MCP connection; include only search/read/list tools initially."}
+  - {id: "M07-S05", action: "Configure backup/export/recovery from official guidance and execute one restore drill with test data."}
+  - {id: "M07-S06", action: "Document boundary: Karakeep stores sources/evidence; TTK compiles transcript knowledge; IPOS/Riskfolio own deterministic decisions."}
+tests:
+  - {id: "M07-T01", expected: "URL/PDF/RSS fixtures are searchable and source references preserved"}
+  - {id: "M07-T02", expected: "duplicate URL behavior is deterministic and documented"}
+  - {id: "M07-T03", expected: "Hermes can retrieve a bounded source through read-only MCP"}
+  - {id: "M07-T04", expected: "write/delete MCP action is unavailable or denied in initial profile"}
+  - {id: "M07-T05", expected: "backup can restore test evidence"}
+pass_conditions:
+  - "Evidence custody/search materially works without custom crawler/database."
+  - "MCP retrieval does not grant unnecessary mutation tools."
+rollback: "Stop stack and remove Hermes MCP config; preserve backup before deleting volumes."
