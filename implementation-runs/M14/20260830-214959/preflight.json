@@ -1,0 +1,23 @@
+{
+  "module_id": "M14",
+  "repo": "leela-spec/Investment",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "head_sha": "22b3f5f",
+  "dirty_before": false,
+  "official_source_checks": [
+    {
+      "url": "https://github.com/TA-Lib/ta-lib-python",
+      "checked_at": "2026-08-30T21:49:59+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://ta-lib.org/",
+      "checked_at": "2026-08-30T21:49:59+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    }
+  ],
+  "dependency_verdicts": {
+    "M10": "PASS_WITH_LIMITATIONS"
+  },
+  "started_at": "2026-08-30T21:49:59+02:00"
+}
