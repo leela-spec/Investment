@@ -1,0 +1,23 @@
+{
+  "module_id": "M13",
+  "repo": "leela-spec/Investment",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "head_sha": "8cf6f84",
+  "dirty_before": false,
+  "official_source_checks": [
+    {
+      "url": "https://riskfolio-lib.readthedocs.io/en/latest/",
+      "checked_at": "2026-08-30T21:46:30+02:00",
+      "status": "VERIFIED_SPEC"
+    },
+    {
+      "url": "https://github.com/dcajasn/Riskfolio-Lib",
+      "checked_at": "2026-08-30T21:46:30+02:00",
+      "status": "VERIFIED_SPEC"
+    }
+  ],
+  "dependency_verdicts": {
+    "M11": "PASS_WITH_LIMITATIONS"
+  },
+  "started_at": "2026-08-30T21:46:30+02:00"
+}
