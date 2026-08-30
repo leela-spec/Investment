@@ -1,0 +1,3 @@
+[2026-08-30T21:43:58+02:00] INIT M11 execution run 20260830-214358
+[2026-08-30T21:43:58+02:00] Checked workspace sources for finanzen.net ZERO and Smartbroker exports -> NONE_FOUND
+[2026-08-30T21:43:58+02:00] Applying synthetic fixture waiver rule from 05_ANTIGRAVITY_M10_M14_SLICE.yaml

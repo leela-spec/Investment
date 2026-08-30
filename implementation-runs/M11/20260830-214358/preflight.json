@@ -1,0 +1,28 @@
+{
+  "module_id": "M11",
+  "repo": "leela-spec/Investment",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "head_sha": "59b0670",
+  "dirty_before": false,
+  "official_source_checks": [
+    {
+      "url": "https://pandera.readthedocs.io/",
+      "checked_at": "2026-08-30T21:43:58+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://pymupdf.readthedocs.io/en/latest/",
+      "checked_at": "2026-08-30T21:43:58+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://help.portfolio-performance.info/en/reference/file/import/",
+      "checked_at": "2026-08-30T21:43:58+02:00",
+      "status": "VERIFIED_REFERENCE"
+    }
+  ],
+  "dependency_verdicts": {
+    "M10": "PASS_WITH_LIMITATIONS"
+  },
+  "started_at": "2026-08-30T21:43:58+02:00"
+}

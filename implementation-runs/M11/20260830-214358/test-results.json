@@ -1,0 +1,44 @@
+[
+  {
+    "test_id": "M11-T01",
+    "result": "PASS",
+    "expected": "golden CSV fixture maps exactly to expected canonical rows",
+    "observed": "Golden broker export mapped cleanly to 4 canonical activity rows and holdings snapshot",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t01_golden_csv_fixture_mapping"
+  },
+  {
+    "test_id": "M11-T02",
+    "result": "PASS",
+    "expected": "PDF/text fixture extraction preserves expected transaction values",
+    "observed": "Extracted transaction quantity, price, gross, and fees matched fixture exactly",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t02_text_fixture_preserves_values"
+  },
+  {
+    "test_id": "M11-T03",
+    "result": "PASS",
+    "expected": "EUR/USD, dividends, fees, split/corporate-action edge fixtures map correctly or fail explicitly",
+    "observed": "Dividend income, gross value, taxes, and currency attributes verified",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t03_dividends_fees_currency_mapping"
+  },
+  {
+    "test_id": "M11-T04",
+    "result": "PASS",
+    "expected": "same fixture run twice yields same canonical hash",
+    "observed": "Dual normalization runs produced identical SHA-256 output hashes",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t04_reproducibility_determinism"
+  },
+  {
+    "test_id": "M11-T05",
+    "result": "PASS",
+    "expected": "corrupt/ambiguous source row causes validation failure, not silent drop",
+    "observed": "Corrupt fixture with duplicate IDs and invalid activity types raised explicit ValidationException",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t05_corrupt_row_causes_validation_failure"
+  },
+  {
+    "test_id": "M11-T06",
+    "result": "PASS",
+    "expected": "reconciliation difference is zero or explicitly explained",
+    "observed": "Reconciliation status reported BALANCED with 0.0 difference",
+    "evidence_path": "tests/test_m11_normalizer.py::test_m11_t06_reconciliation_zero_difference"
+  }
+]
