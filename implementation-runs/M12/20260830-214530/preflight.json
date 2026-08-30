@@ -1,0 +1,33 @@
+{
+  "module_id": "M12",
+  "repo": "leela-spec/Investment",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "head_sha": "7110523",
+  "dirty_before": false,
+  "official_source_checks": [
+    {
+      "url": "https://wealthfolio.app/docs/",
+      "checked_at": "2026-08-30T21:45:30+02:00",
+      "status": "VERIFIED_SPEC"
+    },
+    {
+      "url": "https://wealthfolio.app/docs/guide/import-csv/",
+      "checked_at": "2026-08-30T21:45:30+02:00",
+      "status": "VERIFIED_SPEC"
+    },
+    {
+      "url": "https://wealthfolio.app/docs/guide/mcp-server/",
+      "checked_at": "2026-08-30T21:45:30+02:00",
+      "status": "VERIFIED_SPEC"
+    },
+    {
+      "url": "https://wealthfolio.app/docs/guide/export-backup/",
+      "checked_at": "2026-08-30T21:45:30+02:00",
+      "status": "VERIFIED_SPEC"
+    }
+  ],
+  "dependency_verdicts": {
+    "M11": "PASS_WITH_LIMITATIONS"
+  },
+  "started_at": "2026-08-30T21:45:30+02:00"
+}

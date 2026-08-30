@@ -1,0 +1,29 @@
+{
+  "versions": {
+    "python": "3.12.10",
+    "uv": "0.12.0",
+    "ipos": "0.1.0"
+  },
+  "services": {
+    "wealthfolio_ui": "LOCAL_UI_POC"
+  },
+  "config_hashes": {
+    "configs/portfolio_mapping.yaml": "sha256:init"
+  },
+  "network_exposure": {
+    "inbound_ports": [],
+    "outbound_apis": []
+  },
+  "created_artifacts": [
+    "ipos/portfolio/wealthfolio.py",
+    "tests/test_m12_wealthfolio.py",
+    "implementation-runs/M12/20260830-214530/preflight.json",
+    "implementation-runs/M12/20260830-214530/before.json",
+    "implementation-runs/M12/20260830-214530/state.json",
+    "implementation-runs/M12/20260830-214530/commands.log",
+    "implementation-runs/M12/20260830-214530/test-results.json",
+    "implementation-runs/M12/20260830-214530/after.json",
+    "implementation-runs/M12/20260830-214530/IMPLEMENTATION_REPORT.md"
+  ],
+  "changed_files": []
+}

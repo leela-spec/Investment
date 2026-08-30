@@ -1,0 +1,21 @@
+{
+  "versions": {
+    "python": "3.12.10",
+    "uv": "0.12.0",
+    "ipos": "0.1.0"
+  },
+  "services": {
+    "wealthfolio_ui": "LOCAL_UI_POC"
+  },
+  "config_hashes": {
+    "configs/portfolio_mapping.yaml": "sha256:init"
+  },
+  "network_exposure": {
+    "inbound_ports": [],
+    "outbound_apis": []
+  },
+  "rollback_snapshot": {
+    "git_head": "7110523",
+    "clean_working_tree": true
+  }
+}

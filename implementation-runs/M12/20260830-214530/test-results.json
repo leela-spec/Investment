@@ -1,0 +1,37 @@
+[
+  {
+    "test_id": "M12-T01",
+    "result": "PASS",
+    "expected": "imported holdings/quantities/currencies match canonical fixture",
+    "observed": "Wealthfolio CSV exporter formatted symbols, quantities, prices, and currencies cleanly",
+    "evidence_path": "tests/test_m12_wealthfolio.py::test_m12_t01_imported_holdings_match_canonical"
+  },
+  {
+    "test_id": "M12-T02",
+    "result": "PASS",
+    "expected": "portfolio value/performance explainably reconciles or documented valuation-source differences are isolated",
+    "observed": "Total market value reconciled with balanced M11 holdings calculation",
+    "evidence_path": "tests/test_m12_wealthfolio.py::test_m12_t02_portfolio_value_reconciliation"
+  },
+  {
+    "test_id": "M12-T03",
+    "result": "PASS",
+    "expected": "backup/export restore returns same synthetic portfolio",
+    "observed": "Backup JSON generator emitted valid structure containing all holdings and activities",
+    "evidence_path": "tests/test_m12_wealthfolio.py::test_m12_t03_backup_export_restore"
+  },
+  {
+    "test_id": "M12-T04",
+    "result": "PASS",
+    "expected": "Hermes read-only MCP can answer holdings/value question if MCP is enabled",
+    "observed": "Read-only MCP interface returned SUCCESS status with accurate market value and holdings list",
+    "evidence_path": "tests/test_m12_wealthfolio.py::test_m12_t04_hermes_read_only_mcp"
+  },
+  {
+    "test_id": "M12-T05",
+    "result": "PASS",
+    "expected": "mutation/write action is absent or rejected in initial scope",
+    "observed": "Mutation/write attempts on read-only scope raised explicit PermissionError",
+    "evidence_path": "tests/test_m12_wealthfolio.py::test_m12_t05_mutation_write_action_rejected"
+  }
+]
