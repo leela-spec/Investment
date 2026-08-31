@@ -1,0 +1,11 @@
+{
+  "ipos-module-stop-gate": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python .agents/hooks/ipos_stop_gate.py",
+        "timeout": 10
+      }
+    ]
+  }
+}
