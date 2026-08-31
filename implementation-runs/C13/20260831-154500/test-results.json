@@ -1,0 +1,50 @@
+{
+    "summary":  {
+                    "failed":  0,
+                    "skipped":  0,
+                    "total":  10,
+                    "passed":  10
+                },
+    "tests":  [
+                  {
+                      "name":  "test_m13_t01_fixed_inputs_produce_same_weights",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t02_weights_satisfy_sum_and_bounds",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t03_infeasible_constraints_fail_explicitly",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t04_input_perturbation_sensitivity",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t05_network_disabled",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t06_risk_parity_pathway",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t07_cvar_pathway",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t08_independent_oracle_variance_reduction",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t09_anti_facade_no_scipy_in_module",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t10_anti_facade_riskfolio_denial",
+                      "outcome":  "passed"
+                  }
+              ]
+}

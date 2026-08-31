@@ -1,13 +1,14 @@
-"""IPOS Riskfolio-Lib Deterministic Portfolio Optimizer (Module M13).
+"""IPOS Riskfolio-Lib Deterministic Portfolio Optimizer (Module M13 / Correction C13).
 
-Provides deterministic mean-variance, risk-budgeting, and CVaR portfolio optimization
-under explicit numeric IPOS governor constraints without remote network dependencies.
+Provides deterministic mean-variance, risk-budgeting/risk-parity, and CVaR portfolio optimization
+by directly invoking the official Riskfolio-Lib package under explicit numeric IPOS governor
+constraints without remote network dependencies.
 """
 
-from typing import Dict, Any, Tuple, Optional, List
+from typing import Dict, Any, Tuple, Optional
 import numpy as np
 import pandas as pd
-from scipy.optimize import minimize
+import riskfolio as rp
 
 
 class OptimizationException(Exception):
@@ -16,7 +17,7 @@ class OptimizationException(Exception):
 
 
 class RiskfolioOptimizer:
-    """Deterministic portfolio optimization wrapper using Scipy SLSQP and Riskfolio-Lib concepts."""
+    """Deterministic portfolio optimization wrapper using official Riskfolio-Lib engine."""
 
     def __init__(self, seed: int = 42):
         self.seed = seed
@@ -30,18 +31,20 @@ class RiskfolioOptimizer:
         obj: str = "MinRisk",
         min_weight: float = 0.0,
         max_weight: float = 1.0,
-        rf: float = 0.0
+        rf: float = 0.0,
+        b: Optional[pd.DataFrame | np.ndarray] = None
     ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
-        """Run deterministic portfolio optimization under explicit numeric constraints.
+        """Run deterministic portfolio optimization using Riskfolio-Lib under explicit numeric constraints.
         
         Args:
             returns_df: DataFrame of asset return series (columns = ticker/instrument_id)
-            model: 'Classic', 'BL' (Black-Litterman), or 'FM'
-            rm: Risk metric ('MV' for Variance, 'MAD', 'CVaR', 'CDaR')
-            obj: Objective ('MinRisk', 'Utility', 'Sharpe', 'MaxRet')
+            model: 'Classic', 'FM', etc.
+            rm: Risk metric ('MV' for Variance, 'MAD', 'CVaR', 'CDaR', etc.)
+            obj: Objective ('MinRisk', 'Utility', 'Sharpe', 'MaxRet', 'RiskParity', 'RP')
             min_weight: Lower bound weight per asset
             max_weight: Upper bound weight per asset
             rf: Risk-free rate
+            b: Optional risk budget vector for risk budgeting / risk parity
             
         Returns:
             Tuple of (weights DataFrame, diagnostics Dict)
@@ -51,56 +54,83 @@ class RiskfolioOptimizer:
         if n_assets == 0:
             raise OptimizationException("Empty return series provided for optimization")
 
-        # Infeasibility check: min_weight * n_assets > 1.0
+        # Infeasibility pre-checks
+        if min_weight > max_weight:
+            raise OptimizationException(
+                f"Infeasible constraints: min_weight ({min_weight}) > max_weight ({max_weight})"
+            )
         if min_weight * n_assets > 1.0 + 1e-6:
             raise OptimizationException(
                 f"Infeasible constraints: min_weight ({min_weight}) * n_assets ({n_assets}) = {min_weight * n_assets} > 1.0"
             )
+        if max_weight * n_assets < 1.0 - 1e-6:
+            raise OptimizationException(
+                f"Infeasible constraints: max_weight ({max_weight}) * n_assets ({n_assets}) = {max_weight * n_assets} < 1.0"
+            )
 
-        cov_matrix = returns_df.cov().values
-        mean_returns = returns_df.mean().values
+        # Build official Riskfolio Portfolio object
+        try:
+            port = rp.Portfolio(returns=returns_df)
+            port.assets_stats(method_mu="hist", method_cov="hist")
+        except Exception as e:
+            raise OptimizationException(f"Riskfolio failed to compute asset statistics: {e}") from e
 
-        # Define objective function
-        if obj == "MinRisk":
-            def objective(w):
-                return float(w.T @ cov_matrix @ w)
-        elif obj == "Sharpe":
-            def objective(w):
-                port_return = float(w.T @ mean_returns) - rf
-                port_risk = np.sqrt(float(w.T @ cov_matrix @ w))
-                return - (port_return / (port_risk + 1e-8))
-        else: # MaxRet
-            def objective(w):
-                return - float(w.T @ mean_returns)
+        # Set explicit linear inequality constraints (A @ w <= B)
+        # -w_i <= -min_weight  and  w_i <= max_weight
+        a_lower = -np.eye(n_assets)
+        b_lower = -np.full(n_assets, min_weight)
+        a_upper = np.eye(n_assets)
+        b_upper = np.full(n_assets, max_weight)
 
-        # Initial guess (equal weight)
-        w0 = np.full(n_assets, 1.0 / n_assets)
-        
-        # Constraints: sum(w) = 1.0
-        constraints = [{"type": "eq", "fun": lambda w: np.sum(w) - 1.0}]
-        
-        # Bounds: min_weight <= w_i <= max_weight
-        bounds = [(min_weight, max_weight) for _ in range(n_assets)]
+        port.ainequality = np.vstack([a_lower, a_upper])
+        port.binequality = np.concatenate([b_lower, b_upper]).reshape(-1, 1)
 
-        res = minimize(objective, w0, method="SLSQP", bounds=bounds, constraints=constraints)
+        # Execute optimization via official Riskfolio pathways
+        try:
+            if obj in ("RiskParity", "RP") or rm in ("RiskParity", "RP"):
+                actual_rm = "MV" if rm in ("RiskParity", "RP") else rm
+                w = port.rp_optimization(
+                    model=model,
+                    rm=actual_rm,
+                    rf=rf,
+                    b=b,
+                    hist=True
+                )
+            else:
+                w = port.optimization(
+                    model=model,
+                    rm=rm,
+                    obj=obj,
+                    rf=rf,
+                    hist=True
+                )
+        except Exception as e:
+            raise OptimizationException(f"Riskfolio solver failed during optimization: {e}") from e
 
-        if not res.success:
-            raise OptimizationException(f"Solver failed to find optimal solution: {res.message}")
+        if w is None or not isinstance(w, pd.DataFrame) or len(w) == 0:
+            raise OptimizationException("Riskfolio solver failed to find optimal solution: result is None or empty")
 
-        weights = res.x
-        # Clean small noise
+        # Clean numerical precision residuals
+        weights = w.iloc[:, 0].values.astype(float)
         weights = np.where(weights < 1e-6, 0.0, weights)
-        weights = weights / np.sum(weights)
+        sum_w = float(np.sum(weights))
 
-        df_weights = pd.DataFrame(weights, index=assets, columns=["weights"])
+        if sum_w <= 0.0 or np.isnan(sum_w) or np.isinf(sum_w):
+            raise OptimizationException(f"Riskfolio solver returned invalid weight sum: {sum_w}")
+
+        weights = weights / sum_w
         sum_w = float(np.sum(weights))
         residual = abs(sum_w - 1.0)
 
         if residual > 1e-3:
             raise OptimizationException(f"Solver residual check failed: sum of weights = {sum_w} != 1.0")
 
+        df_weights = pd.DataFrame(weights, index=assets, columns=["weights"])
+
         diagnostics = {
             "solver_status": "OPTIMAL",
+            "solver_engine": "Riskfolio-Lib",
+            "riskfolio_version": rp.__version__,
             "model": model,
             "risk_metric": rm,
             "objective": obj,
@@ -116,21 +146,25 @@ class RiskfolioOptimizer:
         return df_weights, diagnostics
 
     def calculate_sensitivity(
-        self, returns_df: pd.DataFrame, perturbation: float = 0.01
+        self,
+        returns_df: pd.DataFrame,
+        perturbation: float = 0.01,
+        obj: str = "MinRisk",
+        rm: str = "MV"
     ) -> Dict[str, Any]:
-        """Calculate sensitivity report by perturbing asset mean returns."""
-        w_base, _ = self.optimize_portfolio(returns_df)
-        
+        """Calculate sensitivity report by perturbing asset mean returns via Riskfolio."""
+        w_base, _ = self.optimize_portfolio(returns_df, obj=obj, rm=rm)
+
         perturbed_returns = returns_df.copy()
         first_col = returns_df.columns[0]
         perturbed_returns[first_col] = perturbed_returns[first_col] + perturbation
-        
-        w_perturbed, _ = self.optimize_portfolio(perturbed_returns)
-        
+
+        w_perturbed, _ = self.optimize_portfolio(perturbed_returns, obj=obj, rm=rm)
+
         delta = (w_perturbed.iloc[:, 0] - w_base.iloc[:, 0]).abs()
         max_delta = float(delta.max())
         mean_delta = float(delta.mean())
-        
+
         return {
             "perturbed_asset": first_col,
             "perturbation_size": perturbation,

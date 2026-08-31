@@ -2,7 +2,7 @@ schema_version: "1.0"
 correction_id: "C13"
 repairs_module: "M13"
 title: "Real Riskfolio-Lib optimizer correction"
-status: "READY_AFTER_C11"
+status: "VERIFIED_PASS"
 depends_on: ["C11"]
 objective: "Delete the SciPy substitute and implement the optimizer wrapper by invoking Riskfolio-Lib itself."
 reject:
