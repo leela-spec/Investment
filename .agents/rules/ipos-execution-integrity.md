@@ -1,3 +1,8 @@
+---
+alwaysApply: true
+description: IPOS execution integrity, anti-facade verification, and definition of done rules.
+---
+
 # IPOS execution integrity rule
 
 Activation: ALWAYS ON for this workspace.
