@@ -28,11 +28,14 @@ facade_failure_example: "Installing riskfolio-lib but executing optimization via
 2. **Risk Parity / Risk Budgeting**: Solves equal risk contribution / budget allocation through `port.rp_optimization()`.
 3. **CVaR MinRisk**: Minimizes tail Conditional Value at Risk through `port.optimization(rm='CVaR')`.
 
-### 3. Anti-Facade Invariants
+### 3. Anti-Facade Invariants & Offline Proof
 - `scipy.optimize` and `minimize` are completely eliminated from `ipos/portfolio/optimizer.py`.
 - Monkeypatching / denying `rp.Portfolio.optimization` causes explicit hard `OptimizationException` rather than silent fallback.
+- Monkeypatching / denying `rp.Portfolio.rp_optimization` causes explicit hard `OptimizationException` rather than silent fallback.
+- Outbound socket connect attempts are intercepted/blocked during optimization; wrapper executes offline with `network_required: False`.
 
-### 4. Independent Oracles
+### 4. Independent Oracles & Diagnostics
+- Truthful diagnostic status `solution_status: "SOLUTION_RETURNED"` (no fabricated `OPTIMAL` claim).
 - $\sum_{i=1}^n w_i = 1.0 \pm 10^{-4}$ (independent float sum).
 - $\forall i: \text{min\_weight} - 10^{-5} \le w_i \le \text{max\_weight} + 10^{-5}$.
 - $w_{\text{MinRisk}}^T \Sigma w_{\text{MinRisk}} \le w_{\text{EqualWeight}}^T \Sigma w_{\text{EqualWeight}}$.

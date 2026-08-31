@@ -2,8 +2,8 @@
     "summary":  {
                     "failed":  0,
                     "skipped":  0,
-                    "total":  10,
-                    "passed":  10
+                    "total":  11,
+                    "passed":  11
                 },
     "tests":  [
                   {
@@ -44,6 +44,10 @@
                   },
                   {
                       "name":  "test_m13_t10_anti_facade_riskfolio_denial",
+                      "outcome":  "passed"
+                  },
+                  {
+                      "name":  "test_m13_t11_anti_facade_risk_parity_denial",
                       "outcome":  "passed"
                   }
               ]

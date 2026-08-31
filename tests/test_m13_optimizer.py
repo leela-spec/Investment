@@ -1,12 +1,13 @@
 """Test suite for Module M13 / Correction C13 (Riskfolio-Lib Optimizer Bridge).
 
-Tests M13-T01 through M13-T10 covering deterministic repeatability, constraint satisfaction,
+Tests M13-T01 through M13-T11 covering deterministic repeatability, constraint satisfaction,
 infeasible handling, perturbation sensitivity, offline execution, Risk Parity, CVaR,
 independent mathematical oracles, and anti-facade verification.
 """
 
 import ast
 import inspect
+import socket
 from unittest.mock import patch
 import pytest
 import numpy as np
@@ -39,7 +40,7 @@ def test_m13_t01_fixed_inputs_produce_same_weights(synthetic_returns):
 
     diff = (w1.iloc[:, 0] - w2.iloc[:, 0]).abs().max()
     assert diff < 1e-6
-    assert diag1["solver_status"] == "OPTIMAL"
+    assert diag1["solution_status"] == "SOLUTION_RETURNED"
     assert diag1["solver_engine"] == "Riskfolio-Lib"
     assert "riskfolio_version" in diag1
     assert diag1["riskfolio_version"] == rp.__version__
@@ -95,11 +96,18 @@ def test_m13_t04_input_perturbation_sensitivity(synthetic_returns):
 
 
 def test_m13_t05_network_disabled(synthetic_returns):
-    """M13-T05: Wrapper runs with network disabled."""
+    """M13-T05: Wrapper executes offline without socket connection attempts."""
     opt = RiskfolioOptimizer(seed=42)
-    _, diag = opt.optimize_portfolio(synthetic_returns)
 
-    assert diag["is_network_disabled"] is True
+    def forbidden_connect(*args, **kwargs):
+        raise RuntimeError("Outbound socket connection forbidden during offline optimization")
+
+    with patch.object(socket.socket, "connect", side_effect=forbidden_connect):
+        with patch.object(socket, "create_connection", side_effect=forbidden_connect):
+            w, diag = opt.optimize_portfolio(synthetic_returns)
+
+    assert w is not None
+    assert diag["network_required"] is False
     assert diag["solver_engine"] == "Riskfolio-Lib"
 
 
@@ -188,5 +196,15 @@ def test_m13_t10_anti_facade_riskfolio_denial(synthetic_returns):
     with patch.object(rp.Portfolio, "optimization", side_effect=RuntimeError("Riskfolio unavailable")):
         with pytest.raises(OptimizationException) as exc_info:
             opt.optimize_portfolio(synthetic_returns)
+        assert "Riskfolio solver failed" in str(exc_info.value)
+
+
+def test_m13_t11_anti_facade_risk_parity_denial(synthetic_returns):
+    """M13-T11: Anti-facade check: denying Riskfolio rp_optimization causes explicit hard failure."""
+    opt = RiskfolioOptimizer(seed=42)
+
+    with patch.object(rp.Portfolio, "rp_optimization", side_effect=RuntimeError("Riskfolio RP unavailable")):
+        with pytest.raises(OptimizationException) as exc_info:
+            opt.optimize_portfolio(synthetic_returns, obj="RiskParity")
         assert "Riskfolio solver failed" in str(exc_info.value)
 

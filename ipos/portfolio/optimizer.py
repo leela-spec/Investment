@@ -128,7 +128,7 @@ class RiskfolioOptimizer:
         df_weights = pd.DataFrame(weights, index=assets, columns=["weights"])
 
         diagnostics = {
-            "solver_status": "OPTIMAL",
+            "solution_status": "SOLUTION_RETURNED",
             "solver_engine": "Riskfolio-Lib",
             "riskfolio_version": rp.__version__,
             "model": model,
@@ -140,7 +140,7 @@ class RiskfolioOptimizer:
             "constraint_residual": residual,
             "min_weight_bound": min_weight,
             "max_weight_bound": max_weight,
-            "is_network_disabled": True
+            "network_required": False
         }
 
         return df_weights, diagnostics
