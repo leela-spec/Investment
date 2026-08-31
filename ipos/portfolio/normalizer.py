@@ -7,7 +7,6 @@ source manifests, and multi-state reconciliation reports with zero silent transa
 from typing import Dict, Any, List, Tuple, Optional, Union
 import hashlib
 import json
-import math
 import os
 import pandas as pd
 
@@ -31,7 +30,7 @@ class ReconciliationException(Exception):
 
 
 class PortfolioNormalizer:
-    """Normalizes broker transactions into canonical data structures with strict accounting."""
+    """Normalizes broker transactions into canonical data structures with strict multi-currency accounting."""
 
     def __init__(self, account_name: str = "DEFAULT_ACCOUNT"):
         self.account_name = account_name
@@ -126,7 +125,7 @@ class PortfolioNormalizer:
         filepath: str,
         control_input: Optional[Union[str, Dict[str, Any]]] = None
     ) -> Tuple[pd.DataFrame, pd.DataFrame, Dict[str, Any], Dict[str, Any]]:
-        """Normalize raw CSV fixture into canonical holdings, activities, manifest, and reconciliation report."""
+        """Normalize raw CSV fixture into canonical holdings, activities, manifest, and multi-currency reconciliation report."""
         file_sha256 = self.compute_file_sha256(filepath)
 
         df_raw = pd.read_csv(filepath)
@@ -167,7 +166,8 @@ class PortfolioNormalizer:
             activities.append(act_record)
 
             # Update holdings map with Economic/Book Cost Basis
-            # Note: This is economic/book cost basis and does not claim to represent German tax-lot accounting.
+            # Valuation Timestamp Semantics: as_of is updated ONLY on trade valuation events (BUY, SELL),
+            # never advanced on cash events like DIVIDEND that do not revalue market_value.
             if act_type == "BUY":
                 if inst_id not in holdings_map:
                     holdings_map[inst_id] = {
@@ -202,8 +202,8 @@ class PortfolioNormalizer:
                 holdings_map[inst_id]["as_of"] = str(row["timestamp"])
 
             elif act_type == "DIVIDEND":
-                if inst_id in holdings_map:
-                    holdings_map[inst_id]["as_of"] = str(row["timestamp"])
+                # Do NOT advance as_of on DIVIDEND because market_value is not revalued
+                pass
 
         df_activities = pd.DataFrame(activities)
         if holdings_map:
@@ -224,56 +224,61 @@ class PortfolioNormalizer:
             "account": self.account_name
         }
 
-        # Calculate directional cash flow and summary totals
-        gross_buys = 0.0
-        gross_sells = 0.0
-        gross_divs = 0.0
-        total_fees = 0.0
-        total_taxes = 0.0
-        net_cash_flow = 0.0
+        # Multi-currency accounting: calculate totals PER CURRENCY (never sum across currencies)
+        currencies = sorted(list(set(df_activities["currency"].unique()))) if not df_activities.empty else []
+        summary_totals_by_currency: Dict[str, Dict[str, float]] = {}
 
-        for act in activities:
-            t = act["type"]
-            g = act["gross"]
-            f = act["fees"]
-            tx = act["taxes"]
+        for curr in currencies:
+            curr_acts = df_activities[df_activities["currency"] == curr]
+            gross_buys = 0.0
+            gross_sells = 0.0
+            gross_divs = 0.0
+            total_fees = 0.0
+            total_taxes = 0.0
+            net_cash_flow = 0.0
 
-            if t == "BUY":
-                gross_buys += g
-                total_fees += f
-                total_taxes += tx
-                net_cash_flow -= (g + f + tx)
-            elif t == "SELL":
-                gross_sells += g
-                total_fees += f
-                total_taxes += tx
-                net_cash_flow += (g - f - tx)
-            elif t == "DIVIDEND":
-                gross_divs += g
-                total_fees += f
-                total_taxes += tx
-                net_cash_flow += (g - f - tx)
-            elif t == "DEPOSIT":
-                net_cash_flow += g
-            elif t == "WITHDRAWAL":
-                net_cash_flow -= g
-            elif t == "FEE":
-                total_fees += g
-                net_cash_flow -= g
-            elif t == "TAX":
-                total_taxes += g
-                net_cash_flow -= g
+            for _, act in curr_acts.iterrows():
+                t = act["type"]
+                g = float(act["gross"])
+                f = float(act["fees"])
+                tx = float(act["taxes"])
 
-        summary_totals = {
-            "gross_buys": round(gross_buys, 2),
-            "gross_sells": round(gross_sells, 2),
-            "gross_dividends": round(gross_divs, 2),
-            "total_fees": round(total_fees, 2),
-            "total_taxes": round(total_taxes, 2),
-            "net_cash_flow": round(net_cash_flow, 2)
-        }
+                if t == "BUY":
+                    gross_buys += g
+                    total_fees += f
+                    total_taxes += tx
+                    net_cash_flow -= (g + f + tx)
+                elif t == "SELL":
+                    gross_sells += g
+                    total_fees += f
+                    total_taxes += tx
+                    net_cash_flow += (g - f - tx)
+                elif t == "DIVIDEND":
+                    gross_divs += g
+                    total_fees += f
+                    total_taxes += tx
+                    net_cash_flow += (g - f - tx)
+                elif t == "DEPOSIT":
+                    net_cash_flow += g
+                elif t == "WITHDRAWAL":
+                    net_cash_flow -= g
+                elif t == "FEE":
+                    total_fees += g
+                    net_cash_flow -= g
+                elif t == "TAX":
+                    total_taxes += g
+                    net_cash_flow -= g
 
-        # Reconciliation against independent source control
+            summary_totals_by_currency[curr] = {
+                "gross_buys": round(gross_buys, 2),
+                "gross_sells": round(gross_sells, 2),
+                "gross_dividends": round(gross_divs, 2),
+                "total_fees": round(total_fees, 2),
+                "total_taxes": round(total_taxes, 2),
+                "net_cash_flow": round(net_cash_flow, 2)
+            }
+
+        # Comprehensive Multi-Field Reconciliation against Independent Control
         control_data: Optional[Dict[str, Any]] = None
         if isinstance(control_input, str) and os.path.exists(control_input):
             with open(control_input, "r", encoding="utf-8-sig") as cf:
@@ -281,24 +286,98 @@ class PortfolioNormalizer:
         elif isinstance(control_input, dict):
             control_data = control_input
 
-        if control_data is not None:
-            expected_net = None
-            if "summary_totals" in control_data and "net_cash_flow" in control_data["summary_totals"]:
-                expected_net = float(control_data["summary_totals"]["net_cash_flow"])
-            elif "net_cash_flow" in control_data:
-                expected_net = float(control_data["net_cash_flow"])
+        checks: List[Dict[str, Any]] = []
 
-            if expected_net is not None:
-                diff = abs(summary_totals["net_cash_flow"] - expected_net)
-                if diff <= 1e-4:
-                    rec_status = "BALANCED"
-                    rec_diff = round(diff, 4)
-                else:
-                    rec_status = "MISMATCH"
-                    rec_diff = round(diff, 4)
+        if control_data is not None:
+            # 1. Check summary totals per currency
+            # Support both control["summary_totals_by_currency"] and legacy single-currency control["summary_totals"]
+            ctrl_by_curr = control_data.get("summary_totals_by_currency", {})
+            if not ctrl_by_curr and "summary_totals" in control_data and len(currencies) == 1:
+                ctrl_by_curr = {currencies[0]: control_data["summary_totals"]}
+
+            for curr, expected_totals in ctrl_by_curr.items():
+                actual_totals = summary_totals_by_currency.get(curr, {})
+                for field in ["gross_buys", "gross_sells", "gross_dividends", "total_fees", "total_taxes", "net_cash_flow"]:
+                    if field in expected_totals:
+                        exp_val = float(expected_totals[field])
+                        act_val = float(actual_totals.get(field, 0.0))
+                        diff = round(abs(act_val - exp_val), 4)
+                        status = "PASS" if diff <= 1e-4 else "FAIL"
+                        checks.append({
+                            "check": f"summary_totals.{curr}.{field}",
+                            "expected": exp_val,
+                            "actual": act_val,
+                            "difference": diff,
+                            "status": status
+                        })
+
+            # Top-level net_cash_flow fallback if control only had top-level net_cash_flow
+            if not checks and "net_cash_flow" in control_data and len(currencies) == 1:
+                curr = currencies[0]
+                exp_val = float(control_data["net_cash_flow"])
+                act_val = float(summary_totals_by_currency[curr]["net_cash_flow"])
+                diff = round(abs(act_val - exp_val), 4)
+                status = "PASS" if diff <= 1e-4 else "FAIL"
+                checks.append({
+                    "check": f"summary_totals.{curr}.net_cash_flow",
+                    "expected": exp_val,
+                    "actual": act_val,
+                    "difference": diff,
+                    "status": status
+                })
+
+            # 2. Check ending holdings balances
+            if "ending_holdings" in control_data and isinstance(control_data["ending_holdings"], dict):
+                for inst_id, expected_h in control_data["ending_holdings"].items():
+                    actual_h_rows = df_holdings[df_holdings["instrument_id"] == inst_id]
+                    actual_qty = float(actual_h_rows.iloc[0]["quantity"]) if not actual_h_rows.empty else 0.0
+                    actual_basis = float(actual_h_rows.iloc[0]["cost_basis"]) if not actual_h_rows.empty else 0.0
+                    actual_as_of = str(actual_h_rows.iloc[0]["as_of"]) if not actual_h_rows.empty else ""
+
+                    if "quantity" in expected_h:
+                        exp_qty = float(expected_h["quantity"])
+                        diff_qty = round(abs(actual_qty - exp_qty), 4)
+                        checks.append({
+                            "check": f"holding.{inst_id}.quantity",
+                            "expected": exp_qty,
+                            "actual": actual_qty,
+                            "difference": diff_qty,
+                            "status": "PASS" if diff_qty <= 1e-4 else "FAIL"
+                        })
+
+                    # Check cost basis (support book_cost_basis or cost_basis key)
+                    basis_key = "book_cost_basis" if "book_cost_basis" in expected_h else ("cost_basis" if "cost_basis" in expected_h else None)
+                    if basis_key:
+                        exp_basis = float(expected_h[basis_key])
+                        diff_basis = round(abs(actual_basis - exp_basis), 4)
+                        checks.append({
+                            "check": f"holding.{inst_id}.cost_basis",
+                            "expected": exp_basis,
+                            "actual": actual_basis,
+                            "difference": diff_basis,
+                            "status": "PASS" if diff_basis <= 1e-4 else "FAIL"
+                        })
+
+                    if "as_of" in expected_h:
+                        exp_as_of = str(expected_h["as_of"])
+                        as_of_match = (actual_as_of == exp_as_of)
+                        checks.append({
+                            "check": f"holding.{inst_id}.as_of",
+                            "expected": exp_as_of,
+                            "actual": actual_as_of,
+                            "difference": 0.0 if as_of_match else 1.0,
+                            "status": "PASS" if as_of_match else "FAIL"
+                        })
+
+        if checks:
+            all_pass = all(c["status"] == "PASS" for c in checks)
+            if all_pass:
+                rec_status = "BALANCED"
+                rec_diff = 0.0
             else:
-                rec_status = "UNVERIFIABLE_NO_SOURCE_CONTROL"
-                rec_diff = None
+                rec_status = "MISMATCH"
+                failed_diffs = [c["difference"] for c in checks if c["status"] == "FAIL"]
+                rec_diff = round(sum(failed_diffs), 4)
         else:
             rec_status = "UNVERIFIABLE_NO_SOURCE_CONTROL"
             rec_diff = None
@@ -306,7 +385,8 @@ class PortfolioNormalizer:
         reconciliation = {
             "account": self.account_name,
             "total_activities": len(df_activities),
-            "summary_totals": summary_totals,
+            "summary_totals_by_currency": summary_totals_by_currency,
+            "checks": checks,
             "reconciliation_difference": rec_diff,
             "reconciliation_status": rec_status
         }

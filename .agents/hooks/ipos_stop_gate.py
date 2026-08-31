@@ -46,9 +46,12 @@ def main() -> None:
         return
 
     try:
-        task = json.loads(task_file.read_text(encoding="utf-8"))
-    except Exception:
-        emit("allow")
+        task = json.loads(task_file.read_text(encoding="utf-8-sig"))
+        if not isinstance(task, dict):
+            emit("continue", "Malformed .agents/current-task.json: root must be a JSON object. Fail closed.")
+            return
+    except Exception as exc:
+        emit("continue", f"Malformed or unparseable .agents/current-task.json detected ({exc}). Fail closed: fix task state before stopping.")
         return
 
     if not task.get("active", False):

@@ -1,0 +1,13 @@
+{
+  "account": "DEFAULT_ACCOUNT",
+  "summary_totals_by_currency": {
+    "EUR": {
+      "gross_buys": 5900.00,
+      "gross_sells": 380.00,
+      "gross_dividends": 15.00,
+      "total_fees": 99.00,
+      "total_taxes": 7.25,
+      "net_cash_flow": -5520.25
+    }
+  }
+}

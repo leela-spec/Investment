@@ -1,13 +1,15 @@
 {
   "account": "DEFAULT_ACCOUNT",
   "total_activities": 4,
-  "summary_totals": {
-    "gross_buys": 5900.00,
-    "gross_sells": 380.00,
-    "gross_dividends": 15.00,
-    "total_fees": 8.00,
-    "total_taxes": 7.25,
-    "net_cash_flow": -5520.25
+  "summary_totals_by_currency": {
+    "EUR": {
+      "gross_buys": 5900.00,
+      "gross_sells": 380.00,
+      "gross_dividends": 15.00,
+      "total_fees": 8.00,
+      "total_taxes": 7.25,
+      "net_cash_flow": -5520.25
+    }
   },
   "ending_holdings": {
     "US7846721097": {
@@ -16,7 +18,7 @@
       "book_cost_basis": 5005.00,
       "unit_cost_basis": 500.50,
       "market_value": 5000.00,
-      "as_of": "2026-03-01T09:15:00Z"
+      "as_of": "2026-01-15T10:00:00Z"
     },
     "US0378331005": {
       "symbol": "AAPL",

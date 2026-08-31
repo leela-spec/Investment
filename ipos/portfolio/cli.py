@@ -65,10 +65,16 @@ def main():
             with open(os.path.join(args.outdir, "reconciliation.json"), "w", encoding="utf-8") as f:
                 json.dump(reconciliation, f, indent=2)
 
-            print(f"Normalization SUCCESS -> Written outputs to '{args.outdir}'")
-            if reconciliation.get("reconciliation_status") == "MISMATCH":
+            rec_status = reconciliation.get("reconciliation_status")
+            if rec_status == "MISMATCH":
+                print(f"Normalization FAILED reconciliation: status={rec_status} -> Written outputs to '{args.outdir}'")
                 sys.exit(1)
-            sys.exit(0)
+            elif rec_status == "UNVERIFIABLE_NO_SOURCE_CONTROL":
+                print(f"Normalization SUCCESS (Reconciliation UNVERIFIABLE: no source control provided) -> Written outputs to '{args.outdir}'")
+                sys.exit(0)
+            else:
+                print(f"Normalization SUCCESS (Reconciliation BALANCED) -> Written outputs to '{args.outdir}'")
+                sys.exit(0)
         except Exception as e:
             print(f"Normalization FAILED: {e}")
             sys.exit(1)
@@ -77,9 +83,15 @@ def main():
         try:
             _, _, _, reconciliation = normalizer.normalize_csv_fixture(args.input, control_input=args.control)
             print(json.dumps(reconciliation, indent=2))
-            if reconciliation.get("reconciliation_status") == "MISMATCH":
+            rec_status = reconciliation.get("reconciliation_status")
+            if rec_status == "BALANCED":
+                sys.exit(0)
+            elif rec_status == "MISMATCH":
                 sys.exit(1)
-            sys.exit(0)
+            elif rec_status == "UNVERIFIABLE_NO_SOURCE_CONTROL":
+                sys.exit(2)
+            else:
+                sys.exit(1)
         except Exception as e:
             print(f"Reconciliation FAILED: {e}")
             sys.exit(1)

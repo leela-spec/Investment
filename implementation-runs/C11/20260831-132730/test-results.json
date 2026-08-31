@@ -1,14 +1,14 @@
-﻿{
+{
   "module_id": "C11",
   "repairs_module": "M11",
-  "total_tests": 8,
-  "passed": 8,
+  "total_tests": 15,
+  "passed": 15,
   "failed": 0,
   "tests": [
     {
       "name": "test_m11_t01_golden_csv_fixture_mapping_vs_independent_oracle",
       "verdict": "PASS",
-      "description": "Golden CSV maps to canonical rows matching independent JSON oracle"
+      "description": "Golden CSV maps to canonical rows matching independent JSON oracle with checks matrix"
     },
     {
       "name": "test_m11_t02_text_fixture_preserves_values_and_cash_flow",
@@ -44,6 +44,41 @@
       "name": "test_m11_t08_economic_book_cost_basis_relief_on_sales",
       "verdict": "PASS",
       "description": "Weighted average book cost basis relieved proportionally on sales (AAPL 540.90 EUR across 3 shares)"
+    },
+    {
+      "name": "test_m11_t09_valuation_timestamp_semantics",
+      "verdict": "PASS",
+      "description": "Holding as_of timestamp is not advanced on DIVIDEND when market value is not revalued"
+    },
+    {
+      "name": "test_m11_t10_multi_currency_accounting",
+      "verdict": "PASS",
+      "description": "Summary totals and reconciliation segregated per currency (EUR and USD never summed across)"
+    },
+    {
+      "name": "test_m11_t11_full_control_oracle_component_and_holding_mismatch",
+      "verdict": "PASS",
+      "description": "Component or ending holding mismatch yields MISMATCH even when net cash flow matches"
+    },
+    {
+      "name": "test_m11_t12_cli_exit_code_semantics",
+      "verdict": "PASS",
+      "description": "CLI exit code semantics: 0=BALANCED, 1=MISMATCH, 2=UNVERIFIABLE"
+    },
+    {
+      "name": "test_stop_gate_inactive_task_allows_stop",
+      "verdict": "PASS",
+      "description": "Stop gate hook allows model_stop when current-task.json has active=false"
+    },
+    {
+      "name": "test_stop_gate_bom_task_file_parsed",
+      "verdict": "PASS",
+      "description": "Stop gate hook reads UTF-8 BOM task file without crashing"
+    },
+    {
+      "name": "test_stop_gate_malformed_task_file_fails_closed",
+      "verdict": "PASS",
+      "description": "Stop gate hook fails closed on malformed task JSON and emits continue"
     }
   ]
 }
