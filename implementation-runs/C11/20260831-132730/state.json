@@ -1,0 +1,8 @@
+﻿{
+  "module_id": "C11",
+  "repairs_module": "M11",
+  "status": "COMPLETED",
+  "verdict": "PASS_WITH_LIMITATIONS",
+  "timestamp": "2026-08-31T13:31:30Z",
+  "limitations": "Real ZERO / Smartbroker broker-specific PDF/CSV exports remain deferred/blocked until representative exports are provided."
+}

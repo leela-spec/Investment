@@ -1,0 +1,30 @@
+{
+  "account": "DEFAULT_ACCOUNT",
+  "total_activities": 4,
+  "summary_totals": {
+    "gross_buys": 5900.00,
+    "gross_sells": 380.00,
+    "gross_dividends": 15.00,
+    "total_fees": 8.00,
+    "total_taxes": 7.25,
+    "net_cash_flow": -5520.25
+  },
+  "ending_holdings": {
+    "US7846721097": {
+      "symbol": "SPY",
+      "quantity": 10.0,
+      "book_cost_basis": 5005.00,
+      "unit_cost_basis": 500.50,
+      "market_value": 5000.00,
+      "as_of": "2026-03-01T09:15:00Z"
+    },
+    "US0378331005": {
+      "symbol": "AAPL",
+      "quantity": 3.0,
+      "book_cost_basis": 540.90,
+      "unit_cost_basis": 180.30,
+      "market_value": 570.00,
+      "as_of": "2026-03-10T11:00:00Z"
+    }
+  }
+}

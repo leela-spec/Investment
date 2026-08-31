@@ -1,4 +1,4 @@
-"""CLI interface for IPOS Portfolio Normalizer (Module M11)."""
+"""CLI interface for IPOS Portfolio Normalizer (Module M11 / Correction C11)."""
 
 import argparse
 import sys
@@ -15,6 +15,7 @@ def main():
     p_norm = subparsers.add_parser("normalize", help="Normalize broker export CSV")
     p_norm.add_argument("--input", required=True, help="Input raw CSV fixture")
     p_norm.add_argument("--outdir", required=True, help="Output directory for canonical tables")
+    p_norm.add_argument("--control", required=False, default=None, help="Optional independent control JSON")
 
     # validate command
     p_val = subparsers.add_parser("validate", help="Validate raw or canonical file")
@@ -23,6 +24,7 @@ def main():
     # reconcile command
     p_rec = subparsers.add_parser("reconcile", help="Generate reconciliation report")
     p_rec.add_argument("--input", required=True, help="Input CSV file")
+    p_rec.add_argument("--control", required=False, default=None, help="Optional independent control JSON")
 
     # doctor command
     p_doc = subparsers.add_parser("doctor", help="Check normalizer readiness and dependencies")
@@ -45,23 +47,27 @@ def main():
 
     elif args.command == "normalize":
         try:
-            df_holdings, df_activities, manifest, reconciliation = normalizer.normalize_csv_fixture(args.input)
+            df_holdings, df_activities, manifest, reconciliation = normalizer.normalize_csv_fixture(
+                args.input, control_input=args.control
+            )
             os.makedirs(args.outdir, exist_ok=True)
-            
+
             # Write parquet & csv
             df_holdings.to_parquet(os.path.join(args.outdir, "portfolio_snapshot.parquet"))
             df_holdings.to_csv(os.path.join(args.outdir, "portfolio_snapshot.csv"), index=False)
-            
+
             df_activities.to_parquet(os.path.join(args.outdir, "activities.parquet"))
             df_activities.to_csv(os.path.join(args.outdir, "activities.csv"), index=False)
-            
-            with open(os.path.join(args.outdir, "source_manifest.json"), "w") as f:
+
+            with open(os.path.join(args.outdir, "source_manifest.json"), "w", encoding="utf-8") as f:
                 json.dump(manifest, f, indent=2)
-                
-            with open(os.path.join(args.outdir, "reconciliation.json"), "w") as f:
+
+            with open(os.path.join(args.outdir, "reconciliation.json"), "w", encoding="utf-8") as f:
                 json.dump(reconciliation, f, indent=2)
 
             print(f"Normalization SUCCESS -> Written outputs to '{args.outdir}'")
+            if reconciliation.get("reconciliation_status") == "MISMATCH":
+                sys.exit(1)
             sys.exit(0)
         except Exception as e:
             print(f"Normalization FAILED: {e}")
@@ -69,8 +75,10 @@ def main():
 
     elif args.command == "reconcile":
         try:
-            _, _, _, reconciliation = normalizer.normalize_csv_fixture(args.input)
+            _, _, _, reconciliation = normalizer.normalize_csv_fixture(args.input, control_input=args.control)
             print(json.dumps(reconciliation, indent=2))
+            if reconciliation.get("reconciliation_status") == "MISMATCH":
+                sys.exit(1)
             sys.exit(0)
         except Exception as e:
             print(f"Reconciliation FAILED: {e}")

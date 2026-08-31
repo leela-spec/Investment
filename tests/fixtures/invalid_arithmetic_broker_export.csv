@@ -1,0 +1,2 @@
+source_row_id,timestamp,type,isin,symbol,name,quantity,price,gross,fees,taxes,currency
+301,2026-01-15T10:00:00Z,BUY,US7846721097,SPY,SPDR S&P 500 ETF,10,500.0,9999.0,5.0,0.0,EUR

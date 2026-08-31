@@ -1,0 +1,10 @@
+﻿{
+  "module_id": "C11",
+  "repairs_module": "M11",
+  "timestamp": "2026-08-31T13:27:30Z",
+  "git_branch": "ipos-modular-rebuild-2026-08-28",
+  "workspace_root": "C:\\GitDev\\Investment",
+  "python_version": "3.12.10",
+  "target": "Deterministic portfolio accounting & reconciliation correction",
+  "status": "IN_PROGRESS"
+}

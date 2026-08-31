@@ -1,0 +1,49 @@
+﻿{
+  "module_id": "C11",
+  "repairs_module": "M11",
+  "total_tests": 8,
+  "passed": 8,
+  "failed": 0,
+  "tests": [
+    {
+      "name": "test_m11_t01_golden_csv_fixture_mapping_vs_independent_oracle",
+      "verdict": "PASS",
+      "description": "Golden CSV maps to canonical rows matching independent JSON oracle"
+    },
+    {
+      "name": "test_m11_t02_text_fixture_preserves_values_and_cash_flow",
+      "verdict": "PASS",
+      "description": "Values preserved and directional net cash flow -5520.25 EUR verified"
+    },
+    {
+      "name": "test_m11_t03_standalone_fee_tax_semantics",
+      "verdict": "PASS",
+      "description": "Non-overlapping standalone FEE and TAX rows mapped cleanly; ambiguous double-counting rejected"
+    },
+    {
+      "name": "test_m11_t04_reproducibility_determinism",
+      "verdict": "PASS",
+      "description": "Dual runs yield identical SHA-256 hashes"
+    },
+    {
+      "name": "test_m11_t05_row_arithmetic_invalid_causes_validation_exception",
+      "verdict": "PASS",
+      "description": "Negative Case A: Row arithmetic error raises ValidationException"
+    },
+    {
+      "name": "test_m11_t06_source_control_mismatch_fails_reconciliation",
+      "verdict": "PASS",
+      "description": "Negative Case B: Valid rows with mismatched control yields MISMATCH status and 520.25 diff"
+    },
+    {
+      "name": "test_m11_t07_unverifiable_without_source_control",
+      "verdict": "PASS",
+      "description": "Normalization without control refuses to report BALANCED"
+    },
+    {
+      "name": "test_m11_t08_economic_book_cost_basis_relief_on_sales",
+      "verdict": "PASS",
+      "description": "Weighted average book cost basis relieved proportionally on sales (AAPL 540.90 EUR across 3 shares)"
+    }
+  ]
+}

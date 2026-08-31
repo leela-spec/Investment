@@ -1,6 +1,5 @@
-{
-  "active": false,
-  "module_id": null,
-  "run_dir": null,
-  "note": "Set active=true only during a bounded Antigravity correction module. The Stop hook uses this file to resist premature completion."
+﻿{
+  "active": true,
+  "module_id": "C11",
+  "run_dir": "implementation-runs/C11/20260831-132730"
 }
