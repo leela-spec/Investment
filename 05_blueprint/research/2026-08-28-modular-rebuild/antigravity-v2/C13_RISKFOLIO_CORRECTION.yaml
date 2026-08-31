@@ -1,0 +1,35 @@
+schema_version: "1.0"
+correction_id: "C13"
+repairs_module: "M13"
+title: "Real Riskfolio-Lib optimizer correction"
+status: "READY_AFTER_C11"
+depends_on: ["C11"]
+objective: "Delete the SciPy substitute and implement the optimizer wrapper by invoking Riskfolio-Lib itself."
+reject:
+  - "SciPy SLSQP implementation labeled as Riskfolio-Lib"
+  - "model/rm arguments that do not affect the real optimization path"
+real_target_proof:
+  target_product: "Riskfolio-Lib"
+  required_interface: "import riskfolio as rp and invoke documented Portfolio/optimization APIs"
+  independent_oracle: "constraint arithmetic + simple fixed cases + direct Riskfolio outputs/diagnostics"
+steps:
+  - "Re-open current official Riskfolio-Lib docs/examples and installed version metadata."
+  - "Create TARGET_PROOF.md naming the exact Riskfolio classes/functions that will be called."
+  - "Inspect current optimizer and tests; preserve only contracts worth keeping."
+  - "Replace custom SciPy minimize path with direct Riskfolio-Lib portfolio/optimization calls."
+  - "Implement and prove at minimum: Classic MinRisk/MV, risk-parity or risk-budgeting, and CVaR-constrained/metric optimization using actual supported Riskfolio APIs."
+  - "Ensure objective/risk-model parameters actually change the invoked Riskfolio path."
+  - "Preserve explicit bounds/constraints and expose solver/status diagnostics from the real library where available."
+  - "Add facade test: monkeypatch/deny Riskfolio import or call and prove the wrapper cannot silently run a local SciPy substitute."
+  - "Use fixed independent constraint checks: sum=1, bounds, infeasible constraint behavior."
+  - "Run deterministic repeatability within documented numerical tolerance."
+  - "Invoke ipos-proof-verifier."
+pass_conditions:
+  - "Runtime code imports and calls Riskfolio-Lib."
+  - "Removing/denying Riskfolio causes the integration proof to fail explicitly."
+  - "MV MinRisk, risk-budget/parity, and CVaR pathways are actually exercised."
+  - "Constraints are independently checked."
+  - "No home-grown optimizer is retained as an invisible fallback."
+  - "Verifier verdict PASS."
+stop_conditions:
+  - "Current Riskfolio version/API cannot satisfy a required pathway; record exact limitation instead of substituting another optimizer."
