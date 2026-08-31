@@ -1,0 +1,36 @@
+schema_version: "1.0"
+correction_id: "C10"
+repairs_module: "M10"
+title: "OpenBB evidence-completeness correction"
+status: "READY"
+objective: "Keep the useful real OpenBB POC, but close missing coverage and replace generic metadata claims with observed/official per-series evidence."
+keep:
+  - "ipos/data/openbb_adapter.py real OpenBB usage"
+  - "isolated OpenBB environment"
+reject_or_fix:
+  - "Generic/hardcoded provider metadata presented as verified endpoint facts"
+  - "Missing 10Y-3M and non-US macro representative series"
+  - "Three-date validation on only one FRED series being presented as broad provider verification"
+real_target_proof:
+  target_product: "OpenBB ODP"
+  actual_interface_required: "openbb/obb provider API"
+  independent_oracle: "authoritative provider values from FRED/ECB/other official source"
+steps:
+  - "Re-read M10 authority and current official OpenBB docs."
+  - "Create TARGET_PROOF.md before mutation."
+  - "Inspect current adapter/tests; do not rewrite working portions merely for style."
+  - "Add required T10Y3M retrieval."
+  - "Add at least one freely supported non-US macro series from an authoritative provider; document provider/series choice."
+  - "Replace generic metadata strings with explicit observed/official per-endpoint fields: provider, series/symbol, credential requirement, frequency, history/coverage observed, timezone where applicable, rate-limit/usage note only when official source supports it, cache/license note. Use UNKNOWN instead of guessing."
+  - "Add cross-series/provider spot checks: at least one market/equity route plus two macro routes, each using an independent upstream oracle."
+  - "Run real network retrieval tests and negative credential/provider tests."
+  - "Invoke ipos-proof-verifier."
+pass_conditions:
+  - "Real OpenBB APIs execute in acceptance proof."
+  - "All representative M10 series required by plan are covered or explicitly BLOCKED with evidence."
+  - "No unsupported metadata fact is hardcoded as verified truth."
+  - "Independent oracle paths are not the same dataframes returned by the adapter."
+  - "Verifier verdict PASS or approved PASS_WITH_LIMITATIONS."
+stop_conditions:
+  - "Official OpenBB/provider interface materially changed."
+  - "Required non-US series cannot be obtained freely through a supported route; record BLOCKED rather than inventing one."
