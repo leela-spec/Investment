@@ -1,0 +1,36 @@
+schema_version: "1.0"
+correction_id: "C14"
+repairs_module: "M14"
+title: "TA-Lib independent validation and M10 integration correction"
+status: "READY_AFTER_C10"
+depends_on: ["C10"]
+objective: "Keep the real TA-Lib implementation, but replace tautological validation with independent TradingView/ground-truth fixtures and prove the M10->M14 data seam."
+keep:
+  - "Direct talib.SMA/RSI/ATR/STOCH usage"
+  - "warmup handling"
+  - "local deterministic batch concept"
+reject_or_fix:
+  - "tv_benchmark = df_ind.copy() or any equivalent self-comparison"
+  - "claiming TradingView reconciliation without actual independent TradingView values"
+  - "only synthetic OHLCV when M10 integration is supposed to be demonstrated"
+real_target_proof:
+  target_product: "TA-Lib"
+  required_interface: "actual talib native Python calls"
+  independent_oracle: "operator-provided or real exported TradingView CSV for selected indicators; otherwise documented independently computed fixed oracle for formulas that can be safely checked"
+steps:
+  - "Create TARGET_PROOF.md and identify exact independent oracle before touching tests."
+  - "Preserve working direct TA-Lib calls."
+  - "Feed at least one real representative OHLCV dataframe through M10 OpenBB adapter into TechnicalEngine; record provider/symbol/date range."
+  - "For TradingView reconciliation, use an actual TradingView chart-data export containing selected indicator values if available. If unavailable, STOP that test as BLOCKED_HUMAN_GATE or use a clearly labeled non-TradingView independent oracle; never fabricate a TradingView benchmark."
+  - "Validate at minimum MA50/MA200/RSI14/ATR14 with independent expected values; document convention differences."
+  - "Add invalid/missing-column and insufficient-warmup tests."
+  - "Add facade/dependency proof that talib calls are actually invoked."
+  - "Invoke ipos-proof-verifier."
+pass_conditions:
+  - "TA-Lib actual calls remain runtime authority."
+  - "M10 market-data output feeds M14 successfully."
+  - "Every claimed independent benchmark really originates independently."
+  - "No self-copy oracle remains."
+  - "Verifier verdict PASS or PASS_WITH_LIMITATIONS only if real TradingView export is explicitly waiting on operator input while non-TradingView independent verification passes."
+stop_conditions:
+  - "No real TradingView export is available and the module would otherwise claim TradingView reconciliation; request the export instead of simulating it."
