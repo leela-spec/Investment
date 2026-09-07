@@ -22,4 +22,4 @@
 - Raw Sources: `Sources/` is read-only input material; do not mutate directly.
 - Canonical Branch: `main` (commit directly; no feature branches).
 - Governing Axiom: *Code computes everything numeric; the LLM only narrates.*
-- Host & Project Isolation: Unrelated host stacks (e.g. `ki-basis`, `apexai-os-meta`) are completely separate systems. IPOS is 100% sovereign. NEVER inspect, reuse, query, or attach to `ki-basis` containers, networks (`ki-basis-*`), volumes, or databases. All IPOS external services must use dedicated `ipos-*` project namespacing, isolated `ipos-net` bridge networks, and disjoint port assignments.
+- Infrastructure Sovereignty & Single Edge Security: IPOS code, policies, and investment logic remain 100% sovereign and local. Supporting container services (Karakeep, Activepieces) run in a unified, lean Docker environment sharing a single internal network and single Edge Gateway (Nginx/Caddy) to eliminate memory bloat and port friction. Do not invent artificial subnets or duplicate database containers on the local workstation.

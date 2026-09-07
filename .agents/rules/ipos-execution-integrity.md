@@ -14,7 +14,7 @@ Activation: ALWAYS ON for this workspace.
 - One implementation module at a time.
 - Do not load or implement future modules unless the current module explicitly depends on one output contract.
 - Existing architecture and module authority files outrank implementation convenience.
-- Cross-project isolation: Never inspect, attach to, or reuse infrastructure from unrelated host projects (such as `ki-basis` or `apexai-os-meta`). All IPOS services must remain strictly sovereign under `ipos-*` namespacing.
+- Lean Architecture Invariant: IPOS numeric calculations, policies, and investment logic remain 100% sovereign in code. Supporting containers (Karakeep, Activepieces) attach to the unified Docker environment and single edge gateway. Do not create artificial subnets, separate database daemons, or micro-compose silos on the local workstation.
 
 ## Reuse-before-invention invariant
 

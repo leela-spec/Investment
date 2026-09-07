@@ -25,10 +25,10 @@ IPOS operates under a dual-filesystem model with execution rooted in **native Li
 * **Host Workstation Environment (Windows)**:
   - **Filesystem**: `C:\GitDev\Investment\` (NTFS).
   - Used for IDE editing, Git synchronization, and operator command interface.
-* **Strict Sovereignty Invariant**:
-  - Unrelated host stacks (e.g. `ki-basis-private`, `ki-basis-community` in `apexai-os-meta`) are completely isolated.
-  - IPOS external services run under dedicated `ipos-*` namespacing (e.g. `ipos-karakeep`, `ipos-activepieces`), attached exclusively to an isolated `ipos-net` bridge network, with disjoint port assignments (`9500+`).
-  - IPOS never connects to, queries, or reuses `ki-basis` databases, networks, or containers.
+* **Unified Docker Environment & Single Security Edge**:
+  - Supporting services (Karakeep for evidence custody, Activepieces for event routing, and Nginx/Caddy for edge ingress) run inside one unified Docker environment on a shared internal bridge network.
+  - Hermes connects directly to companion tools over Docker internal DNS (`http://karakeep:3000`, `http://activepieces:8080`) with zero port-forwarding gymnastics or artificial subnets.
+  - A single Edge Gateway (Nginx / Caddy) provides the sole security perimeter, while internal databases and services expose zero unnecessary host ports.
 
 ---
 
@@ -37,8 +37,8 @@ IPOS operates under a dual-filesystem model with execution rooted in **native Li
 ```
 [M01] Hermes Baseline (PASS & COMMITTED: 3b70a1c)
  ├── [M02] Telegram Channel & Authenticated Webhooks (Pending Operator Credentials)
- ├── [M03] Public Ingress Edge (Pending Ingress Method Choice)
- │    └── [M04] Activepieces Platform (Self-Hosted Docker Compose)
+ ├── [M03] Public Ingress Edge (Single Gateway Ingress Route)
+ │    └── [M04] Activepieces Platform (Unified Docker Environment)
  │         ├── [M06] Action / Watch Register (Activepieces Tables)
  │         └── [M05] Email Ingestion Flows (Gmail & WEB.DE -> Karakeep -> Hermes)
  └── [M07] Karakeep Evidence Custody (READY FOR IMMEDIATE EXECUTION)
@@ -49,10 +49,10 @@ IPOS operates under a dual-filesystem model with execution rooted in **native Li
 | Module | Title | Status | Details / Blocker |
 |---|---|---|---|
 | **`M01`** | Hermes Baseline & Investment Profile | **PASS (VERIFIED)** | Runtime verified; profile `investment` created; invariants enforced; negative test refusing broker orders passed. Commit `3b70a1c`. |
-| **`M07`** | Karakeep Evidence Custody | **READY NOW** | Self-contained Docker Compose stack in WSL2 (`ipos-karakeep`); read-only Hermes MCP client integration; test fixtures for URL, PDF, RSS. |
+| **`M07`** | Karakeep Evidence Custody | **READY NOW** | Straightforward service deployment in unified Docker environment; read-only Hermes MCP client integration; test fixtures for URL, PDF, RSS. |
 | **`M02`** | Telegram & Authenticated Webhook Intake | **BLOCKED (OPERATOR)** | Requires: 1) Bot Token from `@BotFather`, 2) Private Group ID with Topics, 3) Operator User IDs allowlist. |
-| **`M03`** | Minimal Public HTTPS Ingress | **DECISION GATE** | Ingress routing selection: Cloudflare Tunnel vs. Caddy reverse proxy vs. Tailscale Funnel. |
-| **`M04`** | Activepieces Event Platform | **PENDING M03** | Docker Compose Community Edition deployment; persistent volumes; connected to M03 public webhook URL. |
+| **`M03`** | Minimal Public HTTPS Ingress | **DECISION GATE** | Single edge gateway selection: Cloudflare Tunnel vs. Caddy reverse proxy. |
+| **`M04`** | Activepieces Event Platform | **PENDING M03** | Unified Docker service connected to M03 public webhook URL. |
 | **`M06`** | Action / Watch Register | **PENDING M02+M04** | Activepieces Tables CRUD; deterministic upsert; Hermes register query mapping. |
 | **`M05`** | Email Ingestion Flows | **PENDING M02+M04+M07** | WEB.DE (IMAP SSL/993) & Gmail connectors; common normalized event schema; evidence referencing. |
 
