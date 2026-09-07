@@ -1,241 +1,187 @@
-# Handover: Automation Pipelines, Execution Reality, and 10 Concrete Workflows
+# Autonomous Multi-Agent Handover: Automation Architecture, 10 Workflows & Simulation Test Suite
 
 **Date:** 2026-09-07  
-**Prepared For:** Autonomous Test Agents, Subsequent Chat Sessions & Systems Architect  
-**Scope:** Physical Automation Execution Mechanics, Coaching Customer Pipeline, Two IPOS Automation Pipelines, 10 Cross-Repository Workflows, and an Executable Test Suite.
+**Prepared For:** Autonomous Multi-Agent Orchestration Team (Next Chat Session)  
+**Execution Authority:** Multi-Agent CLI Team (Lead Orchestrator, Infra Verifier, IPOS Verifier, Community Verifier)  
+**System Scope:** Three-Tier Cognitive Architecture, Clean Separation of Content vs. Bookkeeping, Isolated Community Alpine Stack, 10 Verified Workflows, and Autonomous Execution Protocol.
 
 ---
 
-## 1. Physical Automation Execution Reality & Hardware Contract
+## 1. The Three-Tier Cognitive & Operational Architecture
 
-To eliminate any ambiguity or wishful thinking regarding how automation actually executes on your hardware:
-
-### Q1: Who holds the cron jobs and schedulers?
-Automation is driven across three specific layers:
-1. **Windows Task Scheduler (Host Level)**:
-   * Script: `scripts/register_scheduler.ps1` in `Investment`.
-   * Holds the scheduled task `IPOS Weekly Pipeline`.
-   * Runs natively under Windows with the user's interactive token.
-2. **Linux Cron / Systemd Timers (WSL2 Level)**:
-   * Script: `scripts/run_weekly_cron.sh` in `Investment` / `apexai-os-meta`.
-   * Can be registered as a systemd timer (`/etc/systemd/system/ipos-weekly.timer`) or crontab in Ubuntu WSL2.
-   * Features a kernel file-lock (`flock -n /tmp/ipos-weekly.lock`) to prevent concurrent runs from interleaving DuckDB writes.
-3. **Docker Internal Schedulers (KI-Basis Container Level)**:
-   * Paperless-ngx: Internal consume watcher polling `/usr/src/paperless/consume`.
-   * OpenProject: Internal worker daemon (`delayed_job` / Puma) executing background notification sweeps.
-   * Hermes Gateway (`ki-basis-hermes`): Async event loop listening on `127.0.0.1:8642`.
-
----
-
-### Q2: Does the laptop need to be running? What happens when it is closed, asleep, or offline?
-* **Hardware Reality**: The local CPU and RAM cannot execute code when the laptop is closed, sleeping (S3/Modern Standby), or powered off.
-* **How Scheduled Tasks Catch Up (-StartWhenAvailable)**:
-  - In `register_scheduler.ps1`, the task is configured with:
-    ```powershell
-    $Settings = New-ScheduledTaskSettingsSet `
-        -StartWhenAvailable `
-        -DontStopIfGoingOnBatteries `
-        -AllowStartIfOnBatteries `
-        -ExecutionTimeLimit (New-TimeSpan -Hours 2) `
-        -MultipleInstances IgnoreNew
-    ```
-  - **The Catch-Up Mechanic**: If the laptop was asleep at 05:00 on Saturday, Windows Task Scheduler records that a trigger was missed. The instant the laptop is opened and wakes up, Windows triggers the missed run immediately.
-* **How Telegram Messages Catch Up (Telegram Cloud Buffer)**:
-  - Telegram does **not** discard messages when your laptop is offline.
-  - The Telegram Bot API maintains an update buffer on Telegram's cloud servers (retaining unacknowledged updates for 24+ hours).
-  - When the laptop connects to the internet and `hermes_telegram_intake.py` starts, it calls Telegram's `getUpdates(offset=...)`.
-  - Telegram delivers all messages, photos, and receipts posted during the offline period in sequential chronological order. Nothing is lost.
-* **How Webhooks / Orders Catch Up (Pretix & Activepieces)**:
-  - Pretix retains all orders and financial transactions in the cloud database.
-  - Activepieces and `pretix_adapter.py` query the API with high-water marks (`modified_since` or order ID), pulling and settling any backlog upon reconnection.
-
----
-
-## 2. Coaching Customer Lifecycle & Invoicing Pipeline
-
-For your private coaching business, the operational pipeline spans `MasterOfArts` and `KI-Basis`:
+The system operates across three strictly delineated layers of cognition and responsibility:
 
 ```mermaid
-flowchart LR
-    subgraph S1 ["1. Concept & Offer"]
-        Concept["Coaching Concept
-(MasterOfArts/Coaching)"]
-        HermesOffer["Hermes drafts Offer & Agreement
-(workshop-designer profile)"]
-        Concept --> HermesOffer
+flowchart TB
+    subgraph Tier1 ["Tier 1: High-Reasoning CLI Agents (Antigravity / Local Skills)"]
+        CLIAgent["CLI Agent Cognitive Core
+(Deep Multi-Step Reasoning & Strategy)"]
+        SkillsEngine["Local Skills Library (.agents/skills/)
+(ipos-product-proof, agy-customizations, etc.)"]
+        CLIAgent --- SkillsEngine
     end
 
-    subgraph S2 ["2. Engagement & Booking"]
-        ClientAccept["Client Accepts Offer"]
-        Booking["Session Calendar Sync
-(OpenProject Meetings)"]
-        HermesOffer --> ClientAccept --> Booking
+    subgraph Tier2 ["Tier 2: Hermes Master Orchestration & Automation Engine"]
+        HermesMaster["Hermes Master Orchestrator (/usr/local/bin/hermes)
+(Persistent Automation Lines, Profiles & MCP)"]
+        subgraph Profiles ["Active Role Profiles (/root/.hermes/profiles/)"]
+            ProfDefault["default (Cross-Repo Execution)"]
+            ProfInv["investment (IPOS Rules & Evidence Custody)"]
+            ProfWork["workshop-designer (Curriculum & Workshops)"]
+            ProfStrat["research-strategist (Deep Literature Synthesis)"]
+            ProfMkt["marketing-executive (Outreach & Event Workflows)"]
+            ProfRev["independent-reviewer (Quality Gates & Audits)"]
+        end
+        HermesMaster --> Profiles
     end
 
-    subgraph S3 ["3. Invoicing (§ 14 UStG)"]
-        InvoiceGen["Generate Compliant PDF Invoice
-(Sequential No, Steuernummer)"]
-        PaperlessOut["Archive in Paperless-ngx
-(Tag: COACHING-INVOICE-OUTGOING)"]
-        Booking --> InvoiceGen --> PaperlessOut
+    subgraph Tier3_Content ["Tier 3A: The Content Domain (Native ext4 Repositories)"]
+        RepoApex["📁 apexai-os-meta (OS, Tools & Architecture)"]
+        RepoInv["📁 Investment (IPOS Core, Rules, DuckDB)"]
+        Karakeep_Custody["🗄️ Karakeep Evidence Custody (Anchored in Investment)"]
+        RepoMoA["📁 MasterOfArts (Workshops, Website, Coaching, Art)"]
+        RepoAcim["📁 acim-secular (Philosophical Corpus)"]
+        
+        RepoInv --- Karakeep_Custody
     end
 
-    subgraph S4 ["4. Payment & Automated Reminders"]
-        BankIngest["GLS Bank Ingestion
-(Firefly III)"]
-        Match["Reconciliation Engine
-Matches Invoice ID"]
-        Watchdog{"Payment
-Received in
-14 Days?"}
-        Reminder["Hermes Telegram/Email Draft:
-Polite Payment Reminder"]
-        Settled["Mark Invoice Paid & Closed
-(Firefly & OpenProject)"]
-
-        PaperlessOut --> BankIngest --> Match --> Watchdog
-        Watchdog -- "NO" --> Reminder
-        Watchdog -- "YES" --> Settled
+    subgraph Tier3_PrivateBiz ["Tier 3B: Private Bookkeeping Domain (WSL2 KI-Basis Stack)"]
+        PrivEdge["Nginx Gateway :8084"]
+        PrivPaperless["Paperless-ngx (Client Invoices & Contracts)"]
+        PrivFirefly["Firefly III (Private Business Ledger & Bank Sync)"]
+        PrivOpenProject["OpenProject (Private Milestones & Tasks)"]
+        PrivPostgres[("Consolidated PostgreSQL 16")]
     end
+
+    subgraph Tier3_Community ["Tier 3C: Community Operations Domain (Windows Alpine Docker) - FULL SEPARATION"]
+        CommNginx["Nginx Gateway :8084 (Windows Host)"]
+        CommPretix["Pretix API Ticketing Adapter (Safer Space e.V.)"]
+        CommPaperless["Paperless-ngx (Event Receipts & Payouts)"]
+        CommFirefly["Firefly III (Non-Profit 4-Sphere EÜR Ledger)"]
+        CommOpenProject["OpenProject (Equinox 2026 Volunteer Shift Board)"]
+        CommNote["⚠️ Isolated Alpine VM: Shareable with Community Organizers without Exposing Private Repos/Finances"]
+    end
+
+    %% Inter-Tier Operational Links
+    CLIAgent ==>|Directs Strategy, Reads Outputs, Inspects Boards| HermesMaster
+    CLIAgent ==>|Queries & Audits Local Code| Tier3_Content
+
+    HermesMaster ==>|Executes Automation & Content Generation| Tier3_Content
+    HermesMaster -.->|Binds Status & Triggers to Business Side| Tier3_PrivateBiz
+
+    Tier3_Content -.->|Extracts Outgoing Invoices / Deliverables| Tier3_PrivateBiz
+    Tier3_Community -.-x|NO ROUTING / NO SHARED DB / CORE SEPARATION| Tier3_PrivateBiz
 ```
 
-### The 5 Operational Stages:
-1. **Concept & Offer Formulation**:
-   - Location: `MasterOfArts/Coaching/Leela Coaching/` (e.g. customized curriculum per client).
-   - Hermes activates `workshop-designer` to generate the session roadmap, learning objectives, and service contract.
-2. **Engagement & Meeting Orchestration**:
-   - Meeting dates recorded in OpenProject work packages under the client's milestone.
-3. **Automated Invoice Generation**:
-   - ReportLab / script generates a § 14 UStG compliant PDF invoice with sequential invoice ID (`INV-2026-XXXX`), VAT status, and bank details.
-   - Pushed to Paperless-ngx (`http://127.0.0.1:8010`) with metadata: `client: Carlos`, `type: outgoing-invoice`.
-4. **Bank Reconciliation in Firefly III**:
-   - Incoming bank feed into Firefly III (`http://127.0.0.1:8086`).
-   - Matching rule checks transfer description for `INV-2026-XXXX`.
-5. **Payment Watchdog & Automated Reminders**:
-   - A daily cron queries Firefly III for unpaid outgoing coaching invoices older than 14 days.
-   - If unpaid, Hermes drafts a polite Telegram / email reminder for operator confirmation before dispatching.
+### Key Architectural Truths:
+1. **CLI Agents = The Cognitive Brain**:
+   * CLI agents possess high-reasoning capacity and execute deep research, complex refactors, and strategic synthesis.
+   * They access local skills (`.agents/skills/`), inspect Hermes logs, review OpenProject Kanban boards, and direct Hermes automation.
+2. **Hermes = The Persistent Automation Line**:
+   * Hermes maintains long-running state, role profiles, crons, and MCP tool connections.
+   * It handles scheduled executions, repetitive pipelines, and programmatic queries.
+3. **Content vs. Bookkeeping Division**:
+   * **Content Side (Hermes + ext4 Repos)**: Workshops, website creation, ideas, research pipelines, algorithmic backtests.
+   * **Bookkeeping Side (KI-Basis)**: Strictly the receiving end for invoices, banking reconciliation, and administrative accounting.
+4. **Community Operations Quarantined in Alpine Docker**:
+   * The Equinox 2026 ticketing, Safer Space e.V. non-profit accounting, and volunteer shift planning live **strictly in the Windows Alpine Docker Desktop environment**.
+   * It is 100% segregated so it can be shared with club collaborators without ever exposing private source code or personal business financials.
 
 ---
 
-## 3. Two Core IPOS Automation Pipelines (`Investment` Repo)
+## 2. Execution Reality: Schedulers, Offline Queues & Catch-Up Mechanics
 
-### Pipeline 1: Autonomous Saturday Macro Regime Pipeline
-* **Who Initiates**: Windows Task Scheduler (`scripts/register_scheduler.ps1`) or WSL2 systemd (`scripts/run_weekly_cron.sh`).
-* **Trigger Schedule**: Every Saturday at 05:00 local time (with `-StartWhenAvailable` catch-up).
-* **Execution Flow**:
-  1. `flock` secures `/tmp/ipos-weekly.lock` to prevent database collision.
-  2. Python runner invokes `python -X utf8 -m ipos.run`.
-  3. Pulls live data for the active 22 indicators (Yield Curve 10Y-2Y, HY Credit Spreads, Fed Net Liquidity, ISM PMI, CPI YoY).
-  4. `ipos/advisor/rule_engine.py` evaluates all 126 seminar rules and 44 process steps.
-  5. Computes composite Regime Score and writes immutable snapshot to DuckDB warehouse (`data/warehouse/`).
-  6. Refreshes the Action/Watch Register (`data/action_watch_register.json`).
-  7. Formats executive markdown report and sends summary notification to the operator's private Telegram channel.
+### 1. Who Initiates and Holds the Automation?
+* **Windows Task Scheduler (`scripts/register_scheduler.ps1`)**:
+  Holds `IPOS Weekly Pipeline`. Configured with `-StartWhenAvailable` to catch up missed runs.
+* **Linux Cron / Systemd (`scripts/run_weekly_cron.sh`)**:
+  Executes in Ubuntu WSL2 under `flock -n /tmp/ipos-weekly.lock` to prevent concurrent database writes.
+* **Hermes Event Loop (`ki-basis-hermes`)**:
+  Listens for incoming webhooks and API triggers on `127.0.0.1:8642`.
 
-### Pipeline 2: Research Evidence Custody & Thesis Invalidation Watchdog
-* **Who Initiates**: Event-driven on URL/PDF drop or scheduled hourly RSS sweep.
-* **Execution Flow**:
-  1. Research document ingested into **Karakeep** anchored in `/root/workspaces/Investment/`.
-  2. Karakeep archives full-page SingleFile capture, extracts text, and generates SHA-256 receipt.
-  3. Hermes running under the **`investment` profile** retrieves the evidence text via read-only MCP (`http://localhost:3000`).
-  4. **The Thesis Invalidation Gate**:
-     - Hermes checks if the findings contradict active macro assumptions (e.g. Fed policy pivot, inflation re-acceleration).
-     - If contradictory evidence is detected, Hermes raises an **Invalidation Flag** in the Watch Register.
-     - Hermes is strictly prohibited by `SOUL.md` from placing broker trades. It creates an operator review item with direct citations to the Karakeep artifact.
+### 2. What Happens When the Laptop is Offline or Asleep?
+* **Hardware State**: Local CPU is paused during sleep/off states.
+* **Windows Scheduler Catch-Up**:
+  If the laptop was asleep during the 05:00 Saturday schedule, Windows detects the missed event upon wake and triggers the pipeline immediately.
+* **Telegram Cloud Message Queue**:
+  Telegram Bot API servers store messages for 24+ hours. When `hermes_telegram_intake.py` reconnects, it retrieves updates with the last known `offset`, processing all missed receipts and ideas in chronological order without loss.
+* **Pretix Cloud Queue**:
+  Pretix retains all ticket sales and transaction logs in the cloud. Upon reconnection, `pretix_adapter.py` queries by timestamp and reconciles the backlog into Firefly III and Paperless.
 
 ---
 
-## 4. 10 Concrete Workflow Ideas Across Repositories
+## 3. 10 Concrete Cross-Repository Workflows
 
-### Workflow 1: Creative Writing & Thematic Synthesis Pipeline (`MasterOfArts`)
-* **Stack**: Hermes CLI (`research-strategist` profile) + `MasterOfArts/Art/` & `MasterOfArts/Awakening/`.
-* **Execution**: Hermes crawls internal research notes, cross-references philosophical treatises, and synthesizes draft chapters or artistic essays with zero web distraction.
-
-### Workflow 2: Weekly Meta-Orchestration & Infrastructure Health Sweep (`apexai-os-meta`)
-* **Stack**: Windows PowerShell / WSL2 bash + Docker CLI + Git.
-* **Execution**: Every Sunday at 23:00, sweeps all 4 repositories: verifies git branch status (checks for uncommitted work), verifies Docker container health, runs `backup-stack.sh` on ext4 named volumes, and compiles `health-receipt.yaml`.
-
-### Workflow 3: "Transcendents" Workshop Concept & Curriculum Generator (`MasterOfArts`)
-* **Stack**: Hermes (`workshop-designer` profile) reading `acim-secular` into `MasterOfArts/workshops/`.
-* **Execution**: Ingests non-dual philosophical concepts from `/root/workspaces/acim-secular/`, creates an 8-module weekend retreat syllabus with interactive exercises, time allocations, and reading lists, and saves it into `MasterOfArts/Coaching/`.
-
-### Workflow 4: Multi-Variant Business Website Build & Edge Staging (`MasterOfArts`)
-* **Stack**: Python script (`MasterOfArts/WEbsite/build_all_websites.py`) + Nginx Edge Gateway.
-* **Execution**: Builds three distinct aesthetic variations ("Zen Minimalist", "Vibrant", "Modern") and serves them behind the local Nginx gateway (:8084), enabling instant operator design review.
-
-### Workflow 5: IPOS Autonomous Saturday Indicator Run (`Investment`)
-* **Stack**: Windows Task Scheduler + OpenBB + DuckDB + Telegram Bot.
-* **Execution**: The end-to-end numeric macro pipeline computing the 22-indicator regime score, generating the weekly HTML/MD report, and alerting Telegram without touching broker accounts.
-
-### Workflow 6: IPOS Evidence Custody & Thesis Invalidation Watchdog (`Investment`)
-* **Stack**: Karakeep (`/root/workspaces/Investment/`) + Hermes `investment` profile MCP client.
-* **Execution**: Automated watchdog verifying that newly ingested analyst reports and macro filings adhere to the 126 seminar rules and flagging counter-evidence before capital allocation decisions.
-
-### Workflow 7: Private Coaching Client Lifecycle & Invoicing Watchdog (`apexai-os-meta` & `MasterOfArts`)
-* **Stack**: Paperless-ngx (:8010) + Firefly III (:8086) + OpenProject (:8082).
-* **Execution**: Bridges client proposal acceptance into automatic invoice creation, archives in Paperless, tracks bank settlement in Firefly, and alerts on overdue accounts.
-
-### Workflow 8: Equinox 2026 Pretix Ticketing & Non-Profit Tax Settlement (`apexai-os-meta` Community Stack)
-* **Stack**: `ki-basis/scripts/pretix_adapter.py` + Firefly III + Paperless-ngx.
-* **Execution**: Connects Pretix API, splits gross ticket revenue into platform fees, gateway deductions, and net payout, archives the settlement PDF into Paperless, and logs double-entry bookings in Firefly across the 4 non-profit tax spheres.
-
-### Workflow 9: Social Initiative Telegram Bot Intake & Offline Backlog Catch-Up (`apexai-os-meta`)
-* **Stack**: `ki-basis/scripts/hermes_telegram_intake.py` + Telegram Bot API.
-* **Execution**: Community volunteers upload receipts and ideas to the Telegram group. Even if the laptop was asleep for 12 hours, launching the bridge catches up all receipts, uploads them to Paperless (`STAGED-FOR-REVIEW`), and files OpenProject tasks.
-
-### Workflow 10: `acim-secular` Semantic Corpus Cross-Referencing & Text Extraction (`acim-secular`)
-* **Stack**: Hermes CLI (`default` profile) with SQLite FTS5 / grep tooling.
-* **Execution**: Translates high-level inquiries ("forgiveness vs reconciliation", "fear as resistance") into precise citations and textual excerpts from the secular corpus, feeding directly into coaching and workshop materials.
+| # | Workflow Name | Dominant Cognitive Layer | Target Repositories & Stacks | Core Function & Operational Flow |
+|---|---|---|---|---|
+| **1** | Weekly Meta-Orchestration Sweep | **CLI Agent** (Heavy Reasoning + Skills) directing **Hermes** | All 4 Repos (`/root/workspaces/*`) + KI-Basis OpenProject | CLI agent gathers Hermes logs, inspects Kanban boards, evaluates git statuses across all repos, runs `backup-stack.sh`, and compiles `health-receipt.yaml`. |
+| **2** | Creative Writing & Thematic Synthesis | **Hermes** (`research-strategist`) | `MasterOfArts/Art/` & `MasterOfArts/Awakening/` | Synthesizes draft chapters and artistic essays from internal notes with zero web distraction. |
+| **3** | "Transcendents" Workshop Concept Generator | **Hermes** (`workshop-designer`) | `acim-secular` -> `MasterOfArts/workshops/` | Translates philosophical source texts into an 8-module retreat curriculum, complete with interactive exercises and syllabi. |
+| **4** | Multi-Variant Business Website Pipeline | Python Engine (`build_all_websites.py`) | `MasterOfArts/WEbsite/` + Nginx Edge | Builds 3 distinct aesthetic variations ("Zen Minimalist", "Vibrant", "Modern") and serves them behind the local Nginx gateway (:8084). |
+| **5** | IPOS Saturday Macro Indicator Pipeline | Task Scheduler -> **Hermes** (`investment`) | `Investment/` (22 Indicators, DuckDB, Telegram) | Autonomous Saturday 05:00 run evaluating 126 seminar rules, updating the Action/Watch Register, and dispatching the Telegram digest. |
+| **6** | IPOS Evidence Invalidation Watchdog | **Hermes** (`investment`) + Karakeep | `Investment/` (Karakeep ext4 custody) | Watches newly archived research for macro regime counter-evidence before capital allocation decisions. |
+| **7** | Private Coaching Onboarding & Invoicing | **CLI Agent** (Offer) + **KI-Basis** (Bookkeeping) | `MasterOfArts/Coaching/` + Paperless + Firefly | Generates coaching agreement, issues compliant PDF invoice into Paperless (`COACHING-INVOICE-OUTGOING`), matches bank wire in Firefly, and triggers overdue payment drafts. |
+| **8** | Equinox 2026 Pretix Ticketing Settlement | **Alpine Community KI-Basis Stack** | Windows Docker Desktop (`safer-space-ev`) | Ingests Pretix orders, splits fees (€11,300 gross -> €10,833.90 net), archives payout slip PDF in Paperless, and logs non-profit tax entries in Firefly. |
+| **9** | Social Initiative Telegram Intake Bridge | **Hermes** + Telegram Bot API | `apexai-os-meta/ki-basis/` | Ingests volunteer receipts and ideas from Telegram, catches up offline backlogs, uploads to Paperless, and creates OpenProject tasks. |
+| **10** | Secular Corpus Semantic Cross-Referencing | **Hermes** CLI (`default`) | `acim-secular` + SQLite FTS5 | Extracts precise citations and conceptual parallels from the secular corpus to feed into coaching and workshop curricula. |
 
 ---
 
-## 5. Step-by-Step Executable Test Suite (For Subsequent Sessions)
+## 4. Multi-Agent Autonomous Simulation & Test Protocol (For Next Chat Session)
 
-Any agent or operator can run these 6 live verification tests immediately to prove the stack works end-to-end:
+**Instructions for the incoming Multi-Agent Team:**
+Do NOT ask the operator to run terminal commands manually. Deploy a team of specialized subagents to execute, observe, and verify the following test suite autonomously:
 
-### Test 1: Verify Fundraiser Stack, Pretix Settlement & Multi-Service Integration
-```powershell
-python C:\GitDevpexai-os-meta\ki-basis\scriptserify_fundraiser_stack.py
+```mermaid
+flowchart TD
+    LeadAgent["Agent 1: Lead Orchestration Agent
+(Coordinates Plan & Dispatches Tasks)"]
+    
+    subgraph Verification_Agents ["Autonomous Subagent Verification Team"]
+        InfraAgent["Agent 2: Infrastructure & Alpine Verifier
+(Pretix, Paperless, Firefly, Isolation)"]
+        IPOSAgent["Agent 3: IPOS Pipeline Verifier
+(Regime Pytest, DuckDB, Rule Engine)"]
+        ContentAgent["Agent 4: Content & Website Verifier
+(MasterOfArts Website Build, Hermes Access)"]
+    end
+
+    LeadAgent --> InfraAgent
+    LeadAgent --> IPOSAgent
+    LeadAgent --> ContentAgent
 ```
-*Expected Output*: Passes all 5 stages (Pretix ticketing calculation, staging file checks, OpenProject 24 work packages, Firefly 19 transactions, Paperless 10 documents) with `ALL AUDIT VERIFICATIONS PASSED WITH ZERO ERRORS!`.
 
----
+### Agent Runbook: 5 Autonomous Test Tasks
 
-### Test 2: Verify Dual-Instance Isolation & Port Boundaries
-```powershell
-python C:\GitDevpexai-os-meta\ki-basis\scriptserify_dual_isolation.py
-```
-*Expected Output*: Confirms zero port overlaps between private and community port bands.
+#### Task 1: Autonomous Infrastructure & Pretix Audit (Assigned to: InfraAgent)
+* **Command**: `python C:\GitDevpexai-os-meta\ki-basis\scriptserify_fundraiser_stack.py`
+* **Pass Criteria**:
+  - Pretix module confirms 320 attendees, €11,300 gross, €10,833.90 net payout.
+  - OpenProject returns >= 24 work packages across Project 3.
+  - Firefly III returns >= 19 transactions.
+  - Paperless returns >= 10 documents.
+  - Final log output: `ALL AUDIT VERIFICATIONS PASSED WITH ZERO ERRORS!`.
 
----
+#### Task 2: Autonomous Dual-Instance Isolation Challenge (Assigned to: InfraAgent)
+* **Command**: `python C:\GitDevpexai-os-meta\ki-basis\scriptserify_dual_isolation.py`
+* **Pass Criteria**:
+  - Verifies zero port overlap between Private (8080-8089) and Community (9080-9089).
+  - Verifies network bridge boundaries.
 
-### Test 3: Run Live IPOS Regime & Scoring Pytest Suite
-```powershell
-cd C:\GitDev\Investment
-.venv\Scripts\python.exe -m pytest -q tests/test_regime.py tests/test_scoring.py
-```
-*Expected Output*: `17 passed in ~19s (100%)`.
+#### Task 3: Autonomous IPOS Deterministic Regime Test Suite (Assigned to: IPOSAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q C:\GitDev\Investment	ests	est_regime.py C:\GitDev\Investment	ests	est_scoring.py`
+* **Pass Criteria**:
+  - Pytest executes 17 test cases.
+  - All 17 pass (100% pass rate) in < 30 seconds.
 
----
+#### Task 4: Autonomous MasterOfArts Website Build Pipeline (Assigned to: ContentAgent)
+* **Command**: `python C:\GitDev\MasterOfArts\WEbsiteuild_all_websites.py`
+* **Pass Criteria**:
+  - Compiles `C:\GitDev\MasterOfArts\WEbsite\index.html`.
+  - Verifies output directories exist: `variation-a-zen/`, `variation-b-vibrant/`, `variation-c-modern/`.
 
-### Test 4: Verify MasterOfArts Multi-Variant Website Build Pipeline
-```powershell
-cd C:\GitDev\MasterOfArts\WEbsite
-python build_all_websites.py
-```
-*Expected Output*: Compiles `index.html` switchboard, generates `variation-a-zen`, `variation-b-vibrant`, and `variation-c-modern` static landing pages.
-
----
-
-### Test 5: Verify Telegram Intake Bridge CLI Interface
-```powershell
-python C:\GitDevpexai-os-meta\ki-basis\scripts\hermes_telegram_intake.py --help
-```
-*Expected Output*: Displays intake options for staging receipts (`--receipt`), filing community tasks (`--task`), and managing OpenProject projects.
-
----
-
-### Test 6: Verify Hermes Host CLI Cross-Workspace Direct Access
-```bash
-wsl -d Ubuntu -u root -e bash -c "/usr/local/bin/hermes --version && ls -la /root/workspaces"
-```
-*Expected Output*: Displays Hermes version (`v0.20.5`) and lists all 4 repositories (`apexai-os-meta`, `Investment`, `MasterOfArts`, `acim-secular`) on native ext4.
+#### Task 5: Autonomous Hermes Global CLI Cross-Repo Verification (Assigned to: ContentAgent)
+* **Command**: `wsl.exe -d Ubuntu -u root -e bash -c "/usr/local/bin/hermes --version && ls -la /root/workspaces"`
+* **Pass Criteria**:
+  - Returns Hermes CLI version (`v0.20.5`).
+  - Confirms all 4 repositories (`apexai-os-meta`, `Investment`, `MasterOfArts`, `acim-secular`) exist and are accessible on native ext4.
