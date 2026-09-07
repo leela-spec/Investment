@@ -25,10 +25,10 @@ IPOS operates under a dual-filesystem model with execution rooted in **native Li
 * **Host Workstation Environment (Windows)**:
   - **Filesystem**: `C:\GitDev\Investment\` (NTFS).
   - Used for IDE editing, Git synchronization, and operator command interface.
-* **Unified Docker Environment & Single Security Edge**:
-  - Supporting services (Karakeep for evidence custody, Activepieces for event routing, and Nginx/Caddy for edge ingress) run inside one unified Docker environment on a shared internal bridge network.
-  - Hermes connects directly to companion tools over Docker internal DNS (`http://karakeep:3000`, `http://activepieces:8080`) with zero port-forwarding gymnastics or artificial subnets.
-  - A single Edge Gateway (Nginx / Caddy) provides the sole security perimeter, while internal databases and services expose zero unnecessary host ports.
+* **IPOS Evidence Custody & Workspace Anchor**:
+  - Karakeep is anchored directly in the **`Investment` workspace on native ext4** (`/root/workspaces/Investment/`). It is the dedicated IPOS research/evidence archive, completely separate from the general KI-Basis enterprise stack.
+  - Hermes connects to Karakeep via read-only REST / MCP (`http://localhost:3000` or local endpoint) strictly under the `investment` profile without mutation privileges.
+  - Supporting ingress / webhook event tools (Activepieces) attach cleanly via the single Edge Gateway without artificial micro-subnets.
 
 ---
 
@@ -76,9 +76,9 @@ If you prefer to advance the quantitative analytical and portfolio modules while
 
 To realize the **First Operational Layer** without delay:
 1. **Execute `M07` (Karakeep Evidence Custody)**:
-   - Deploy Karakeep cleanly inside the unified Docker environment on Ubuntu WSL2.
+   - Deploy Karakeep anchored directly within the `Investment` workspace on native ext4 (`/root/workspaces/Investment/`).
    - Configure native ext4 storage volumes (`karakeep-data`).
-   - Wire the Hermes `investment` profile to Karakeep via read-only MCP (`http://karakeep:3000`).
+   - Wire the Hermes `investment` profile to Karakeep via read-only MCP / REST (`http://localhost:3000` or local endpoint).
    - Ingest and verify URL and PDF research fixtures.
    - Run independent adversarial verification via `ipos-proof-verifier`.
 2. **In Parallel**:
