@@ -14,6 +14,7 @@ Activation: ALWAYS ON for this workspace.
 - One implementation module at a time.
 - Do not load or implement future modules unless the current module explicitly depends on one output contract.
 - Existing architecture and module authority files outrank implementation convenience.
+- Cross-project isolation: Never inspect, attach to, or reuse infrastructure from unrelated host projects (such as `ki-basis` or `apexai-os-meta`). All IPOS services must remain strictly sovereign under `ipos-*` namespacing.
 
 ## Reuse-before-invention invariant
 
