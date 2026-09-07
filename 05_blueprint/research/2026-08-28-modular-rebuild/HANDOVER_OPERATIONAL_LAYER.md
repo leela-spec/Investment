@@ -76,9 +76,9 @@ If you prefer to advance the quantitative analytical and portfolio modules while
 
 To realize the **First Operational Layer** without delay:
 1. **Execute `M07` (Karakeep Evidence Custody)**:
-   - Deploy isolated `ipos-karakeep` Compose stack in Ubuntu WSL2.
-   - Configure native ext4 storage volumes (`ipos-karakeep-data`).
-   - Wire the Hermes `investment` profile to Karakeep via read-only MCP.
+   - Deploy Karakeep cleanly inside the unified Docker environment on Ubuntu WSL2.
+   - Configure native ext4 storage volumes (`karakeep-data`).
+   - Wire the Hermes `investment` profile to Karakeep via read-only MCP (`http://karakeep:3000`).
    - Ingest and verify URL and PDF research fixtures.
    - Run independent adversarial verification via `ipos-proof-verifier`.
 2. **In Parallel**:
