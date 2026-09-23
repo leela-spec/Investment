@@ -1,0 +1,55 @@
+schema_version: "1.0"
+artifact_class: "research_evidence"
+authority: "non_binding"
+status: "requires_re_grounding"
+
+created_by:
+  source: "ChatGPT research run"
+  date: "2026-09-23"
+
+repository:
+  name: "leela-spec/Investment"
+
+known_grounding_limitation:
+  summary: >
+    Initial research inspected main but did not inspect the important
+    ipos-modular-rebuild-2026-08-28 branch before drawing some architecture
+    and implementation conclusions.
+  affected_conclusions:
+    - missing modular rebuild sources
+    - missing M11 normalizer
+    - missing M13 optimizer
+    - missing M11/M13 tests
+    - architecture gap conclusions depending on those absences
+
+later_verified_branch:
+  name: "ipos-modular-rebuild-2026-08-28"
+  important_files_verified:
+    - "05_blueprint/research/2026-08-28-modular-rebuild/01_REVISED_DECISION_MATRIX.md"
+    - "05_blueprint/research/2026-08-28-modular-rebuild/02_ARCHITECTURE.md"
+    - "05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml"
+    - "05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml"
+    - "ipos/portfolio/normalizer.py"
+    - "ipos/portfolio/optimizer.py"
+    - "tests/test_m11_normalizer.py"
+    - "tests/test_m13_optimizer.py"
+
+usage_policy:
+  may_be_used_for:
+    - "research evidence"
+    - "historical reasoning"
+    - "external product verification"
+    - "candidate integration designs"
+    - "risk and failure-mode discovery"
+    - "future comparative analysis"
+  must_not_be_used_as:
+    - "SSOT"
+    - "accepted architecture"
+    - "approved implementation plan"
+    - "proof of current state"
+    - "automatic patch authority"
+
+required_future_action:
+  - "inspect relevant branches before conclusions"
+  - "compare against current implementation"
+  - "classify findings as confirmed/corrected/superseded/unresolved"

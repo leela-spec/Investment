@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="18" skipped="0" tests="22" time="0.205" timestamp="2026-09-23T14:11:39.455414+00:00" hostname="66be20b0f152"><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[,1,100,EUR]" time="0.057"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile0')
+row = ',1,100,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,,100,EUR]" time="0.005"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile1')
+row = 'X,,100,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,1,bad,EUR]" time="0.004"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile2')
+row = 'X,1,bad,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,1,inf,EUR]" time="0.004"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile3')
+row = 'X,1,inf,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,inf,100,EUR]" time="0.004"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile4')
+row = 'X,inf,100,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,1,100,]" time="0.004"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile5')
+row = 'X,1,100,'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,1,100,EURO]" time="0.003"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile6')
+row = 'X,1,100,EURO'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_input_cannot_silently_reduce_holdings[X,1,NaN,EUR]" time="0.004"><failure message="Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;">tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_invalid_input_cannot_sile7')
+row = 'X,1,NaN,EUR'
+
+    @pytest.mark.parametrize("row", [
+        ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
+        "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
+    ])
+    def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
+        path = tmp_path / "portfolio.csv"
+        path.write_text("instrument,quantity,value_eur,currency\n"
+                        "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
+&gt;       with pytest.raises(RuntimeError, match="refusing partial holdings"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'RuntimeError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:23: Failed</failure></testcase><testcase classname="run_isolated" name="test_german_zero_snapshot_still_parses" time="0.003" /><testcase classname="run_isolated" name="test_absent_portfolio_stays_optional" time="0.001" /><testcase classname="run_isolated" name="test_price_based_snapshot_still_parses" time="0.003" /><testcase classname="run_isolated" name="test_fx_conversion_is_idempotent_and_labels_eur" time="0.002"><failure message="AssertionError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6b6eb10&gt;
+
+    def test_fx_conversion_is_idempotent_and_labels_eur(monkeypatch):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: 1.2)
+        first, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+        second, _ = agg.convert_to_eur(first, None, dt.date(2026, 9, 18))
+        assert not warnings
+        assert first.iloc[0]["value_eur"] == pytest.approx(100.0)
+&gt;       assert first.iloc[0]["currency"] == "EUR"
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       AssertionError
+
+../patched/tests/test_portfolio_audit_boundary.py:58: AssertionError</failure></testcase><testcase classname="run_isolated" name="test_invalid_fx_cannot_enter_eur_totals[None]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6b629f0&gt;
+rate = None
+
+    @pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
+    def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
+        frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+        assert warnings
+&gt;       with pytest.raises(ValueError, match="unresolved currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:70: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_fx_cannot_enter_eur_totals[0.0]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6a97570&gt;
+rate = 0.0
+
+    @pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
+    def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
+        frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+        assert warnings
+&gt;       with pytest.raises(ValueError, match="unresolved currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:70: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_fx_cannot_enter_eur_totals[-1.0]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6a97bd0&gt;
+rate = -1.0
+
+    @pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
+    def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
+        frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+        assert warnings
+&gt;       with pytest.raises(ValueError, match="unresolved currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:70: Failed</failure></testcase><testcase classname="run_isolated" name="test_invalid_fx_cannot_enter_eur_totals[nan]" time="0.001"><failure message="AssertionError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6a9b850&gt;
+rate = nan
+
+    @pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
+    def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
+        frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+&gt;       assert warnings
+               ^^^^^^^^
+E       AssertionError
+
+../patched/tests/test_portfolio_audit_boundary.py:69: AssertionError</failure></testcase><testcase classname="run_isolated" name="test_invalid_fx_cannot_enter_eur_totals[inf]" time="0.001"><failure message="AssertionError">monkeypatch = &lt;_pytest.monkeypatch.MonkeyPatch object at 0x7f82c6a9bc50&gt;
+rate = inf
+
+    @pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
+    def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
+        monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
+        frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
+&gt;       assert warnings
+               ^^^^^^^^
+E       AssertionError
+
+../patched/tests/test_portfolio_audit_boundary.py:69: AssertionError</failure></testcase><testcase classname="run_isolated" name="test_unsupported_currency_cannot_be_counted_as_eur" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">def test_unsupported_currency_cannot_be_counted_as_eur():
+        frame, warnings = agg.convert_to_eur(_positions("GBP"), None, dt.date(2026, 9, 18))
+        assert warnings
+&gt;       with pytest.raises(ValueError, match="unresolved currency"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:77: Failed</failure></testcase><testcase classname="run_isolated" name="test_nonfinite_aggregate_rejected[nan]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">value = nan
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+    def test_nonfinite_aggregate_rejected(value):
+        frame = _positions("EUR")
+        frame.loc[0, "value_eur"] = value
+&gt;       with pytest.raises(ValueError, match="non-finite"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:85: Failed</failure></testcase><testcase classname="run_isolated" name="test_nonfinite_aggregate_rejected[inf]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">value = inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+    def test_nonfinite_aggregate_rejected(value):
+        frame = _positions("EUR")
+        frame.loc[0, "value_eur"] = value
+&gt;       with pytest.raises(ValueError, match="non-finite"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:85: Failed</failure></testcase><testcase classname="run_isolated" name="test_nonfinite_aggregate_rejected[-inf]" time="0.001"><failure message="Failed: DID NOT RAISE &lt;class 'ValueError'&gt;">value = -inf
+
+    @pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
+    def test_nonfinite_aggregate_rejected(value):
+        frame = _positions("EUR")
+        frame.loc[0, "value_eur"] = value
+&gt;       with pytest.raises(ValueError, match="non-finite"):
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       Failed: DID NOT RAISE &lt;class 'ValueError'&gt;
+
+../patched/tests/test_portfolio_audit_boundary.py:85: Failed</failure></testcase><testcase classname="run_isolated" name="test_unmapped_money_remains_in_denominator" time="0.001" /></testsuite></testsuites>

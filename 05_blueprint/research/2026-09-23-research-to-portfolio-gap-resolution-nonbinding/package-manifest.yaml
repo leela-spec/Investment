@@ -1,0 +1,165 @@
+package: IPOS Process Verification & Gap Resolution Package
+package_version: 1.0.0
+audit_date: '2026-09-23'
+repository: leela-spec/Investment
+branch: main
+base_commit: cec42be2aaf922c74ea6b13dc44fe11adfdd618f
+base_commit_date: '2026-08-26T08:17:39Z'
+remote_writes_performed: false
+delivery_status: ARTIFACT_PACKAGE_COMPLETE_WITH_EXPLICIT_SOURCE_AND_RUNTIME_GATES
+production_status: NOT_CERTIFIED
+write_policy: Patch-only; no replacement of existing repository files by the chat
+proposed_repository_destination: 05_blueprint/research/2026-09-23-research-to-portfolio-gap-resolution/
+manifest_self_hash: omitted to avoid recursive self-reference
+source_authority:
+  operator_contract: Current user prompt; not asserted to exist as a repository file
+  named_paths_present:
+  - 05_blueprint/01_DECISION_ANALYSIS.md
+  - 05_blueprint/03_PORTFOLIO_MODULE.md
+  - 05_blueprint/research/2026-07-29_dashboard_visualization_audit.md
+  - 05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/R1-karakeep-ipos/CURRENT_IPOS_GAP_MAP.md
+  - 05_blueprint/research/2026-08-23-ipos-reuse-expansion-program/results/R3-evidence-kb/TOOL_LANDSCAPE.md
+  named_paths_absent_at_pin:
+  - HANDOVER_RESEARCH_TO_PORTFOLIO_AUDIT.md
+  - HANDOVER_INFRASTRUCTURE_ARCHITECTURE.okf.md
+  - 00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md
+  - 00_runbook/WF05_IPOS_WEEKLY_MACRO_REGIME.md
+  - 00_runbook/WF06_IPOS_EVIDENCE_CUSTODY_WATCHDOG.md
+  - docs/standards/ProThinkingPrompt/01_PRO_THINKING_PROMPT_DESIGN_STANDARD.md
+  - 05_blueprint/research/2026-08-28-modular-rebuild/01_REVISED_DECISION_MATRIX.md
+  - 05_blueprint/research/2026-08-28-modular-rebuild/02_ARCHITECTURE.md
+  - 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml
+  - 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml
+  - 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M06_ACTION_WATCH_REGISTER.yaml
+  - 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M12P_IPOS_POLICY_INTEGRATION.yaml
+  - ipos/portfolio/normalizer.py
+  - ipos/portfolio/optimizer.py
+  - tests/test_m11_normalizer.py
+  - tests/test_m13_optimizer.py
+  absence_scope: Exact reads and narrowly scoped directory metadata at this commit;
+    not a claim about local work or other branches
+  additional_direct_dependencies_inspected:
+  - ipos/etl/portfolio_csv.py
+  - ipos/aggregate/portfolio.py
+  - ipos/run.py
+  - ipos/export/snapshot.py
+  - tests/test_portfolio.py
+  - tests/test_regime.py
+  excluded_from_ingestion:
+  - Sources/
+  - data/
+  - logs/
+  - tests/fixtures/
+patch:
+  format: unified diff
+  apply_from: Investment repository root
+  target_branch: main
+  files:
+  - path: ipos/etl/portfolio_csv.py
+    operation: modify
+    base_git_blob: 1ceec565aa070d9a03a5c49cdeaff12c204110e8
+    post_sha256: 775a17ea99866d4085d070a464f69a019cfdb21d6eb0d600f08753f3adc460d5
+    post_git_blob: be363ad1fb56011befa4ed2d36b252122f2370bb
+  - path: ipos/aggregate/portfolio.py
+    operation: modify
+    base_git_blob: f294f551281e36536250486416c8b24a157c1e07
+    post_sha256: 8b72fc3d6d0ae2234d1f4ffe3505dc01436fab140ad533627b9ef8538a9c43ad
+    post_git_blob: a6cb33277ee95b5d0200dc76cce5859eec496210
+  - path: tests/test_portfolio_audit_boundary.py
+    operation: add
+    base_absence_verified: true
+    post_sha256: c22e586c88871ec899cc41fad2c79e335ae54f1d910c163b5d5629220c0bce1e
+    post_git_blob: 3794cb8227f3cdeb2764132f9571cbf6649de511
+  behavior_change: Invalid holdings/unresolved currencies abort current attempt rather
+    than publish incorrect totals; macro-continuation/quarantine not yet implemented
+  does_not_implement:
+  - modern C11/C12/C13
+  - TTK replacement deployment
+  - SFTP configuration
+  - FIFO ledger
+  - broker orders
+  - transaction-level database atomicity
+validation:
+  baseline_blob_hashes: PASS
+  git_apply_check: PASS
+  applied_postimage_hashes: PASS
+  python_syntax: PASS
+  integration_example_syntax_checked:
+  - 02_EXTERNAL_PRODUCT_INTEGRATION_SPEC.md:python-block-1
+  - 02_EXTERNAL_PRODUCT_INTEGRATION_SPEC.md:python-block-2
+  isolated_regressions:
+    before:
+      passed: 4
+      failed: 18
+    after:
+      passed: 22
+      failed: 0
+    scope: Exact function bodies, real pandas; DuckDB/config imports excluded; explicit
+      FX stubs in tests
+  full_repository_pytest: NOT_RUN
+  native_windows_wsl_docker_acceptance: NOT_RUN
+  real_broker_portfolio_data: NOT_INGESTED
+  whisperx_llamaindex_riskfolio_runtime: NOT_RUN
+  wealthfolio_gui_backup_parity: NOT_RUN
+decisions:
+  existing_matrix: Reviewed accessible historical decisions; proposed amendments in
+    artifact 03
+  august_28_matrix: UNRECONCILED_SOURCE_ABSENT
+  external_products: Selected actual supported interfaces, not deployed in this run
+  llm_authority: Candidate evidence annotation and narration only; no numeric portfolio
+    authority
+  automated_broker_execution: false
+residual_gates:
+- Recover authoritative newer main sources without reset or replacement
+- Run complete native project regression tests
+- Correct single-input run consistency and transactional publication
+- Validate both SFTP directions and recovery
+- Validate broker variants, FIFO and independent C12 parity
+- Approve/test macro-to-sector policy and real constrained optimizer
+- Validate privacy/untouched community operations
+artifacts:
+- path: 01_PROCESS_VERIFICATION_AND_GAP_ANALYSIS.md
+  required: true
+  purpose: End-to-end audit, 12-story coverage, evidence and gaps
+  bytes: 15924
+  sha256: 063ac4aa2e0fad492c670463f4413fe7f5fe17451d4b702d7b8b4076e309ab61
+- path: 02_EXTERNAL_PRODUCT_INTEGRATION_SPEC.md
+  required: true
+  purpose: Supported external product bindings and exact integration examples
+  bytes: 18201
+  sha256: 4b2ee9301b084c7ab6af139977931807b22aeba605660ddc1082c8a21c1e3e88
+- path: 03_RECONCILED_DECISION_MATRIX.md
+  required: true
+  purpose: Proposed historical decision amendments and explicit unresolved matrix
+  bytes: 10074
+  sha256: ef21496f7f0cfae05a3ea0469d63891dd8123f88e75fb93604f59e4dd5938fd5
+- path: 04_IMPLEMENTATION_AND_CORRECTION_PLAN.md
+  required: true
+  purpose: Phased exact commands, acceptance controls and rollback
+  bytes: 24661
+  sha256: 4cb6109fb71b007df29640e5808e97eec0f4726ffa942c41804b74ce91e5a7a1
+- path: 05_SURGICAL_PATCHES.diff
+  required: true
+  purpose: Two existing-file corrections and one new regression file
+  bytes: 8548
+  sha256: ed49c885c13e368f4e9a53f2770cd9ad97cb6f40fc51ed5f47894ad989f970fa
+- path: validation/AUDIT_VALIDATION_SCOPE.md
+  required: false
+  purpose: Supplementary audit validation evidence
+  bytes: 1653
+  sha256: 26ba8e0524b2d54ca730a35bcc2ba6f7c9e11173e804d5f8507a3fc779b050f1
+- path: validation/after.xml
+  required: false
+  purpose: Supplementary audit validation evidence
+  bytes: 2615
+  sha256: cd975b234118adb82ae13f62e74d356a099c3ca6277828481fc800d26791fcfb
+- path: validation/before.xml
+  required: false
+  purpose: Supplementary audit validation evidence
+  bytes: 16294
+  sha256: adc943233cee1810bd701e1d89afb4488402882e5d8c4cd4d13e80c86686b315
+- path: validation/result.json
+  required: false
+  purpose: Supplementary audit validation evidence
+  bytes: 196
+  sha256: bfc4e190bf882ec2e8f8a72fd4e6be160b5bb542f04c64ebaa3d56eb043eb745

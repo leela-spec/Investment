@@ -1,0 +1,200 @@
+diff --git a/ipos/etl/portfolio_csv.py b/ipos/etl/portfolio_csv.py
+--- a/ipos/etl/portfolio_csv.py
++++ b/ipos/etl/portfolio_csv.py
+@@ -16,6 +16,7 @@
+ 
+ import datetime as dt
+ import io
++import math
+ from pathlib import Path
+ 
+ import pandas as pd
+@@ -113,7 +114,7 @@
+         )
+ 
+     df = pd.DataFrame()
+-    df["instrument"] = raw[instrument_col].astype(str).str.strip()
++    df["instrument"] = raw[instrument_col].fillna("").astype(str).str.strip()
+     df["quantity"] = _parse_number(raw[quantity_col], german_locale=german_locale)
+     if value_col is not None:
+         df["value_eur"] = _parse_number(raw[value_col], german_locale=german_locale)
+@@ -122,13 +123,21 @@
+ 
+     currency_col = next((cols[c] for c in CURRENCY_COL_CANDIDATES if c in cols), None)
+     if currency_col is not None:
+-        df["currency"] = raw[currency_col].astype(str).str.strip().str.upper()
+-        df.loc[df["currency"] == "", "currency"] = DEFAULT_CURRENCY
++        # An explicitly supplied but blank currency is unknown, not EUR.
++        df["currency"] = raw[currency_col].fillna("").astype(str).str.strip().str.upper()
+     else:
+         df["currency"] = DEFAULT_CURRENCY
+ 
+-    df = df.dropna(subset=["instrument", "value_eur"])
+-    df = df[df["instrument"] != ""]
++    # Reject the whole input instead of silently shrinking the portfolio.
++    invalid = (
++        df["instrument"].eq("")
++        | ~df["quantity"].map(math.isfinite)
++        | ~df["value_eur"].map(math.isfinite)
++        | ~df["currency"].str.fullmatch(r"[A-Z]{3}")
++    )
++    if invalid.any():
++        rows = (df.index[invalid] + 2).tolist()
++        raise RuntimeError(f"{src.name}: invalid portfolio rows {rows}; refusing partial holdings")
+     return df[["instrument", "quantity", "value_eur", "currency"]].reset_index(drop=True)
+ 
+ 
+diff --git a/ipos/aggregate/portfolio.py b/ipos/aggregate/portfolio.py
+--- a/ipos/aggregate/portfolio.py
++++ b/ipos/aggregate/portfolio.py
+@@ -12,6 +12,7 @@
+ from __future__ import annotations
+ 
+ import datetime as dt
++import math
+ from pathlib import Path
+ 
+ import duckdb
+@@ -56,7 +57,13 @@
+     {"modules": {module_id: {"value_eur", "weight_pct"}}, "unmapped": [...],
+     "total_value_eur": ...}. Total always includes every position's value,
+     mapped or not."""
++    if "currency" in positions.columns and not positions["currency"].eq("EUR").all():
++        raise ValueError("portfolio: unresolved currency; refusing mixed-currency EUR totals")
++    if not positions["value_eur"].map(math.isfinite).all():
++        raise ValueError("portfolio: non-finite position value")
+     total = float(positions["value_eur"].sum())
++    if not math.isfinite(total):
++        raise ValueError("portfolio: non-finite total value")
+     by_module: dict[str, float] = {}
+     unmapped: list[dict] = []
+     for row in positions.itertuples(index=False):
+@@ -108,9 +115,10 @@
+     (``fact_weekly``, nearest at-or-before ``as_of``). EUR rows (the default
+     when no currency column exists -- fully backward compatible) pass
+     through unchanged. A currency with no known rate or no ``SUPPORTED_FX``
+-    mapping is left UNCONVERTED and reported in the returned warnings list --
+-    warn-over-crash, matching ``unmapped_policy``'s philosophy, rather than
+-    aborting the whole portfolio section over one bad currency code. Returns
++    mapping is left UNCONVERTED and reported in the returned warnings list.
++    Such rows must not enter EUR aggregation; ``aggregate_portfolio`` rejects
++    them. Successful conversion also changes the value currency to EUR so
++    repeated conversion cannot apply the FX rate twice. Returns
+     (converted_positions, warnings)."""
+     df = positions.copy()
+     if "currency" not in df.columns:
+@@ -120,13 +128,14 @@
+         mask = df["currency"] == ccy
+         series_id = SUPPORTED_FX.get(ccy)
+         rate = _latest_fx_value(con, series_id, as_of) if series_id else None
+-        if not rate or rate <= 0:
++        if rate is None or not math.isfinite(rate) or rate <= 0:
+             warnings.append({
+                 "currency": ccy, "n_positions": int(mask.sum()),
+                 "reason": "no FX rate available; left unconverted",
+             })
+             continue
+         df.loc[mask, "value_eur"] = df.loc[mask, "value_eur"] / rate
++        df.loc[mask, "currency"] = "EUR"
+     return df, warnings
+ 
+ 
+diff --git a/tests/test_portfolio_audit_boundary.py b/tests/test_portfolio_audit_boundary.py
+new file mode 100644
+--- /dev/null
++++ b/tests/test_portfolio_audit_boundary.py
+@@ -0,0 +1,94 @@
++"""Regression tests for the 2026-09-23 portfolio boundary audit.
++
++Small constructed inputs only; FX lookup is explicitly stubbed. These tests
++exercise IPOS arithmetic, not a live DuckDB connection or external broker.
++"""
++import datetime as dt
++
++import pandas as pd
++import pytest
++
++from ipos.aggregate import portfolio as agg
++from ipos.etl import portfolio_csv as csv
++
++
++@pytest.mark.parametrize("row", [
++    ",1,100,EUR", "X,,100,EUR", "X,1,bad,EUR", "X,1,inf,EUR",
++    "X,inf,100,EUR", "X,1,100,", "X,1,100,EURO", "X,1,NaN,EUR",
++])
++def test_invalid_input_cannot_silently_reduce_holdings(tmp_path, row):
++    path = tmp_path / "portfolio.csv"
++    path.write_text("instrument,quantity,value_eur,currency\n"
++                    "GOOD,1,100,EUR\n" + row + "\n", encoding="utf-8")
++    with pytest.raises(RuntimeError, match="refusing partial holdings"):
++        csv.load_positions(path)
++
++
++def test_german_zero_snapshot_still_parses(tmp_path):
++    path = tmp_path / "portfolio.csv"
++    path.write_text("ISIN;Anzahl;Wert\nDE0000000001;1.000;10.684,60\n", encoding="utf-8")
++    frame = csv.load_positions(path)
++    assert frame.iloc[0]["quantity"] == 1000
++    assert frame.iloc[0]["value_eur"] == pytest.approx(10684.60)
++    assert frame.iloc[0]["currency"] == "EUR"
++
++
++def test_absent_portfolio_stays_optional(tmp_path, monkeypatch):
++    monkeypatch.setattr(csv, "INBOX", tmp_path)
++    assert csv.load_positions() is None
++
++
++def test_price_based_snapshot_still_parses(tmp_path):
++    path = tmp_path / "portfolio.csv"
++    path.write_text("instrument,quantity,price_eur\nX,2,5\n", encoding="utf-8")
++    assert csv.load_positions(path).iloc[0]["value_eur"] == 10
++
++
++def _positions(currency="USD"):
++    return pd.DataFrame({"instrument": ["X"], "quantity": [2.0],
++                         "value_eur": [120.0], "currency": [currency]})
++
++
++def test_fx_conversion_is_idempotent_and_labels_eur(monkeypatch):
++    monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: 1.2)
++    first, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
++    second, _ = agg.convert_to_eur(first, None, dt.date(2026, 9, 18))
++    assert not warnings
++    assert first.iloc[0]["value_eur"] == pytest.approx(100.0)
++    assert first.iloc[0]["currency"] == "EUR"
++    pd.testing.assert_frame_equal(first, second)
++    total = agg.aggregate_portfolio(first, {"X": "EquityRisk"})
++    assert total["total_value_eur"] == 100.0
++    assert total["modules"]["EquityRisk"]["weight_pct"] == 100.0
++
++
++@pytest.mark.parametrize("rate", [None, 0.0, -1.0, float("nan"), float("inf")])
++def test_invalid_fx_cannot_enter_eur_totals(monkeypatch, rate):
++    monkeypatch.setattr(agg, "_latest_fx_value", lambda *args: rate)
++    frame, warnings = agg.convert_to_eur(_positions(), None, dt.date(2026, 9, 18))
++    assert warnings
++    with pytest.raises(ValueError, match="unresolved currency"):
++        agg.aggregate_portfolio(frame, {"X": "EquityRisk"})
++
++
++def test_unsupported_currency_cannot_be_counted_as_eur():
++    frame, warnings = agg.convert_to_eur(_positions("GBP"), None, dt.date(2026, 9, 18))
++    assert warnings
++    with pytest.raises(ValueError, match="unresolved currency"):
++        agg.aggregate_portfolio(frame, {"X": "EquityRisk"})
++
++
++@pytest.mark.parametrize("value", [float("nan"), float("inf"), -float("inf")])
++def test_nonfinite_aggregate_rejected(value):
++    frame = _positions("EUR")
++    frame.loc[0, "value_eur"] = value
++    with pytest.raises(ValueError, match="non-finite"):
++        agg.aggregate_portfolio(frame, {"X": "EquityRisk"})
++
++
++def test_unmapped_money_remains_in_denominator():
++    frame = pd.DataFrame({"instrument": ["X", "Y"], "quantity": [1.0, 1.0],
++                          "value_eur": [100.0, 100.0], "currency": ["EUR", "EUR"]})
++    result = agg.aggregate_portfolio(frame, {"X": "EquityRisk"})
++    assert result["total_value_eur"] == 200.0
++    assert result["modules"]["EquityRisk"]["weight_pct"] == 50.0
