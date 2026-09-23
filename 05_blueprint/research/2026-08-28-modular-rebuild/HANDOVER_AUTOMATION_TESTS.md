@@ -1,4 +1,4 @@
-# Autonomous Multi-Agent Handover: Automation Architecture, 10 Workflows & Simulation Test Suite
+﻿# Autonomous Multi-Agent Handover: Automation Architecture, 10 Workflows & Simulation Test Suite
 
 **Date:** 2026-09-07  
 **Prepared For:** Autonomous Multi-Agent Orchestration Team (Next Chat Session)  
@@ -110,78 +110,78 @@ flowchart TB
 
 ---
 
-## 3. 10 Concrete Cross-Repository Workflows
+## 3. Workflow Relocation & Retained IPOS Runbooks
 
-| # | Workflow Name | Dominant Cognitive Layer | Target Repositories & Stacks | Core Function & Operational Flow |
-|---|---|---|---|---|
-| **1** | Weekly Meta-Orchestration Sweep | **CLI Agent** (Heavy Reasoning + Skills) directing **Hermes** | All 4 Repos (`/root/workspaces/*`) + KI-Basis OpenProject | CLI agent gathers Hermes logs, inspects Kanban boards, evaluates git statuses across all repos, runs `backup-stack.sh`, and compiles `health-receipt.yaml`. |
-| **2** | Creative Writing & Thematic Synthesis | **Hermes** (`research-strategist`) | `MasterOfArts/Art/` & `MasterOfArts/Awakening/` | Synthesizes draft chapters and artistic essays from internal notes with zero web distraction. |
-| **3** | "Transcendents" Workshop Concept Generator | **Hermes** (`workshop-designer`) | `acim-secular` -> `MasterOfArts/workshops/` | Translates philosophical source texts into an 8-module retreat curriculum, complete with interactive exercises and syllabi. |
-| **4** | Multi-Variant Business Website Pipeline | Python Engine (`build_all_websites.py`) | `MasterOfArts/WEbsite/` + Nginx Edge | Builds 3 distinct aesthetic variations ("Zen Minimalist", "Vibrant", "Modern") and serves them behind the local Nginx gateway (:8084). |
-| **5** | IPOS Saturday Macro Indicator Pipeline | Task Scheduler -> **Hermes** (`investment`) | `Investment/` (22 Indicators, DuckDB, Telegram) | Autonomous Saturday 05:00 run evaluating 126 seminar rules, updating the Action/Watch Register, and dispatching the Telegram digest. |
-| **6** | IPOS Evidence Invalidation Watchdog | **Hermes** (`investment`) + Karakeep | `Investment/` (Karakeep ext4 custody) | Watches newly archived research for macro regime counter-evidence before capital allocation decisions. |
-| **7** | Private Coaching Onboarding & Invoicing | **CLI Agent** (Offer) + **KI-Basis** (Bookkeeping) | `MasterOfArts/Coaching/` + Paperless + Firefly | Generates coaching agreement, issues compliant PDF invoice into Paperless (`COACHING-INVOICE-OUTGOING`), matches bank wire in Firefly, and triggers overdue payment drafts. |
-| **8** | Equinox 2026 Pretix Ticketing Settlement | **Alpine Community KI-Basis Stack** | Windows Docker Desktop (`safer-space-ev`) | Ingests Pretix orders, splits fees (€11,300 gross -> €10,833.90 net), archives payout slip PDF in Paperless, and logs non-profit tax entries in Firefly. |
-| **9** | Social Initiative Telegram Intake Bridge | **Hermes** + Telegram Bot API | `apexai-os-meta/ki-basis/` | Ingests volunteer receipts and ideas from Telegram, catches up offline backlogs, uploads to Paperless, and creates OpenProject tasks. |
-| **10** | Secular Corpus Semantic Cross-Referencing | **Hermes** CLI (`default`) | `acim-secular` + SQLite FTS5 | Extracts precise citations and conceptual parallels from the secular corpus to feed into coaching and workshop curricula. |
+To eliminate domain pollution and maintain strict repository sovereignty, the non-investment workflows have been moved to their respective sibling repositories with dedicated README index files:
+
+| Workflow | Title | New Authoritative Location |
+|---|---|---|
+| **MPP-001** | Autonomous Multi-Agent Sequential Test Plan | `C:\GitDev\apexai-os-meta\docs\plans\00_META_PROGRAM_PLAN.md` |
+| **WF-01** | Weekly Meta-Orchestration Sweep | `C:\GitDev\apexai-os-meta\docs\workflows\WF01_WEEKLY_META_ORCHESTRATION.md` |
+| **WF-02** | Creative Writing & Thematic Synthesis | `C:\GitDev\MasterOfArts\docs\workflows\WF02_CREATIVE_WRITING_SYNTHESIS.md` |
+| **WF-03** | "Transcendents" Workshop Concept | `C:\GitDev\MasterOfArts\workshops\plans\WF03_TRANSCENDENTS_WORKSHOP_CONCEPT.md` |
+| **WF-04** | Business Website Multi-Variant Pipeline | `C:\GitDev\MasterOfArts\WEbsite\WF04_MOA_BUSINESS_WEBSITE_PIPELINE.md` |
+| **WF-07** | Coaching Onboarding & Invoicing | `C:\GitDev\MasterOfArts\Coaching\WF07_COACHING_LIFECYCLE_INVOICING.md` |
+| **WF-08** | Equinox 2026 Pretix Ticketing Settlement | `C:\GitDev\lika-community\docs\workflows\WF08_EQUINOX_PRETIX_TICKETING.md` |
+| **WF-09** | Telegram Bot Offline Intake | `C:\GitDev\lika-community\docs\workflows\WF09_TELEGRAM_BOT_OFFLINE_INTAKE.md` |
+| **WF-10** | Secular Corpus Cross-Referencing | `C:\GitDev\acim-secular\docs\workflows\WF10_ACIM_SECULAR_CROSS_REFERENCE.md` |
+
+### Retained IPOS Operational Procedures (in `00_runbook/`):
+- **[`WF05_IPOS_WEEKLY_MACRO_REGIME.md`](../../../00_runbook/WF05_IPOS_WEEKLY_MACRO_REGIME.md)**: Saturday 05:00 22-indicator macro regime calculation via DuckDB and rule engine.
+- **[`WF06_IPOS_EVIDENCE_CUSTODY_WATCHDOG.md`](../../../00_runbook/WF06_IPOS_EVIDENCE_CUSTODY_WATCHDOG.md)**: Karakeep research custody watchdog archiving financial research artifacts with cryptographic receipts.
 
 ---
 
-## 4. Multi-Agent Autonomous Simulation & Test Protocol (For Next Chat Session)
+## 4. Multi-Agent Autonomous Simulation & Test Protocol (IPOS Focus)
 
 **Instructions for the incoming Multi-Agent Team:**
-Do NOT ask the operator to run terminal commands manually. Deploy a team of specialized subagents to execute, observe, and verify the following test suite autonomously:
+Do NOT ask the operator to run terminal commands manually. Execute, observe, and verify the following IPOS test battery autonomously:
 
 ```mermaid
 flowchart TD
-    LeadAgent["Agent 1: Lead Orchestration Agent
-(Coordinates Plan & Dispatches Tasks)"]
+    LeadAgent["Lead Orchestrator (IPOS Focus)"]
     
-    subgraph Verification_Agents ["Autonomous Subagent Verification Team"]
-        InfraAgent["Agent 2: Infrastructure & Alpine Verifier
-(Pretix, Paperless, Firefly, Isolation)"]
-        IPOSAgent["Agent 3: IPOS Pipeline Verifier
-(Regime Pytest, DuckDB, Rule Engine)"]
-        ContentAgent["Agent 4: Content & Website Verifier
-(MasterOfArts Website Build, Hermes Access)"]
+    subgraph IPOS_Verification_Agents ["Autonomous IPOS Verification Team"]
+        MacroAgent["Macro Regime & Scoring Verifier"]
+        NormalizerAgent["Portfolio Accounting Verifier (C11)"]
+        OptimizerAgent["Riskfolio Optimizer Verifier (C13)"]
+        ReportingAgent["HTML Report & Explorer Verifier"]
     end
 
-    LeadAgent --> InfraAgent
-    LeadAgent --> IPOSAgent
-    LeadAgent --> ContentAgent
+    LeadAgent --> MacroAgent
+    LeadAgent --> NormalizerAgent
+    LeadAgent --> OptimizerAgent
+    LeadAgent --> ReportingAgent
 ```
 
-### Agent Runbook: 5 Autonomous Test Tasks
+### Agent Runbook: 5 Autonomous IPOS Test Tasks
 
-#### Task 1: Autonomous Infrastructure & Pretix Audit (Assigned to: InfraAgent)
-* **Command**: `python C:\GitDevpexai-os-meta\ki-basis\scriptserify_fundraiser_stack.py`
+#### Task 1: Macro Regime & Scoring Deterministic Test Suite (Assigned to: MacroAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q tests/test_regime.py tests/test_scoring.py`
 * **Pass Criteria**:
-  - Pretix module confirms 320 attendees, €11,300 gross, €10,833.90 net payout.
-  - OpenProject returns >= 24 work packages across Project 3.
-  - Firefly III returns >= 19 transactions.
-  - Paperless returns >= 10 documents.
-  - Final log output: `ALL AUDIT VERIFICATIONS PASSED WITH ZERO ERRORS!`.
+  - All test cases pass (100% pass rate) in < 30 seconds.
+  - Regime classifier deterministically outputs CHOPPY, TRENDY, or MOMENTUM based on golden fixtures.
 
-#### Task 2: Autonomous Dual-Instance Isolation Challenge (Assigned to: InfraAgent)
-* **Command**: `python C:\GitDevpexai-os-meta\ki-basis\scriptserify_dual_isolation.py`
+#### Task 2: Portfolio Normalizer & Reconciliation Engine Suite (Assigned to: NormalizerAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q tests/test_m11_normalizer.py tests/test_stop_gate.py`
 * **Pass Criteria**:
-  - Verifies zero port overlap between Private (8080-8089) and Community (9080-9089).
-  - Verifies network bridge boundaries.
+  - Validates FIFO book cost basis, multi-currency conversions (EUR/USD), and control matrix checks.
+  - Stop-gate fails closed on arithmetic discrepancies.
 
-#### Task 3: Autonomous IPOS Deterministic Regime Test Suite (Assigned to: IPOSAgent)
-* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q C:\GitDev\Investment	ests	est_regime.py C:\GitDev\Investment	ests	est_scoring.py`
+#### Task 3: Riskfolio-Lib Quantitative Optimization Suite (Assigned to: OptimizerAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q tests/test_m13_optimizer.py`
 * **Pass Criteria**:
-  - Pytest executes 17 test cases.
-  - All 17 pass (100% pass rate) in < 30 seconds.
+  - Proves real Riskfolio-Lib execution (HRP, Min-Risk, Max Sharpe).
+  - Validates socket blocking (offline invariant) and constraints sum to 1.0.
 
-#### Task 4: Autonomous MasterOfArts Website Build Pipeline (Assigned to: ContentAgent)
-* **Command**: `python C:\GitDev\MasterOfArts\WEbsiteuild_all_websites.py`
+#### Task 4: Contradiction Detection & Historical Replay Suite (Assigned to: MacroAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q tests/test_contradictions.py tests/test_replay.py`
 * **Pass Criteria**:
-  - Compiles `C:\GitDev\MasterOfArts\WEbsite\index.html`.
-  - Verifies output directories exist: `variation-a-zen/`, `variation-b-vibrant/`, `variation-c-modern/`.
+  - Verifies inter-market macro contradiction rules (Credit vs Equity, Yield Curve vs Stance).
+  - Historical replay produces deterministic point-in-time snapshots.
 
-#### Task 5: Autonomous Hermes Global CLI Cross-Repo Verification (Assigned to: ContentAgent)
-* **Command**: `wsl.exe -d Ubuntu -u root -e bash -c "/usr/local/bin/hermes --version && ls -la /root/workspaces"`
+#### Task 5: Static Report & Macro Risk Explorer Verification (Assigned to: ReportingAgent)
+* **Command**: `C:\GitDev\Investment\.venv\Scripts\python.exe -m pytest -q tests/test_report_html.py`
 * **Pass Criteria**:
-  - Returns Hermes CLI version (`v0.20.5`).
-  - Confirms all 4 repositories (`apexai-os-meta`, `Investment`, `MasterOfArts`, `acim-secular`) exist and are accessible on native ext4.
+  - Generates self-contained static HTML report (`report.html`).
+  - Validates all report sections without network leakage.
