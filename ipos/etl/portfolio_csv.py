@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import datetime as dt
 import io
+import math
 from pathlib import Path
 
 import pandas as pd
@@ -113,7 +114,7 @@ def load_positions(path: Path | None = None) -> pd.DataFrame | None:
         )
 
     df = pd.DataFrame()
-    df["instrument"] = raw[instrument_col].astype(str).str.strip()
+    df["instrument"] = raw[instrument_col].fillna("").astype(str).str.strip()
     df["quantity"] = _parse_number(raw[quantity_col], german_locale=german_locale)
     if value_col is not None:
         df["value_eur"] = _parse_number(raw[value_col], german_locale=german_locale)
@@ -122,13 +123,22 @@ def load_positions(path: Path | None = None) -> pd.DataFrame | None:
 
     currency_col = next((cols[c] for c in CURRENCY_COL_CANDIDATES if c in cols), None)
     if currency_col is not None:
-        df["currency"] = raw[currency_col].astype(str).str.strip().str.upper()
-        df.loc[df["currency"] == "", "currency"] = DEFAULT_CURRENCY
+        # A supplied-but-blank currency is unknown, not implicitly EUR.
+        df["currency"] = raw[currency_col].fillna("").astype(str).str.strip().str.upper()
     else:
         df["currency"] = DEFAULT_CURRENCY
 
-    df = df.dropna(subset=["instrument", "value_eur"])
-    df = df[df["instrument"] != ""]
+    # A portfolio snapshot is one financial statement. Silently dropping a
+    # malformed row would make every downstream total look valid but partial.
+    invalid = (
+        df["instrument"].eq("")
+        | ~df["quantity"].map(math.isfinite)
+        | ~df["value_eur"].map(math.isfinite)
+        | ~df["currency"].str.fullmatch(r"[A-Z]{3}")
+    )
+    if invalid.any():
+        rows = (df.index[invalid] + 2).tolist()
+        raise RuntimeError(f"{src.name}: invalid portfolio rows {rows}; refusing partial holdings")
     return df[["instrument", "quantity", "value_eur", "currency"]].reset_index(drop=True)
 
 

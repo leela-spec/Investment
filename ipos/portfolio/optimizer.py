@@ -110,20 +110,36 @@ class RiskfolioOptimizer:
         if w is None or not isinstance(w, pd.DataFrame) or len(w) == 0:
             raise OptimizationException("Riskfolio solver failed to find optimal solution: result is None or empty")
 
-        # Clean numerical precision residuals
-        weights = w.iloc[:, 0].values.astype(float)
-        weights = np.where(weights < 1e-6, 0.0, weights)
-        sum_w = float(np.sum(weights))
+        if w.shape != (n_assets, 1):
+            raise OptimizationException(
+                f"Riskfolio solver returned unexpected weight shape: {w.shape}"
+            )
+        if list(w.index) != assets:
+            raise OptimizationException(
+                "Riskfolio solver returned mismatched asset identity/order"
+            )
 
-        if sum_w <= 0.0 or np.isnan(sum_w) or np.isinf(sum_w):
+        # Validate the actual solver receipt. Do not clip or renormalize it:
+        # doing so could turn an infeasible/invalid result into a plausible one.
+        weights = w.iloc[:, 0].to_numpy(dtype=float)
+        if not np.isfinite(weights).all():
+            raise OptimizationException("Riskfolio solver returned non-finite weights")
+        sum_w = float(np.sum(weights))
+        if sum_w <= 0.0:
             raise OptimizationException(f"Riskfolio solver returned invalid weight sum: {sum_w}")
-
-        weights = weights / sum_w
-        sum_w = float(np.sum(weights))
         residual = abs(sum_w - 1.0)
-
-        if residual > 1e-3:
-            raise OptimizationException(f"Solver residual check failed: sum of weights = {sum_w} != 1.0")
+        if residual > 1e-4:
+            raise OptimizationException(
+                f"Riskfolio solver returned invalid weight sum: {sum_w} != 1.0"
+            )
+        bound_tolerance = 1e-5
+        if (
+            (weights < min_weight - bound_tolerance).any()
+            or (weights > max_weight + bound_tolerance).any()
+        ):
+            raise OptimizationException(
+                "Riskfolio solver returned weights outside approved bounds"
+            )
 
         df_weights = pd.DataFrame(weights, index=assets, columns=["weights"])
 

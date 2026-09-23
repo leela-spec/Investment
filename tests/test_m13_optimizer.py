@@ -208,3 +208,27 @@ def test_m13_t11_anti_facade_risk_parity_denial(synthetic_returns):
             opt.optimize_portfolio(synthetic_returns, obj="RiskParity")
         assert "Riskfolio solver failed" in str(exc_info.value)
 
+
+def test_m13_rejects_solver_output_that_requires_renormalization(synthetic_returns):
+    """A solver result summing to 0.8 must fail instead of being relabeled optimal."""
+    raw = pd.DataFrame({"weights": [0.2, 0.2, 0.2, 0.2]}, index=synthetic_returns.columns)
+    with patch.object(rp.Portfolio, "optimization", return_value=raw):
+        with pytest.raises(OptimizationException, match="weight sum"):
+            RiskfolioOptimizer().optimize_portfolio(synthetic_returns)
+
+
+def test_m13_rejects_solver_output_outside_approved_bounds(synthetic_returns):
+    """Bound violations in the real solver receipt cannot be clipped or hidden."""
+    raw = pd.DataFrame({"weights": [0.7, 0.1, 0.1, 0.1]}, index=synthetic_returns.columns)
+    with patch.object(rp.Portfolio, "optimization", return_value=raw):
+        with pytest.raises(OptimizationException, match="bounds"):
+            RiskfolioOptimizer().optimize_portfolio(synthetic_returns, max_weight=0.5)
+
+
+def test_m13_rejects_solver_output_with_wrong_asset_identity(synthetic_returns):
+    """Weights cannot be reassigned positionally when Riskfolio returns different assets."""
+    wrong_assets = ["SPY", "TLT", "GLD", "MSFT"]
+    raw = pd.DataFrame({"weights": [0.25] * 4}, index=wrong_assets)
+    with patch.object(rp.Portfolio, "optimization", return_value=raw):
+        with pytest.raises(OptimizationException, match="asset identity"):
+            RiskfolioOptimizer().optimize_portfolio(synthetic_returns)

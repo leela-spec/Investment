@@ -202,13 +202,38 @@ def test_m11_t08_economic_book_cost_basis_relief_on_sales(golden_fixture_path, g
     expected_aapl = expected["ending_holdings"]["US0378331005"]
 
     assert aapl_holding["quantity"] == expected_aapl["quantity"]
-    assert round(aapl_holding["cost_basis"], 2) == expected_aapl["book_cost_basis"]
+    assert round(aapl_holding["weighted_average_cost_basis"], 2) == expected_aapl["book_cost_basis"]
     assert round(aapl_holding["market_value"], 2) == expected_aapl["market_value"]
 
     spy_holding = df_holdings[df_holdings["instrument_id"] == "US7846721097"].iloc[0]
     expected_spy = expected["ending_holdings"]["US7846721097"]
     assert spy_holding["quantity"] == expected_spy["quantity"]
-    assert round(spy_holding["cost_basis"], 2) == expected_spy["book_cost_basis"]
+    assert round(spy_holding["weighted_average_cost_basis"], 2) == expected_spy["book_cost_basis"]
+
+
+def test_m11_labels_weighted_average_basis_without_claiming_fifo(golden_fixture_path):
+    """A weighted-average calculation must not leave a generic/FIFO-ambiguous label."""
+    normalizer = PortfolioNormalizer()
+    df_holdings, _, _, _ = normalizer.normalize_csv_fixture(golden_fixture_path)
+
+    assert "weighted_average_cost_basis" in df_holdings.columns
+    assert "cost_basis" not in df_holdings.columns
+    assert set(df_holdings["cost_basis_currency"]) == {"EUR"}
+    assert set(df_holdings["valuation_currency"]) == {"EUR"}
+
+
+def test_m11_rejects_cross_currency_basis_without_transaction_fx(tmp_path):
+    """Amounts in two currencies cannot be added into one weighted-average basis."""
+    path = tmp_path / "mixed_basis_currency.csv"
+    path.write_text(
+        "source_row_id,timestamp,type,isin,symbol,name,quantity,price,gross,fees,taxes,currency\n"
+        "1,2026-01-01T00:00:00Z,BUY,US0000000001,X,Example,1,100,100,0,0,EUR\n"
+        "2,2026-02-01T00:00:00Z,BUY,US0000000001,X,Example,1,110,110,0,0,USD\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValidationException, match="mixed currencies"):
+        PortfolioNormalizer().normalize_csv_fixture(str(path))
 
 
 def test_m11_t09_valuation_timestamp_semantics(golden_fixture_path, golden_expected_path):

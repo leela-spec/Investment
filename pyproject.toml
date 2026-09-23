@@ -12,6 +12,7 @@ dependencies = [
     "jinja2>=3.1",
     "jsonschema>=4.21",
     "requests>=2.31",
+    "Riskfolio-Lib==7.3.0",
 ]
 
 [project.optional-dependencies]

@@ -12,6 +12,7 @@ comparison only, matching the rest of the system's "no trade calls" stance.
 from __future__ import annotations
 
 import datetime as dt
+import math
 from pathlib import Path
 
 import duckdb
@@ -56,7 +57,13 @@ def aggregate_portfolio(
     {"modules": {module_id: {"value_eur", "weight_pct"}}, "unmapped": [...],
     "total_value_eur": ...}. Total always includes every position's value,
     mapped or not."""
+    if "currency" in positions.columns and not positions["currency"].eq("EUR").all():
+        raise ValueError("portfolio: unresolved currency; refusing mixed-currency EUR totals")
+    if not positions["value_eur"].map(math.isfinite).all():
+        raise ValueError("portfolio: non-finite position value")
     total = float(positions["value_eur"].sum())
+    if not math.isfinite(total):
+        raise ValueError("portfolio: non-finite total value")
     by_module: dict[str, float] = {}
     unmapped: list[dict] = []
     for row in positions.itertuples(index=False):
@@ -108,9 +115,9 @@ def convert_to_eur(
     (``fact_weekly``, nearest at-or-before ``as_of``). EUR rows (the default
     when no currency column exists -- fully backward compatible) pass
     through unchanged. A currency with no known rate or no ``SUPPORTED_FX``
-    mapping is left UNCONVERTED and reported in the returned warnings list --
-    warn-over-crash, matching ``unmapped_policy``'s philosophy, rather than
-    aborting the whole portfolio section over one bad currency code. Returns
+    mapping is left UNCONVERTED and reported in the returned warnings list.
+    Such rows cannot enter EUR aggregation. A successful conversion relabels
+    the value currency as EUR, preventing accidental repeated conversion. Returns
     (converted_positions, warnings)."""
     df = positions.copy()
     if "currency" not in df.columns:
@@ -120,13 +127,14 @@ def convert_to_eur(
         mask = df["currency"] == ccy
         series_id = SUPPORTED_FX.get(ccy)
         rate = _latest_fx_value(con, series_id, as_of) if series_id else None
-        if not rate or rate <= 0:
+        if rate is None or not math.isfinite(rate) or rate <= 0:
             warnings.append({
                 "currency": ccy, "n_positions": int(mask.sum()),
                 "reason": "no FX rate available; left unconverted",
             })
             continue
         df.loc[mask, "value_eur"] = df.loc[mask, "value_eur"] / rate
+        df.loc[mask, "currency"] = "EUR"
     return df, warnings
 
 

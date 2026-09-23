@@ -12,7 +12,16 @@ import pandas as pd
 
 
 CANONICAL_INSTRUMENT_FIELDS = ["instrument_id", "isin", "symbol", "name", "currency"]
-CANONICAL_HOLDING_FIELDS = ["account", "instrument_id", "quantity", "cost_basis", "market_value", "as_of"]
+CANONICAL_HOLDING_FIELDS = [
+    "account",
+    "instrument_id",
+    "quantity",
+    "weighted_average_cost_basis",
+    "cost_basis_currency",
+    "market_value",
+    "valuation_currency",
+    "as_of",
+]
 CANONICAL_ACTIVITY_FIELDS = ["account", "timestamp", "type", "instrument_id", "quantity", "price", "gross", "fees", "taxes", "currency", "source_row_id"]
 
 VALID_ACTIVITY_TYPES = ["BUY", "SELL", "DIVIDEND", "FEE", "DEPOSIT", "WITHDRAWAL", "TAX"]
@@ -53,8 +62,22 @@ class PortfolioNormalizer:
         for idx, row in df_holdings.iterrows():
             if row["quantity"] < 0:
                 raise ValidationException(f"Invalid negative quantity {row['quantity']} for instrument '{row['instrument_id']}'")
-            if pd.notna(row["cost_basis"]) and row["cost_basis"] < 0:
-                raise ValidationException(f"Invalid negative cost basis {row['cost_basis']} for instrument '{row['instrument_id']}'")
+            basis = row["weighted_average_cost_basis"]
+            if pd.notna(basis) and basis < 0:
+                raise ValidationException(
+                    f"Invalid negative weighted-average cost basis {basis} "
+                    f"for instrument '{row['instrument_id']}'"
+                )
+            if row["cost_basis_currency"] not in VALID_CURRENCIES:
+                raise ValidationException(
+                    f"Invalid cost-basis currency '{row['cost_basis_currency']}' "
+                    f"for instrument '{row['instrument_id']}'"
+                )
+            if row["valuation_currency"] not in VALID_CURRENCIES:
+                raise ValidationException(
+                    f"Invalid valuation currency '{row['valuation_currency']}' "
+                    f"for instrument '{row['instrument_id']}'"
+                )
 
     def validate_activities(self, df_activities: pd.DataFrame) -> None:
         """Validate canonical activities schema, signs, and row arithmetic."""
@@ -174,29 +197,41 @@ class PortfolioNormalizer:
                         "account": self.account_name,
                         "instrument_id": inst_id,
                         "quantity": 0.0,
-                        "cost_basis": 0.0,
+                        "weighted_average_cost_basis": 0.0,
+                        "cost_basis_currency": curr,
                         "market_value": 0.0,
+                        "valuation_currency": curr,
                         "as_of": str(row["timestamp"])
                     }
+                elif holdings_map[inst_id]["cost_basis_currency"] != curr:
+                    raise ValidationException(
+                        f"Cannot combine mixed currencies for instrument '{inst_id}' "
+                        "without transaction FX"
+                    )
                 holdings_map[inst_id]["quantity"] += qty
-                holdings_map[inst_id]["cost_basis"] += (gross + fees + taxes)
+                holdings_map[inst_id]["weighted_average_cost_basis"] += (gross + fees + taxes)
                 holdings_map[inst_id]["market_value"] = holdings_map[inst_id]["quantity"] * price
                 holdings_map[inst_id]["as_of"] = str(row["timestamp"])
 
             elif act_type == "SELL":
                 if inst_id not in holdings_map or holdings_map[inst_id]["quantity"] < qty:
                     raise ValidationException(f"Oversell condition for instrument '{inst_id}' at row {row['source_row_id']}")
+                if holdings_map[inst_id]["cost_basis_currency"] != curr:
+                    raise ValidationException(
+                        f"Cannot combine mixed currencies for instrument '{inst_id}' "
+                        "without transaction FX"
+                    )
 
                 curr_qty = holdings_map[inst_id]["quantity"]
-                curr_basis = holdings_map[inst_id]["cost_basis"]
+                curr_basis = holdings_map[inst_id]["weighted_average_cost_basis"]
 
                 # Weighted-average economic cost relief on sale
                 relief_basis = (qty / curr_qty) * curr_basis
                 holdings_map[inst_id]["quantity"] -= qty
-                holdings_map[inst_id]["cost_basis"] -= relief_basis
+                holdings_map[inst_id]["weighted_average_cost_basis"] -= relief_basis
 
                 if holdings_map[inst_id]["quantity"] == 0.0:
-                    holdings_map[inst_id]["cost_basis"] = 0.0
+                    holdings_map[inst_id]["weighted_average_cost_basis"] = 0.0
 
                 holdings_map[inst_id]["market_value"] = holdings_map[inst_id]["quantity"] * price
                 holdings_map[inst_id]["as_of"] = str(row["timestamp"])
@@ -331,7 +366,10 @@ class PortfolioNormalizer:
                 for inst_id, expected_h in control_data["ending_holdings"].items():
                     actual_h_rows = df_holdings[df_holdings["instrument_id"] == inst_id]
                     actual_qty = float(actual_h_rows.iloc[0]["quantity"]) if not actual_h_rows.empty else 0.0
-                    actual_basis = float(actual_h_rows.iloc[0]["cost_basis"]) if not actual_h_rows.empty else 0.0
+                    actual_basis = (
+                        float(actual_h_rows.iloc[0]["weighted_average_cost_basis"])
+                        if not actual_h_rows.empty else 0.0
+                    )
                     actual_as_of = str(actual_h_rows.iloc[0]["as_of"]) if not actual_h_rows.empty else ""
 
                     if "quantity" in expected_h:
@@ -351,7 +389,7 @@ class PortfolioNormalizer:
                         exp_basis = float(expected_h[basis_key])
                         diff_basis = round(abs(actual_basis - exp_basis), 4)
                         checks.append({
-                            "check": f"holding.{inst_id}.cost_basis",
+                            "check": f"holding.{inst_id}.weighted_average_cost_basis",
                             "expected": exp_basis,
                             "actual": actual_basis,
                             "difference": diff_basis,
