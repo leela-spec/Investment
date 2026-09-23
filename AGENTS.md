@@ -8,6 +8,9 @@
 - Cluster Plans: `05_blueprint/meso/`
 - Playbook Rules: `04_playbook/modules/`
 - Extraction Runbook: `00_runbook/extraction_process.md`
+- Infrastructure Architecture Handover: `HANDOVER_INFRASTRUCTURE_ARCHITECTURE.okf.md`
+- Research-to-Portfolio Decision Flow: `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md`
+- Pipeline Audit Contract: `HANDOVER_RESEARCH_TO_PORTFOLIO_AUDIT.md`
 
 ## Codebase Modules
 - Pipeline & Core Engine: `ipos/`

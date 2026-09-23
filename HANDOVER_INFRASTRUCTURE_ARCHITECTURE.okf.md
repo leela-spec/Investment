@@ -1,4 +1,4 @@
-﻿---
+---
 okf: open-knowledge-format
 okf_version: "0.2"
 spec: OKF-0.2
@@ -157,6 +157,8 @@ To prevent cross-domain contamination, all projects on `C:\GitDev\` are strictly
 | **C14** | TA-Lib Technical Engine | ⬜ **QUEUED AFTER C10** | C-compiled deterministic technical indicators (RSI, ATR, Bollinger). |
 | **M01** | Hermes Baseline Profile | 🟡 **MAKER COMPLETE / CHECKER PENDING** | Keep profile; submit execution logs to `ipos-proof-verifier` for formal sign-off. |
 | **M12P** | Macro Policy Integration | ⛔ **LOCKED BEHIND C10 + C14** | Wire Macro Stance Vector to Riskfolio asset allocation constraints. |
+| **WF07** | Research-to-Portfolio Flow | ✅ **CODIFIED / GOVERNED** | Follow `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md` for claim extraction -> invalidation -> Riskfolio rebalance. |
+| **Audit** | Pipeline External Audit | 🟡 **HANDOVER STAGED** | Independent adversarial audit contract staged at `HANDOVER_RESEARCH_TO_PORTFOLIO_AUDIT.md`. |
 
 ---
 
