@@ -1,7 +1,7 @@
 # --- IPOS runtime data (append-only archive & warehouse live outside git) ---
-data/
-!data/.gitkeep
-!data/**/.gitkeep
+/data/
+!/data/.gitkeep
+!/data/**/.gitkeep
 
 # --- secrets ---
 .env

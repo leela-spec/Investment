@@ -1,0 +1,27 @@
+schema_version: "1.0"
+module_id: "M15"
+title: "TradingView event bridge"
+status: "PLANNED"
+depends_on: ["M02", "M04"]
+objective: "Use scarce TradingView-native alerts only for high-value platform-specific events and route them through the common event backbone."
+authoritative_sources:
+  - {url: "https://www.tradingview.com/support/solutions/43000529348-how-to-configure-webhook-alerts/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000520149-introduction-to-tradingview-alerts/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000739708-watchlist-alerts-your-trading-edge/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000696403-alerts-separation-by-type/", verify_before_execution: true}
+steps:
+  - {id: "M15-S01", action: "Record actual account plan and current alert quotas from operator account; do not infer limits from pricing page alone."}
+  - {id: "M15-S02", action: "Choose 2-3 high-value POC events: one fixed price/horizontal level, one platform-specific drawing/Pine condition if available, and optionally one watchlist-wide standardized condition."}
+  - {id: "M15-S03", action: "Create compact JSON webhook payload containing event ID, symbol, timeframe, condition ID, price/value placeholders, timestamp; no secrets."}
+  - {id: "M15-S04", action: "Route webhook to Activepieces, validate schema, deduplicate, sign outbound Hermes event, then post ALERT to Hermes group."}
+  - {id: "M15-S05", action: "Do not recreate manually drawn chart state outside TradingView in this module."}
+  - {id: "M15-S06", action: "Measure alert-slot consumption and classify each event pattern as TV_REQUIRED or LOCAL_PREFERRED."}
+tests:
+  - {id: "M15-T01", expected: "TradingView test alert arrives as exactly one Hermes ALERT"}
+  - {id: "M15-T02", expected: "malformed payload is rejected before Hermes"}
+  - {id: "M15-T03", expected: "duplicate webhook delivery does not duplicate Telegram alert"}
+  - {id: "M15-T04", expected: "webhook does not expose credentials/account secrets"}
+pass_conditions:
+  - "Common event path works and exact TradingView alert cost/quota is measured."
+  - "Only conditions that genuinely require TradingView remain candidates for native alert slots."
+rollback: "Disable TradingView alerts and Activepieces flow; no local market pipeline is affected."

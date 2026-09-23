@@ -1,0 +1,29 @@
+schema_version: "1.0"
+module_id: "M06"
+title: "Minimal Action and Watch register"
+status: "PLANNED"
+depends_on: ["M02", "M04"]
+objective: "Track unresolved ACTION and WATCH items without building a new application or database."
+authoritative_sources:
+  - {url: "https://www.activepieces.com/pieces/tables", verify_before_execution: true}
+  - {url: "https://www.activepieces.com/docs", verify_before_execution: true}
+decision: "Use Activepieces Tables if current self-hosted edition supports required CRUD/export; otherwise stop and compare the smallest existing alternative before writing custom storage."
+schema:
+  required_fields: ["item_id", "class", "instrument_or_topic", "action_or_condition", "source", "created_at", "reason_short", "status", "evidence_ref", "updated_at"]
+  class_values: ["ACTION", "WATCH"]
+  status_values: ["OPEN", "DONE", "DISMISSED", "EXPIRED"]
+steps:
+  - {id: "M06-S01", action: "Create Investment ActionWatch table through supported Activepieces mechanism."}
+  - {id: "M06-S02", action: "Add deterministic upsert key so the same analyst recommendation/event does not create duplicate open items."}
+  - {id: "M06-S03", action: "Create operations: list OPEN, create/update, mark DONE/DISMISSED/EXPIRED, export CSV."}
+  - {id: "M06-S04", action: "Expose only these narrow operations to Hermes through Activepieces MCP/tooling or a supported flow endpoint."}
+  - {id: "M06-S05", action: "Map Hermes questions 'what do we need to do?' and 'what are we watching?' to register reads, not conversational memory."}
+tests:
+  - {id: "M06-T01", expected: "create ACTION, read it back, mark DONE"}
+  - {id: "M06-T02", expected: "duplicate event upserts/ignores rather than duplicating"}
+  - {id: "M06-T03", expected: "Hermes lists only OPEN items when asked"}
+  - {id: "M06-T04", expected: "CSV export preserves all required fields"}
+pass_conditions:
+  - "No custom dashboard or database service added."
+  - "State survives Activepieces restart/backup."
+rollback: "Export CSV, disable table-integrating flows, retain export as migration artifact."

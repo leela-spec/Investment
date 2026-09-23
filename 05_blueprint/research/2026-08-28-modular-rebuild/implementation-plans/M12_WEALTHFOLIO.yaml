@@ -1,0 +1,30 @@
+schema_version: "1.0"
+module_id: "M12"
+title: "Wealthfolio local portfolio visualization"
+status: "PLANNED"
+depends_on: ["M11"]
+objective: "Use Wealthfolio only where it improves human portfolio understanding/planning; no broker Connect dependency."
+authoritative_sources:
+  - {url: "https://wealthfolio.app/docs/", verify_before_execution: true}
+  - {url: "https://wealthfolio.app/docs/guide/import-csv/", verify_before_execution: true}
+  - {url: "https://wealthfolio.app/docs/guide/mcp-server/", verify_before_execution: true}
+  - {url: "https://wealthfolio.app/docs/guide/export-backup/", verify_before_execution: true}
+steps:
+  - {id: "M12-S01", action: "Install current official desktop/local release on operator machine; keep Connect disabled."}
+  - {id: "M12-S02", action: "Import synthetic + representative M11 canonical data through the officially supported CSV/manual import surface; do not build a private database writer."}
+  - {id: "M12-S03", action: "Validate holdings, currencies, cost basis, activities, performance, allocation, and target/planning views against M11 expected values."}
+  - {id: "M12-S04", action: "Test export/backup and full local restore."}
+  - {id: "M12-S05", action: "If native MCP is supported in current version, configure a read-only token/scope for Hermes holdings/value/performance reads. Do not assume target/rebalance write support."}
+  - {id: "M12-S06", action: "Evaluate whether Wealthfolio materially improves portfolio UX. If not, fail the candidate cleanly rather than customizing the app."}
+tests:
+  - {id: "M12-T01", expected: "imported holdings/quantities/currencies match canonical fixture"}
+  - {id: "M12-T02", expected: "portfolio value/performance explainably reconciles or documented valuation-source differences are isolated"}
+  - {id: "M12-T03", expected: "backup/export restore returns same synthetic portfolio"}
+  - {id: "M12-T04", expected: "Hermes read-only MCP can answer holdings/value question if MCP is enabled"}
+  - {id: "M12-T05", expected: "mutation/write action is absent or rejected in initial scope"}
+pass_conditions:
+  - "Local desktop UX is materially useful with normalized imports."
+  - "No Wealthfolio Connect/broker sync is required."
+  - "No unsupported DB manipulation is required."
+fail_condition: "If import friction or data mismatch requires reverse engineering/internal DB writes, mark candidate FAIL and compare Portfolio Performance before custom integration."
+rollback: "Export/backup, revoke MCP token, uninstall app; canonical M11 portfolio remains authority."

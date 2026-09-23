@@ -1,0 +1,30 @@
+{
+  "versions": {
+    "python": "3.12.10",
+    "uv": "0.12.0",
+    "ipos": "0.1.0",
+    "riskfolio-lib": "7.3.0"
+  },
+  "services": {
+    "optimizer": "LOCAL_RISKFOLIO_POC"
+  },
+  "config_hashes": {
+    "configs/weights.yaml": "sha256:init"
+  },
+  "network_exposure": {
+    "inbound_ports": [],
+    "outbound_apis": []
+  },
+  "created_artifacts": [
+    "ipos/portfolio/optimizer.py",
+    "tests/test_m13_optimizer.py",
+    "implementation-runs/M13/20260830-214630/preflight.json",
+    "implementation-runs/M13/20260830-214630/before.json",
+    "implementation-runs/M13/20260830-214630/state.json",
+    "implementation-runs/M13/20260830-214630/commands.log",
+    "implementation-runs/M13/20260830-214630/test-results.json",
+    "implementation-runs/M13/20260830-214630/after.json",
+    "implementation-runs/M13/20260830-214630/IMPLEMENTATION_REPORT.md"
+  ],
+  "changed_files": []
+}

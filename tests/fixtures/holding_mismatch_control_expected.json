@@ -1,0 +1,13 @@
+{
+  "account": "DEFAULT_ACCOUNT",
+  "summary_totals_by_currency": {
+    "EUR": {
+      "net_cash_flow": -5520.25
+    }
+  },
+  "ending_holdings": {
+    "US0378331005": {
+      "quantity": 99.0
+    }
+  }
+}

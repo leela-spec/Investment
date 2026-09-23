@@ -1,0 +1,37 @@
+[
+  {
+    "test_id": "M13-T01",
+    "result": "PASS",
+    "expected": "same fixed inputs produce same weights within solver tolerance",
+    "observed": "Dual optimization runs produced identical asset weight vectors within 1e-5 tolerance",
+    "evidence_path": "tests/test_m13_optimizer.py::test_m13_t01_fixed_inputs_produce_same_weights"
+  },
+  {
+    "test_id": "M13-T02",
+    "result": "PASS",
+    "expected": "weights satisfy sum, bounds, and explicit IPOS constraints",
+    "observed": "Weights summed to 1.0 and strictly satisfied lower (0.05) and upper (0.50) bounds",
+    "evidence_path": "tests/test_m13_optimizer.py::test_m13_t02_weights_satisfy_sum_and_bounds"
+  },
+  {
+    "test_id": "M13-T03",
+    "result": "PASS",
+    "expected": "infeasible constraints return explicit infeasible/error status",
+    "observed": "Overconstrained lower bounds raised explicit OptimizationException without fabricating weights",
+    "evidence_path": "tests/test_m13_optimizer.py::test_m13_t03_infeasible_constraints_fail_explicitly"
+  },
+  {
+    "test_id": "M13-T04",
+    "result": "PASS",
+    "expected": "small input perturbation produces documented sensitivity report",
+    "observed": "Sensitivity calculation produced documented weight shift metrics and STABLE status",
+    "evidence_path": "tests/test_m13_optimizer.py::test_m13_t04_input_perturbation_sensitivity"
+  },
+  {
+    "test_id": "M13-T05",
+    "result": "PASS",
+    "expected": "wrapper runs with network disabled",
+    "observed": "Verified optimizer operates fully locally with is_network_disabled=True",
+    "evidence_path": "tests/test_m13_optimizer.py::test_m13_t05_network_disabled"
+  }
+]

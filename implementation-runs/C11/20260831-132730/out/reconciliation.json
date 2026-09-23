@@ -1,0 +1,14 @@
+{
+  "account": "DEFAULT_ACCOUNT",
+  "total_activities": 4,
+  "summary_totals": {
+    "gross_buys": 5900.0,
+    "gross_sells": 380.0,
+    "gross_dividends": 15.0,
+    "total_fees": 8.0,
+    "total_taxes": 7.25,
+    "net_cash_flow": -5520.25
+  },
+  "reconciliation_difference": 0.0,
+  "reconciliation_status": "BALANCED"
+}

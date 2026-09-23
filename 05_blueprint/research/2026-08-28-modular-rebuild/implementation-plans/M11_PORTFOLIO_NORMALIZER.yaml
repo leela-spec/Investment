@@ -1,0 +1,42 @@
+schema_version: "1.0"
+module_id: "M11"
+title: "Deterministic broker CSV/PDF normalization"
+status: "PLANNED"
+depends_on: []
+objective: "Convert operator-provided broker exports into one reproducible canonical portfolio/activity schema without broker cloud connections."
+authoritative_sources:
+  - {url: "https://pandera.readthedocs.io/", verify_before_execution: true}
+  - {url: "https://pymupdf.readthedocs.io/en/latest/", verify_before_execution: true}
+  - {url: "https://help.portfolio-performance.info/en/reference/file/import/", verify_before_execution: true, purpose: "reference for proven broker-import concepts and field mappings, not a source of broker semantics"}
+source_authority_rule: "The actual representative broker export and its broker documentation outrank generic parser assumptions."
+canonical_outputs:
+  - "portfolio_snapshot.parquet or csv"
+  - "activities.parquet or csv"
+  - "reconciliation.json"
+  - "source_manifest.json"
+minimum_fields:
+  instrument: ["instrument_id", "isin", "symbol", "name", "currency"]
+  holding: ["account", "instrument_id", "quantity", "cost_basis", "market_value", "as_of"]
+  activity: ["account", "timestamp", "type", "instrument_id", "quantity", "price", "gross", "fees", "taxes", "currency", "source_row_id"]
+steps:
+  - {id: "M11-S01", action: "Obtain representative finanzen.net ZERO and Smartbroker CSV/PDF exports plus operator-approved synthetic edge cases. STOP if no representative export exists; do not guess schemas."}
+  - {id: "M11-S02", action: "Preserve originals byte-for-byte with SHA-256 in raw fixture/source area."
+    }
+  - {id: "M11-S03", action: "Prefer CSV/text-native broker exports. Use PyMuPDF text/table extraction only for machine-readable PDFs; do not OCR by default."}
+  - {id: "M11-S04", action: "Implement broker-specific adapters that emit one canonical schema; keep mapping rules explicit/configured rather than hidden heuristic inference."}
+  - {id: "M11-S05", action: "Validate canonical frames with Pandera or equivalent typed dataframe schema; reject unknown required fields, impossible signs, invalid currencies, and duplicate source IDs."}
+  - {id: "M11-S06", action: "Produce reconciliation totals: quantities, cash flows, fees, dividends, and account totals against source where source permits."}
+  - {id: "M11-S07", action: "Make adapter idempotent and deterministic: same input bytes + same config -> same normalized data/hash."}
+  - {id: "M11-S08", action: "Create CLI: normalize, validate, reconcile, and doctor. No web UI."}
+tests:
+  - {id: "M11-T01", expected: "golden CSV fixture maps exactly to expected canonical rows"}
+  - {id: "M11-T02", expected: "PDF fixture extraction preserves expected transaction values when text-native"}
+  - {id: "M11-T03", expected: "EUR/USD, dividends, fees, split/corporate-action edge fixtures either map correctly or fail explicitly"}
+  - {id: "M11-T04", expected: "same fixture run twice yields same canonical hash"}
+  - {id: "M11-T05", expected: "corrupt/ambiguous source row causes validation failure, not silent drop"}
+  - {id: "M11-T06", expected: "reconciliation difference is zero or explicitly explained"}
+pass_conditions:
+  - "Zero silent transaction drops."
+  - "Every canonical row points to source file and source row/page evidence."
+  - "No broker credential or live connection is required."
+rollback: "Adapters are additive; remove module outputs/code without altering immutable raw broker exports."

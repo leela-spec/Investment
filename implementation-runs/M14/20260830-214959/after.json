@@ -1,0 +1,31 @@
+{
+  "versions": {
+    "python": "3.12.10",
+    "uv": "0.12.0",
+    "ipos": "0.1.0",
+    "ta-lib": "0.7.1"
+  },
+  "services": {
+    "technical_engine": "LOCAL_TALIB_POC"
+  },
+  "config_hashes": {
+    "configs/registry.yaml": "sha256:d8c...registry"
+  },
+  "network_exposure": {
+    "inbound_ports": [],
+    "outbound_apis": []
+  },
+  "created_artifacts": [
+    "ipos/indicators/__init__.py",
+    "ipos/indicators/technical_engine.py",
+    "tests/test_m14_technical_engine.py",
+    "implementation-runs/M14/20260830-214959/preflight.json",
+    "implementation-runs/M14/20260830-214959/before.json",
+    "implementation-runs/M14/20260830-214959/state.json",
+    "implementation-runs/M14/20260830-214959/commands.log",
+    "implementation-runs/M14/20260830-214959/test-results.json",
+    "implementation-runs/M14/20260830-214959/after.json",
+    "implementation-runs/M14/20260830-214959/IMPLEMENTATION_REPORT.md"
+  ],
+  "changed_files": []
+}

@@ -1,0 +1,24 @@
+schema_version: "1.0"
+module_id: "M14"
+title: "TA-Lib local technical computation engine"
+status: "PLANNED"
+depends_on: ["M10"]
+objective: "Provide reproducible local technical calculations for scalable monitoring and IPOS inputs without recreating technical indicators manually."
+authoritative_sources:
+  - {url: "https://github.com/TA-Lib/ta-lib-python", verify_before_execution: true}
+  - {url: "https://ta-lib.org/", verify_before_execution: true}
+steps:
+  - {id: "M14-S01", action: "Create isolated Python environment and install current TA-Lib Python package using official wheels/native library guidance for host OS."}
+  - {id: "M14-S02", action: "Define a narrow indicator registry matching actually used IPOS/TradingView concepts: MA50/200, RSI14, Slow Stochastic, ATR, selected volume transforms. Do not enable the full catalog by default."}
+  - {id: "M14-S03", action: "Build deterministic batch wrapper: OHLCV input -> indicator values + warmup/missing metadata -> JSON/Parquet output."}
+  - {id: "M14-S04", action: "Document exact period/timeframe conventions; weekly and daily indicators must not be mixed silently."}
+  - {id: "M14-S05", action: "Use TradingView CSV exports only as validation fixtures for selected indicators, not as runtime dependency."}
+tests:
+  - {id: "M14-T01", expected: "golden OHLCV fixture produces stable indicator outputs"}
+  - {id: "M14-T02", expected: "insufficient warmup yields null/flag, not fabricated values"}
+  - {id: "M14-T03", expected: "selected MA/RSI/ATR values reconcile with independent/TradingView fixtures within documented conventions"}
+  - {id: "M14-T04", expected: "network-disabled batch run succeeds"}
+pass_conditions:
+  - "All runtime technical values are deterministic and versioned."
+  - "No custom reimplementation of standard TA formulas where TA-Lib provides them."
+rollback: "Remove isolated environment/wrapper; input market data remains intact."

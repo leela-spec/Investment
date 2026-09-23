@@ -1,0 +1,34 @@
+schema_version: "1.0"
+module_id: "M12P"
+title: "Preserve and expose the deterministic IPOS policy layer"
+status: "PLANNED"
+depends_on: ["M10", "M11", "M14"]
+objective: "Preserve the user's unique IPOS rules/governors as the deterministic policy authority while replacing commodity infrastructure around them."
+authoritative_sources:
+  - {repo_path: "AGENTS.md"}
+  - {repo_path: "04_playbook/modules/"}
+  - {repo_path: "03_extract/rules.jsonl"}
+  - {repo_path: "03_extract/process.jsonl"}
+  - {repo_path: "ipos/advisor/rule_engine.py"}
+  - {repo_path: "ipos/backtest/engine.py"}
+  - {repo_path: "configs/contradictions.yaml"}
+source_rule: "Existing repository rule semantics and extracted source artifacts outrank any new prose interpretation."
+steps:
+  - {id: "M12P-S01", action: "Inventory current deterministic inputs/outputs and map each active rule/governor to source artifact IDs; do not rewrite semantics during integration."}
+  - {id: "M12P-S02", action: "Run existing advisor/backtest/unit tests to establish a frozen baseline before changing adapters."}
+  - {id: "M12P-S03", action: "Define a compact canonical PolicyInput schema fed by M10 market/macro data, M11 portfolio data, and M14 technical outputs."
+    }
+  - {id: "M12P-S04", action: "Create adapters only where needed to translate canonical field names into existing rule-engine inputs; keep rules pure/deterministic."}
+  - {id: "M12P-S05", action: "Define PolicyOutput schema: posture/tilts, fired rules, contradictions, governors/caps, confidence, skipped rules/missing inputs, source IDs."}
+  - {id: "M12P-S06", action: "Compare new-adapter outputs with baseline outputs on frozen fixtures; any semantic difference requires explicit documented operator decision, not normalization convenience."}
+  - {id: "M12P-S07", action: "Expose one deterministic CLI/API wrapper for Hermes and M18; Hermes receives outputs, not permission to alter thresholds."}
+tests:
+  - {id: "M12P-T01", expected: "all pre-existing rule/advisor tests pass before and after adapter work"}
+  - {id: "M12P-T02", expected: "frozen input fixture produces identical policy verdict before/after integration except explicitly approved schema-only metadata"}
+  - {id: "M12P-T03", expected: "missing critical inputs produce existing fail-degraded/UNCERTAIN behavior rather than fabricated defaults"}
+  - {id: "M12P-T04", expected: "Hermes cannot modify rule thresholds through the runtime wrapper"}
+  - {id: "M12P-T05", expected: "every fired rule in output retains rule/source ID for auditability"}
+pass_conditions:
+  - "Unique IPOS methodology remains deterministic and source-traceable."
+  - "Commodity data/UI/orchestration can change without changing investment semantics."
+rollback: "Remove new adapters/wrapper and return to frozen baseline; do not roll back source playbook/extracts."

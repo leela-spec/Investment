@@ -1,0 +1,72 @@
+schema_version: "1.0"
+module_id: "M19"
+title: "End-to-end acceptance, failure injection, and architecture freeze recommendation"
+status: "PLANNED"
+depends_on: ["M18"]
+objective: "Verify the assembled infrastructure from source event/portfolio input to operator output before any production migration or main-branch adoption."
+execution_rule: "Run from a fresh verifier context that did not implement M18."
+scenarios:
+  - id: "E2E-01"
+    name: "Analyst ACTION email"
+    path: "WEB.DE/Gmail fixture -> Activepieces -> Karakeep evidence -> Hermes ACTION -> Action/Watch register -> Telegram"
+    expected: "Immediate ACTION notification, exactly one OPEN item, no automatic trade or mandatory deep analysis."
+  - id: "E2E-02"
+    name: "Research video"
+    path: "email video fixture -> media pipeline -> transcript -> TTK -> Karakeep/source linkage -> Hermes RESEARCH/impact summary"
+    expected: "Validated source-grounded KB plus bounded portfolio relevance output."
+  - id: "E2E-03"
+    name: "TradingView technical alert"
+    path: "TradingView/test webhook -> Activepieces -> Hermes -> Telegram ALERT"
+    expected: "Exactly one ALERT and no ACTION unless a separate recommendation exists."
+  - id: "E2E-04"
+    name: "Local technical watchdog"
+    path: "market fixture -> OpenBB/provider data -> TA-Lib -> state transition -> Hermes ALERT"
+    expected: "No TradingView alert slot and no LLM call on no-change polls."
+  - id: "E2E-05"
+    name: "Manual chart level"
+    path: "confirmed local level -> watchdog -> approach/cross ALERT"
+    expected: "Deterministic trigger without unsupported TradingView scraping."
+  - id: "E2E-06"
+    name: "Portfolio refresh and optimization"
+    path: "broker fixture -> normalizer -> Wealthfolio -> IPOS -> Riskfolio -> Hermes"
+    expected: "Reconciled portfolio and deterministic target weights; UI matches canonical holdings sufficiently for planning."
+  - id: "E2E-07"
+    name: "Weekly review"
+    path: "all current snapshots/evidence/actions -> Hermes review"
+    expected: "dashboard review + memo + ranked actions + proposed target weights with auditable provenance."
+failure_injection:
+  - {id: "F01", fault: "mailbox authentication revoked", expected: "SYSTEM notification; no source event lost silently"}
+  - {id: "F02", fault: "duplicate webhook delivery", expected: "one downstream notification/item only"}
+  - {id: "F03", fault: "Karakeep unavailable", expected: "research event blocks/degrades explicitly; no invented evidence"}
+  - {id: "F04", fault: "stale market data", expected: "technical/weekly actionable output suppressed; SYSTEM warning"}
+  - {id: "F05", fault: "infeasible Riskfolio constraints", expected: "optimizer reports infeasible; Hermes does not fabricate weights"}
+  - {id: "F06", fault: "malformed broker row", expected: "normalizer fails/reconciles visibly; no silent drop"}
+  - {id: "F07", fault: "invalid Hermes webhook signature", expected: "rejected"}
+acceptance_metrics:
+  correctness:
+    - "0 fabricated numeric values in audited outputs"
+    - "0 silent transaction drops in accepted fixtures"
+    - "0 duplicate ACTION/ALERT messages in duplicate-delivery tests"
+  resilience:
+    - "every critical dependency failure produces explicit BLOCKED/SYSTEM behavior"
+    - "restart/restore procedure proven for stateful services"
+  cost:
+    - "record observed recurring software/service cost and paid-data dependencies"
+    - "no OpenBB paid Workspace required"
+  token_efficiency:
+    - "ordinary local watchdog no-change polls use zero LLM calls"
+    - "TTK is resumable by file state"
+    - "weekly review uses bounded evidence/tool exposure"
+  security:
+    - "no secrets in Git or reports"
+    - "no broker execution interface enabled"
+    - "public ingress limited to required webhook surface"
+final_outputs:
+  - "implementation-runs/M19/<timestamp>/VERIFICATION_REPORT.md"
+  - "implementation-runs/M19/<timestamp>/ARCHITECTURE_FREEZE_RECOMMENDATION.md"
+  - "implementation-runs/M19/<timestamp>/COST_EGRESS_INVENTORY.json"
+  - "implementation-runs/M19/<timestamp>/LIVE_INTERFACE_REGISTRY.json"
+  - "implementation-runs/M19/<timestamp>/MIGRATION_DECISION.md"
+freeze_decision_values: ["FREEZE_AND_PLAN_MIGRATION", "FREEZE_WITH_LIMITATIONS", "REWORK_SPECIFIC_MODULES", "ABANDON_REPLACEMENT_ARCHITECTURE"]
+pass_condition: "Verifier issues PASS and recommends FREEZE_AND_PLAN_MIGRATION or an operator-accepted FREEZE_WITH_LIMITATIONS."
+prohibition: "Passing M19 does not itself merge to main or delete existing IPOS implementation."

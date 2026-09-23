@@ -1,0 +1,7 @@
+{
+  "source_file": "golden_broker_export.csv",
+  "source_sha256": "b8be8f63131f2dc3128df5271bb97d92c2d9f0622e4b016a02741c938a9ff83d",
+  "total_source_rows": 4,
+  "normalized_activities_count": 4,
+  "account": "DEFAULT_ACCOUNT"
+}

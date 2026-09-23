@@ -1,0 +1,49 @@
+package:
+  name: Pro Thinking Prompt Design System
+  version: "1.0"
+  purpose: >
+    Create high-autonomy, research-backed, anti-overengineered prompts for
+    GPT-5.6 Pro and comparable advanced reasoning modes.
+
+  delivery:
+    artifact: single_zip
+    duplicate_standalone_files: false
+
+files:
+  - path: 00_README.md
+    role: Package orientation
+
+  - path: 01_PRO_THINKING_PROMPT_DESIGN_STANDARD.md
+    role: Principles and design standard
+
+  - path: 02_REUSABLE_MASTER_TEMPLATE.md
+    role: Fillable Pro Thinking prompt template
+
+  - path: 03_INGESTION_RESEARCH_SYNTHESIS_WORKFLOW.md
+    role: Pre-creation ingestion, research, and synthesis design
+
+  - path: 04_ANTI_OVERENGINEERING_AND_VALIDATION.md
+    role: Restraint rules and quality validation
+
+  - path: 05_APEX_PROMPT_CASE_STUDY.md
+    role: Analysis of the successful reference prompt
+
+  - path: 06_ORIGINAL_APEX_PRO_PROMPT.md
+    role: Original attached APEX reference prompt
+
+  - path: package-manifest.yaml
+    role: Machine-readable package index
+
+core_principles:
+  - Name the exact target at the beginning.
+  - Distinguish the final product from research and analysis.
+  - Rank source authority.
+  - Name high-signal sources directly.
+  - Require ingestion before synthesis.
+  - Require synthesis before final creation.
+  - Give the model freedom over its internal method.
+  - State each material constraint once.
+  - Continue through ordinary uncertainty.
+  - Validate the complete package before delivery.
+  - Return one ZIP rather than duplicate files.
+  - Restate the target at the end as the success condition.

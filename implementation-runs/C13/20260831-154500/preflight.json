@@ -1,0 +1,8 @@
+{
+    "correction_id":  "C13",
+    "timestamp":  "2026-08-31T15:45:00+02:00",
+    "integrity_mode":  "DEVELOPMENT",
+    "repairs_module":  "M13",
+    "target_version":  "7.3.0",
+    "target_product":  "Riskfolio-Lib"
+}

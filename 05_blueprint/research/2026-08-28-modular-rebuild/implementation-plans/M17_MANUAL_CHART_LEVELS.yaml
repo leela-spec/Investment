@@ -1,0 +1,37 @@
+schema_version: "1.0"
+module_id: "M17"
+title: "Manual chart-level registry and deterministic monitoring"
+status: "PLANNED"
+depends_on: ["M16"]
+objective: "Monitor a selected subset of operator-defined TradingView chart conclusions locally without claiming to export full TradingView drawings."
+authoritative_sources:
+  - {url: "https://www.tradingview.com/support/solutions/43000518095-trendline-drawing-tool/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000763315-getting-started-with-technical-alerts/", verify_before_execution: true}
+  - {repo_path: "05_blueprint/research/2026-08-28-modular-rebuild/04_TRADINGVIEW_INTEGRATION.md"}
+registry_types:
+  - "horizontal_level"
+  - "fibonacci"
+  - "trendline"
+  - "channel_optional_after_trendline_passes"
+minimum_fields:
+  common: ["level_id", "symbol", "timeframe", "type", "meaning", "active", "created_at", "source_note"]
+  horizontal_level: ["price", "approach_pct", "cross_direction"]
+  fibonacci: ["anchor_a_time", "anchor_a_price", "anchor_b_time", "anchor_b_price", "ratios"]
+  trendline: ["point_1_time", "point_1_price", "point_2_time", "point_2_price", "extend_right", "scale_mode"]
+steps:
+  - {id: "M17-S01", action: "Create a machine-readable chart-level registry file/table with schema validation; do not scrape TradingView layouts."}
+  - {id: "M17-S02", action: "Provide an operator CLI/import form for exact horizontal level, Fib anchors, and trendline coordinates taken from TradingView Coordinates UI or explicit operator entry."}
+  - {id: "M17-S03", action: "Implement deterministic geometry calculation for current value of registered line/Fib levels, respecting timeframe and scale-mode semantics."}
+  - {id: "M17-S04", action: "Integrate with M16 state-transition engine for APPROACHING|TOUCHED|CROSSED|CLEARED events."}
+  - {id: "M17-S05", action: "Require operator confirmation before any AI-assisted screenshot-derived candidate geometry becomes active."}
+  - {id: "M17-S06", action: "Keep TradingView-native alerts only for important drawings not registered locally or where TradingView semantics cannot be faithfully reproduced."}
+tests:
+  - {id: "M17-T01", expected: "horizontal fixture triggers approach/cross at exact configured thresholds"}
+  - {id: "M17-T02", expected: "Fib fixture calculates selected ratios from known anchors correctly"}
+  - {id: "M17-T03", expected: "trendline fixture returns expected line price on three known dates"}
+  - {id: "M17-T04", expected: "log/linear ambiguity is rejected unless explicitly configured"}
+  - {id: "M17-T05", expected: "unconfirmed AI/screenshot candidate cannot become active"}
+pass_conditions:
+  - "A selected manual level can be monitored locally without consuming a TradingView alert slot."
+  - "No unsupported TradingView drawing export/scraping was introduced."
+rollback: "Deactivate/remove local level entries; operator TradingView drawings remain untouched."

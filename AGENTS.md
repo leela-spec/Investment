@@ -8,6 +8,9 @@
 - Cluster Plans: `05_blueprint/meso/`
 - Playbook Rules: `04_playbook/modules/`
 - Extraction Runbook: `00_runbook/extraction_process.md`
+- Infrastructure Architecture Handover: `HANDOVER_INFRASTRUCTURE_ARCHITECTURE.okf.md`
+- Research-to-Portfolio Decision Flow: `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md`
+- Pipeline Audit Contract: `HANDOVER_RESEARCH_TO_PORTFOLIO_AUDIT.md`
 
 ## Codebase Modules
 - Pipeline & Core Engine: `ipos/`
@@ -22,3 +25,4 @@
 - Raw Sources: `Sources/` is read-only input material; do not mutate directly.
 - Canonical Branch: `main` (commit directly; no feature branches).
 - Governing Axiom: *Code computes everything numeric; the LLM only narrates.*
+- Infrastructure Sovereignty & Single Edge Security: IPOS code, policies, and investment logic remain 100% sovereign and local. Supporting container services (Karakeep, Activepieces) run in a unified, lean Docker environment sharing a single internal network and single Edge Gateway (Nginx/Caddy) to eliminate memory bloat and port friction. Do not invent artificial subnets or duplicate database containers on the local workstation.

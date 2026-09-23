@@ -1,0 +1,8 @@
+{
+  "module_id": "M13",
+  "current_step": "M13-S06",
+  "completed_steps": ["M13-S01", "M13-S02", "M13-S03", "M13-S04", "M13-S05", "M13-S06"],
+  "pending_steps": [],
+  "blocked": false,
+  "last_updated": "2026-08-30T21:49:09+02:00"
+}

@@ -1,0 +1,27 @@
+schema_version: "1.0"
+module_id: "M90"
+title: "Future research: discretionary TradingView chart-analysis automation"
+status: "FUTURE_RESEARCH_NOT_BLOCKING"
+depends_on: []
+objective: "Research whether discretionary TradingView drawings can be captured reliably through supported mechanisms; do not implement unsupported scraping."
+authoritative_sources:
+  - {url: "https://www.tradingview.com/support/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000537255-how-to-export-chart-data/", verify_before_execution: true}
+  - {url: "https://www.tradingview.com/support/solutions/43000518095-trendline-drawing-tool/", verify_before_execution: true}
+research_questions:
+  - "Has TradingView introduced a supported machine-readable drawing/layout API/export?"
+  - "Can a supported UI/browser workflow retrieve exact Coordinates values without brittle DOM/private-state scraping?"
+  - "Can screenshot + vision propose candidate geometry with operator confirmation at acceptable error rates?"
+  - "Which drawing types can be represented exactly enough locally: horizontal, Fib, trendline, channel, rectangle, annotations?"
+prohibited:
+  - "reverse engineering private TradingView layout storage"
+  - "credential/session-cookie extraction"
+  - "unsupervised screenshot-to-live-alert activation"
+  - "claiming exact numeric geometry from visually ambiguous screenshots"
+research_method:
+  - "Official-doc scan first."
+  - "Small bounded POC on synthetic chart with known coordinates."
+  - "Measure extraction error against known ground truth."
+  - "Require operator confirmation before any candidate becomes active."
+  - "Recommend IMPLEMENT only if supported, reproducible, and lower-effort than manual coordinate entry."
+output: "A research report only; M90 is not part of production implementation acceptance."

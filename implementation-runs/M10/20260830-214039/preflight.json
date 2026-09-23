@@ -1,0 +1,33 @@
+{
+  "module_id": "M10",
+  "repo": "leela-spec/Investment",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "head_sha": "093a64badb5d9f76de923df7349fcc7d42184050",
+  "dirty_before": false,
+  "official_source_checks": [
+    {
+      "url": "https://docs.openbb.co/odp/python/installation",
+      "checked_at": "2026-08-30T21:40:39+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://docs.openbb.co/odp/python",
+      "checked_at": "2026-08-30T21:40:39+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://docs.openbb.co/odp/python/extensions",
+      "checked_at": "2026-08-30T21:40:39+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    },
+    {
+      "url": "https://docs.openbb.co/odp/python/integrations",
+      "checked_at": "2026-08-30T21:40:39+02:00",
+      "status": "VERIFIED_COMPATIBLE"
+    }
+  ],
+  "dependency_verdicts": {
+    "M01": "PARTIAL_WAIVER_AGY_BOOTSTRAP_SLICE"
+  },
+  "started_at": "2026-08-30T21:40:39+02:00"
+}

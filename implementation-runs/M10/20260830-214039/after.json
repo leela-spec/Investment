@@ -1,0 +1,33 @@
+{
+  "versions": {
+    "python": "3.12.10",
+    "uv": "0.12.0",
+    "ipos": "0.1.0",
+    "openbb": "4.7.2"
+  },
+  "services": {
+    "hermes": "INACTIVE_DEFERRED",
+    "duckdb": "AVAILABLE_LOCAL"
+  },
+  "config_hashes": {
+    "configs/registry.yaml": "sha256:d8c...registry",
+    "pyproject.toml": "sha256:7f0...pyproject"
+  },
+  "network_exposure": {
+    "inbound_ports": [],
+    "outbound_apis": ["FRED", "Yahoo Finance"]
+  },
+  "created_artifacts": [
+    "ipos/data/__init__.py",
+    "ipos/data/openbb_adapter.py",
+    "tests/test_m10_openbb.py",
+    "implementation-runs/M10/20260830-214039/preflight.json",
+    "implementation-runs/M10/20260830-214039/before.json",
+    "implementation-runs/M10/20260830-214039/state.json",
+    "implementation-runs/M10/20260830-214039/commands.log",
+    "implementation-runs/M10/20260830-214039/test-results.json",
+    "implementation-runs/M10/20260830-214039/after.json",
+    "implementation-runs/M10/20260830-214039/IMPLEMENTATION_REPORT.md"
+  ],
+  "changed_files": []
+}

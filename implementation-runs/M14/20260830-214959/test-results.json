@@ -1,0 +1,30 @@
+[
+  {
+    "test_id": "M14-T01",
+    "result": "PASS",
+    "expected": "golden OHLCV fixture produces stable indicator outputs",
+    "observed": "Computed MA50, MA200, RSI14, ATR14, Slow Stoch, and Volume MA20 cleanly over 250-bar series",
+    "evidence_path": "tests/test_m14_technical_engine.py::test_m14_t01_golden_fixture_stable_indicators"
+  },
+  {
+    "test_id": "M14-T02",
+    "result": "PASS",
+    "expected": "insufficient warmup yields null/flag, not fabricated values",
+    "observed": "30-bar series resulted in all-NaN MA200 with insufficient_warmup=True flag",
+    "evidence_path": "tests/test_m14_technical_engine.py::test_m14_t02_insufficient_warmup_yields_null_flag"
+  },
+  {
+    "test_id": "M14-T03",
+    "result": "PASS",
+    "expected": "selected MA/RSI/ATR values reconcile with independent/TradingView fixtures within documented conventions",
+    "observed": "Reconciled against TradingView benchmark values with max difference < 1e-2 across indicators",
+    "evidence_path": "tests/test_m14_technical_engine.py::test_m14_t03_reconciles_with_tradingview_benchmark"
+  },
+  {
+    "test_id": "M14-T04",
+    "result": "PASS",
+    "expected": "network-disabled batch run succeeds",
+    "observed": "Verified technical calculation engine executes fully locally with is_network_disabled=True",
+    "evidence_path": "tests/test_m14_technical_engine.py::test_m14_t04_network_disabled_batch_run"
+  }
+]

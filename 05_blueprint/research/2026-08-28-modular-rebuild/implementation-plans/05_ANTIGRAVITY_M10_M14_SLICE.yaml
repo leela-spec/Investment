@@ -1,0 +1,177 @@
+schema_version: "1.0"
+slice_id: "AGY-IPOS-M10-M14-BOOTSTRAP"
+title: "Antigravity bootstrap slice for M10-M14"
+status: "APPROVED_FOR_EXECUTION"
+created_at: "2026-08-30"
+repository: "leela-spec/Investment"
+required_branch: "ipos-modular-rebuild-2026-08-28"
+purpose: >-
+  Execute the useful local market-data, portfolio-normalization, portfolio-UI,
+  optimization, and technical-computation modules before the messaging/evidence/orchestration
+  infrastructure is implemented. This is a bounded exception to the normal wave order, not
+  a rewrite of the main architecture.
+authority_order:
+  - "AGENTS.md"
+  - "implementation-plans/05_ANTIGRAVITY_M10_M14_SLICE.yaml"
+  - "implementation-plans/01_EXECUTOR_CONTRACT.yaml"
+  - "implementation-plans/03_REPORT_SCHEMAS.yaml"
+  - "current module plan M10/M11/M12/M13/M14"
+  - "files explicitly listed by the current module plan"
+  - "current official upstream documentation"
+requested_modules:
+  - "M10"
+  - "M11"
+  - "M12"
+  - "M13"
+  - "M14"
+explicitly_excluded:
+  - "M01-M09"
+  - "M12P"
+  - "M15-M19"
+  - "M90"
+  - "Hermes integration/configuration"
+  - "broker execution"
+  - "production/main migration"
+execution_order:
+  - sequence: 1
+    module: "M10"
+    mode: "LOCAL_DATA_POC"
+  - sequence: 2
+    module: "M11"
+    mode: "NORMALIZER_POC"
+  - sequence: 3
+    module: "M12"
+    mode: "LOCAL_UI_POC"
+  - sequence: 4
+    module: "M13"
+    mode: "LOCAL_OPTIMIZER_POC"
+  - sequence: 5
+    module: "M14"
+    mode: "LOCAL_TECHNICAL_POC"
+parallel_implementation: false
+reason_no_parallel_implementation: >-
+  Antigravity subagents are useful for research and independent verification, but these five
+  modules should mutate the shared checkout sequentially to preserve a simple audit trail and
+  prevent environment/file conflicts.
+dependency_overrides:
+  M10:
+    original_dependency: ["M01"]
+    override: "PARTIAL_WAIVER"
+    allowed_now:
+      - "M10-S01"
+      - "M10-S02"
+      - "M10-S03"
+      - "M10-S04"
+      - "M10-S05"
+      - "M10-S07"
+    deferred:
+      - "M10-S06: Hermes local API/MCP exposure"
+    verification_rule: >-
+      M10 may receive PASS_WITH_LIMITATIONS when all data-layer tests pass and the only missing
+      item is the intentionally deferred Hermes exposure. Do not mark the full production M10
+      integration complete.
+  M11:
+    original_dependency: []
+    override: "NONE"
+    representative_export_gate: >-
+      First search only approved workspace/source locations for representative broker exports.
+      If no real finanzen.net ZERO/Smartbroker export is available, do not guess its schema.
+      Build/test the canonical schema, source-manifest contract, validation/reconciliation framework,
+      and synthetic fixtures only; mark the real broker adapter BLOCKED and M11 PASS_WITH_LIMITATIONS.
+    downstream_exception: >-
+      M12 and M13 may use the validated synthetic canonical fixture even if a live broker adapter is
+      blocked, but must state this limitation prominently.
+  M12:
+    original_dependency: ["M11"]
+    override: >-
+      M11 PASS is preferred. PASS_WITH_LIMITATIONS is acceptable only when the limitation is absence
+      of a representative real broker export and the synthetic canonical fixture itself is validated.
+  M13:
+    original_dependency: ["M11"]
+    override: >-
+      M11 PASS is preferred. PASS_WITH_LIMITATIONS is acceptable only for the same synthetic-fixture
+      exception used by M12.
+  M14:
+    original_dependency: ["M10"]
+    override: >-
+      If OpenBB passes the local-data POC, integrate representative M10 OHLCV output. If M10 formally
+      rejects OpenBB as REPLACE_CANDIDATE, M14 may still implement and fully test TA-Lib against fixed
+      OHLCV fixtures, but runtime market-data integration is deferred and the verifier must report it.
+antigravity_execution_policy:
+  surface: "Antigravity 2.0 IDE or Antigravity CLI"
+  recommended_project_mode: "LOCAL_MODE_ON_PRECHECKED_DEDICATED_BRANCH"
+  do_not_use_new_worktree_mode_reason: >-
+    Antigravity New Worktree Mode is generally useful for complex isolated work, but this repository's
+    executor contract requires the exact pre-existing branch ipos-modular-rebuild-2026-08-28. Use Local
+    Mode in a checkout already on that branch rather than allowing Antigravity to create another branch.
+  recommended_agent_mode: "PLANNING_MODE"
+  artifact_review_policy: "REQUEST_REVIEW"
+  planning_model:
+    - "Explore"
+    - "Plan"
+    - "Execute"
+    - "Verify"
+  context_rules:
+    - "One implementation module in the primary context at a time."
+    - "Do not preload future module plans."
+    - "Use @ file references to target exact authority files instead of broad repository search."
+    - "Use a built-in research subagent for official-document freshness checks when useful."
+    - "Use a fresh subagent/context for verification after implementation; verifier must not fix code."
+    - "Checkpoint state to implementation-runs/<module>/<timestamp>/state.json before major context reset."
+    - "Long command output stays in log files; return compact receipts into model context."
+  permissions:
+    preferred: "request-review"
+    rationale: >-
+      These modules install Python packages and may create local environments/app state. Google documents
+      request-review as the default/recommended control posture. Do not use dangerously-skip-permissions.
+  intervention_policy:
+    routine_questions: "DO_NOT_ASK"
+    ask_user_only_when:
+      - "A real broker export or operator file is required and unavailable."
+      - "An installer needs a credential/license/account action that cannot be completed locally."
+      - "Official docs materially conflict with the approved module design."
+      - "A destructive/non-reversible action outside the repo is required."
+      - "A module would need undocumented reverse engineering."
+module_loop:
+  - "Read only the current module authority set."
+  - "Re-open official documentation marked verify_before_execution."
+  - "Create preflight.json and before.json."
+  - "Ask a research subagent to independently check current install/version gotchas when the dependency is fast-moving."
+  - "Create or update tests before consequential implementation if the module lacks a verification mechanism."
+  - "Implement the smallest reversible slice."
+  - "Run smoke, positive, negative, determinism/reproducibility, and module-specific acceptance tests."
+  - "Write test-results.json and IMPLEMENTATION_REPORT.md."
+  - "Spawn fresh verifier context/subagent with module plan + diff + receipts only; prohibit edits."
+  - "Verifier reruns safe tests and writes VERIFICATION_REPORT.md with PASS|PASS_WITH_LIMITATIONS|FAIL."
+  - "Commit module-scoped changes only after verifier verdict is acceptable."
+  - "Reset/compact context before loading next module."
+proceed_to_next_module_rule: >-
+  This slice explicitly overrides the normal single-module STOP only after independent verification.
+  Proceed automatically when verdict is PASS, or PASS_WITH_LIMITATIONS with limitation classified
+  NON_BLOCKING_FOR_THIS_SLICE. Stop on FAIL, BLOCKED, undocumented integration need, or semantic drift.
+commit_policy:
+  - "One module per commit where practical."
+  - "Prefix commit with module ID."
+  - "Never commit secrets, downloaded private broker statements, virtual environments, application databases, or bulky caches."
+  - "Before every commit run git diff --check and inspect git status."
+completion_outputs:
+  per_module:
+    - "implementation-runs/<module>/<timestamp>/preflight.json"
+    - "implementation-runs/<module>/<timestamp>/before.json"
+    - "implementation-runs/<module>/<timestamp>/commands.log"
+    - "implementation-runs/<module>/<timestamp>/test-results.json"
+    - "implementation-runs/<module>/<timestamp>/after.json"
+    - "implementation-runs/<module>/<timestamp>/IMPLEMENTATION_REPORT.md"
+    - "implementation-runs/<module>/<timestamp>/VERIFICATION_REPORT.md"
+  slice:
+    - "implementation-runs/AGY-IPOS-M10-M14-BOOTSTRAP/SLICE_REPORT.md"
+    - "implementation-runs/AGY-IPOS-M10-M14-BOOTSTRAP/SLICE_STATE.json"
+slice_report_must_answer:
+  - "Which modules passed, passed with limitations, failed, or were blocked?"
+  - "Did OpenBB prove more useful than direct-provider adapters?"
+  - "What real/synthetic broker coverage was actually demonstrated?"
+  - "Did Wealthfolio materially improve UX without unsupported integration?"
+  - "Are Riskfolio outputs reproducible and constraint-valid?"
+  - "Are TA-Lib outputs reproducible and independently reconciled?"
+  - "What remains deferred specifically because M01-M09 were skipped?"
+  - "What exact next module is dependency-ready after this slice?"

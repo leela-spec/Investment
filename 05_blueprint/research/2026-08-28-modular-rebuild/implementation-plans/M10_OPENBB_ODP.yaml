@@ -1,0 +1,32 @@
+schema_version: "1.0"
+module_id: "M10"
+title: "OpenBB ODP free/local market and macro data layer"
+status: "PLANNED"
+depends_on: ["M01"]
+objective: "Test OpenBB ODP as the local provider-abstraction layer using free sources only; reject paid Workspace as a dependency."
+authoritative_sources:
+  - {url: "https://docs.openbb.co/odp/python/installation", verify_before_execution: true}
+  - {url: "https://docs.openbb.co/odp/python", verify_before_execution: true}
+  - {url: "https://docs.openbb.co/odp/python/extensions", verify_before_execution: true}
+  - {url: "https://docs.openbb.co/odp/python/integrations", verify_before_execution: true}
+steps:
+  - {id: "M10-S01", action: "Create isolated Python 3.10-3.14 environment per current official requirements; never install into system/base Python."}
+  - {id: "M10-S02", action: "Install openbb from PyPI and run openbb-build when required by current docs."}
+  - {id: "M10-S03", action: "Install/configure only provider extensions required for the representative free-data POC."
+    }
+  - {id: "M10-S04", action: "Retrieve representative IPOS series: broad equity price, Fed balance sheet/FRED, 10Y-2Y, 10Y-3M, HY OAS, and at least one non-US macro series if freely supported."}
+  - {id: "M10-S05", action: "For every endpoint record provider, symbol/series ID, key requirement, rate limit, history, timezone/frequency, licensing/cache notes, and missing-value behavior."}
+  - {id: "M10-S06", action: "Expose a narrow local API/MCP tool surface to Hermes only after direct Python/API retrieval is proven."}
+  - {id: "M10-S07", action: "Compare output against direct authoritative provider values for at least three dates/series; OpenBB is an adapter, not an unquestioned source of truth."}
+tests:
+  - {id: "M10-T01", expected: "clean environment imports OpenBB and completes build"}
+  - {id: "M10-T02", expected: "representative free series retrieve reproducibly"}
+  - {id: "M10-T03", expected: "three-point spot checks match upstream provider within expected transformations"}
+  - {id: "M10-T04", expected: "missing credential/provider outage fails explicitly rather than fabricating data"}
+  - {id: "M10-T05", expected: "no OpenBB Workspace subscription is required"}
+pass_conditions:
+  - "ODP removes meaningful provider glue for the target series."
+  - "Free/local operation is demonstrated."
+  - "Provider provenance remains visible."
+fail_condition: "If ODP adds more operational complexity than direct official-provider adapters for the required small series set, mark REPLACE_CANDIDATE and stop before building around it."
+rollback: "Delete isolated environment and Hermes integration; raw provider comparison fixtures remain."

@@ -1,0 +1,36 @@
+schema_version: "1.0"
+correction_id: "C12"
+repairs_module: "M12"
+title: "Real Wealthfolio product POC correction"
+status: "READY_AFTER_C11"
+depends_on: ["C11"]
+objective: "Replace the local Wealthfolio imitation with proof that the actual Wealthfolio application/import/export/MCP surfaces work for the intended local visualization role."
+reject:
+  - "ipos/portfolio/wealthfolio.py local imitation being treated as Wealthfolio MCP/product proof"
+  - "tests that exercise only local adapter functions"
+real_target_proof:
+  target_product: "Wealthfolio"
+  required_interface: "actual supported desktop/local import and export; native MCP only if current product exposes it"
+  independent_oracle: "C11 canonical fixture versus values observed/exported from real Wealthfolio"
+human_gate_policy:
+  - "If the desktop app requires a user-visible install/launch/import action Antigravity cannot complete, stop as BLOCKED_HUMAN_GATE with exact click/action requested. Do not simulate the product."
+steps:
+  - "Re-open current official Wealthfolio install/import/export/MCP docs."
+  - "Create TARGET_PROOF.md naming exact app version and one real import/export proof action."
+  - "Install or launch the actual supported local Wealthfolio application."
+  - "Import the C11 validated canonical/synthetic CSV using Wealthfolio's official import surface."
+  - "Capture evidence from Wealthfolio itself: holdings/quantities/currencies/value/allocation as available."
+  - "Export/backup from Wealthfolio using its actual supported export/backup function and compare exported values to C11 independent expected values."
+  - "If native MCP is currently supported and can be enabled locally, invoke the real MCP endpoint read-only and capture tool output. If unavailable, mark only MCP step deferred; do not create a fake MCP function."
+  - "Remove or quarantine the prior facade adapter if it has no legitimate role; never leave it documented as native Wealthfolio integration."
+  - "Invoke ipos-proof-verifier with screenshots/export receipts/runtime evidence."
+pass_conditions:
+  - "Actual Wealthfolio app was run."
+  - "Actual supported import accepted the test portfolio."
+  - "At least holdings/quantities/currencies reconcile against independent C11 expected values."
+  - "Actual Wealthfolio export/backup was produced and checked."
+  - "No internal DB manipulation or fake MCP is used as proof."
+  - "Verifier PASS; PASS_WITH_LIMITATIONS allowed only for explicitly deferred native MCP if visualization/import/export all pass."
+stop_conditions:
+  - "Official supported import cannot represent required canonical data without undocumented manipulation."
+  - "Product installation/login/user interaction cannot be completed autonomously; request the smallest human gate."

@@ -1,0 +1,46 @@
+schema_version: "1.0"
+module_id: "M18"
+title: "Hermes weekly investment review orchestration"
+status: "PLANNED"
+depends_on: ["M02", "M06", "M07", "M09", "M10", "M11", "M12", "M13", "M14", "M15", "M16"]
+objective: "Assemble one auditable weekly review from deterministic portfolio/market outputs and bounded evidence retrieval, producing all four required operator outputs."
+authoritative_sources:
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/features/cron", verify_before_execution: true}
+  - {url: "https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp", verify_before_execution: true}
+  - {repo_path: "05_blueprint/research/2026-08-28-modular-rebuild/05_HERMES_ORCHESTRATION.md"}
+  - {repo_path: "AGENTS.md"}
+required_outputs:
+  - "portfolio/dashboard review"
+  - "written investment memo"
+  - "ranked action list"
+  - "proposed target weights"
+run_contract:
+  numeric_authority_order:
+    - "raw/canonical source data"
+    - "deterministic normalized/calculated outputs"
+    - "IPOS deterministic policy outputs"
+    - "Riskfolio deterministic optimizer"
+    - "Hermes narrative"
+  evidence_policy: "Retrieve only relevant Karakeep/TTK evidence and link source refs; do not load full archive by default."
+steps:
+  - {id: "M18-S01", action: "Create one versioned weekly input manifest containing canonical portfolio snapshot ID/hash, market-data snapshot IDs, IPOS result refs, technical alert summary, open Action/Watch items, Riskfolio result ref, and evidence-query targets."}
+  - {id: "M18-S02", action: "Build deterministic preflight/doctor command that checks freshness/completeness of all required numeric inputs before Hermes narration starts."}
+  - {id: "M18-S03", action: "Expose only the narrow MCP/toolsets needed for the run: portfolio read, OpenBB/market reads, Karakeep reads, Action/Watch reads, deterministic scripts."
+    }
+  - {id: "M18-S04", action: "Run IPOS policy and Riskfolio before the model narrative. Persist their machine outputs as immutable run artifacts."}
+  - {id: "M18-S05", action: "Hermes synthesizes: current state, changes since prior review, contradictions, relevant new research, open ACTION/WATCH items, ranked recommendations, target weights from deterministic optimizer, and explicit no-action cases."}
+  - {id: "M18-S06", action: "Render/send compact REVIEW notification to shared Telegram channel with links/paths to full memo and dashboard/portfolio UI."}
+  - {id: "M18-S07", action: "Schedule only after one manual weekly run passes. Scheduled job must fail closed on stale/missing inputs and send SYSTEM message rather than inventing a review."}
+  - {id: "M18-S08", action: "Store run manifest, tool receipts, source refs, and output hashes so the review is reproducible/auditable."}
+tests:
+  - {id: "M18-T01", expected: "manual synthetic weekly run produces all four required outputs"}
+  - {id: "M18-T02", expected: "every numeric claim in memo can be traced to deterministic artifact/provider output"}
+  - {id: "M18-T03", expected: "one deliberately stale required input blocks normal REVIEW and emits SYSTEM warning"}
+  - {id: "M18-T04", expected: "analyst ACTION remains clearly labeled as source recommendation unless separately promoted by system analysis"}
+  - {id: "M18-T05", expected: "open Action/Watch items are included without relying on chat memory"}
+  - {id: "M18-T06", expected: "scheduled run reproduces manual run shape and does not execute broker orders"}
+pass_conditions:
+  - "All four operator outputs are present and source-grounded."
+  - "No invented numeric values."
+  - "Run survives fresh-context verification using artifacts only."
+rollback: "Disable schedule and preserve last passing manual review workflow/artifacts."

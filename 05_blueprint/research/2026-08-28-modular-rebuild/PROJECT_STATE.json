@@ -1,0 +1,56 @@
+{
+  "project": "IPOS Modular Rebuild",
+  "date": "2026-08-28",
+  "status": "ARCHITECTURE_CANDIDATE_V0_1",
+  "branch": "ipos-modular-rebuild-2026-08-28",
+  "base_commit": "cec42be2aaf922c74ea6b13dc44fe11adfdd618f",
+  "production_main_modified": false,
+  "principles": [
+    "reuse_proven_products",
+    "no_undocumented_integrations",
+    "deterministic_numeric_authority",
+    "ai_narration_orchestration_only",
+    "operator_controlled_csv_pdf_ingestion",
+    "free_local_first",
+    "privacy_as_architecture_dimension",
+    "bounded_poc_before_freeze"
+  ],
+  "components": {
+    "orchestrator": {"candidate": "Hermes Agent", "decision": "PROVISIONAL_ADOPT"},
+    "research_evidence": {"candidate": "Karakeep self-hosted", "decision": "PROVISIONAL_ADOPT"},
+    "market_macro_data": {"candidate": "OpenBB ODP", "decision": "TEST_FURTHER"},
+    "openbb_workspace": {"candidate": null, "decision": "REJECT_DEFAULT_COST_PRIVACY"},
+    "portfolio_ingestion": {"candidate": "deterministic local CSV/PDF normalization", "decision": "KEEP_REDESIGN"},
+    "portfolio_ui": {"candidate": "Wealthfolio local core", "decision": "TEST_FURTHER"},
+    "wealthfolio_connect": {"candidate": null, "decision": "DISABLE_DEFAULT"},
+    "optimization": {"candidate": "Riskfolio-Lib", "decision": "PROVISIONAL_ADOPT"},
+    "technical_workbench": {"candidate": "existing TradingView Pro subscription", "decision": "ADOPT_EXISTING"},
+    "technical_local_compute": {"candidate": "TA-Lib", "decision": "CONDITIONAL"},
+    "discrete_orders": {"candidate": "PyPortfolioOpt", "decision": "CONDITIONAL"},
+    "intake_automation": {"candidate": "Activepieces Community", "decision": "HOLD_PENDING_GAP"},
+    "custom_dashboard": {"candidate": null, "decision": "DROP_DEFAULT"},
+    "langgraph": {"candidate": null, "decision": "DROP"},
+    "openclaw": {"candidate": null, "decision": "HOLD_REPLACED_BY_HERMES"}
+  },
+  "poc_sequence": [
+    "P0_privacy_config_freeze",
+    "P1_portfolio_normalization",
+    "P2_wealthfolio_narrow_role",
+    "P3_openbb_odp_free_local_data",
+    "P4_riskfolio_determinism",
+    "P5_tradingview_value_extraction",
+    "P6_karakeep_evidence",
+    "P7_hermes_end_to_end_read_only",
+    "P8_architecture_freeze"
+  ],
+  "hard_no_by_default": [
+    "automatic_broker_connections",
+    "broker_order_execution",
+    "wealthfolio_connect",
+    "openbb_workspace_lite",
+    "custom_ui_build",
+    "langgraph",
+    "unapproved_cloud_portfolio_sync"
+  ],
+  "next_gate": "operator_answers_plus_P0_privacy_config_freeze"
+}
