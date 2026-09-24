@@ -23,11 +23,17 @@ The governing order remains:
 
 Target first, product second, real operator value third. Tests and generated files are evidence, not completion. Use product-native interfaces, preserve provenance, and do not invent local facades for external products.
 
+### Target-first communication discipline
+
+Routine updates must lead with only: **target, intended value, current verdict, remaining material gap, and one next action**. Keep each item to one concise line. Put hashes, schemas, row calculations, command output, and other audit detail in the relevant `implementation-runs/` evidence files; surface them in conversation only when requested or required to explain a material failure.
+
+Before continuing an investigation, ask whether its result can change the current product decision or next action. If not, stop. Do not let evidence production, debugging detail, or process ceremony displace the active value target.
+
 ## Current frontier
 
-**E01 is complete. E02 is active and partially proven. Do not start E03 yet.**
+**E01 is complete. E02 is active but failed reconciliation. Do not start E03 yet.**
 
-E02 has now crossed the real-product boundary: the operator completed a real import in Wealthfolio 3.8.0 using a transformed Smartbroker transaction export. However, E02 is not complete because the resulting activities, holdings, cash, and cost basis have not yet been reconciled inside Wealthfolio or through a supported Wealthfolio export/read interface. IPOS must remain fail-closed until that proof exists.
+The real Wealthfolio 3.8.0 import and supported native backup are proven. The 330 posted activities reconcile, but Wealthfolio's computed holdings omit NDA 1,000 and PSYC 10,000, and computed EUR cash is overstated by EUR 41,037.75. IPOS remains fail-closed. The only active action is the bounded EUR custom-asset probe documented in `implementation-runs/E02/20260923-225605/CAD_CUSTOM_ASSET_PROBE.md`.
 
 ## Completed and committed work
 
@@ -92,31 +98,24 @@ E02 has now crossed the real-product boundary: the operator completed a real imp
 | Official Wealthfolio installed | Version 3.8.0 and official installer verification recorded in E02 status | PASS |
 | Real product import boundary crossed | Operator completed the native desktop import | PASS |
 | Broker rows transformed with explicit provenance | Source and prepared-file hashes plus documented transformations | PASS |
-| Imported activity count is actually 330 | Only the pre-import product preview and operator completion confirmation exist | VERIFY NOW |
-| Holdings/quantities agree with broker control | Not yet inspected/reconciled | OPEN |
-| EUR cash, fees, and taxes agree | Not yet inspected/reconciled | OPEN |
-| Wealthfolio FIFO/cost-lot behavior is useful and correctly attributed | Not yet inspected/exported | OPEN |
-| Supported native export/read interface works | Not yet exercised | OPEN |
-| IPOS consumes real Wealthfolio output | No; code intentionally fails closed | OPEN |
+| Imported activity count is actually 330 | Native backup contains one applied 330-row import with zero review flags/errors | PASS |
+| Activity-ledger quantities, fees, taxes, and 34 custom assets agree | Reconciled to the independent Smartbroker oracle | PASS |
+| Computed holdings agree with broker control | NDA 1,000 and PSYC 10,000 are missing | FAIL |
+| Computed EUR cash agrees | Overstated by EUR 41,037.75 | FAIL |
+| Wealthfolio FIFO behavior is genuinely invoked | Persisted FIFO lots/disposals exist, but coverage omits NDA and PSYC | PARTIAL |
+| Supported native export/read interface works | Native backup exported and inspected read-only | PASS |
+| IPOS consumes real Wealthfolio output | No; code intentionally fails closed | BLOCKED |
 
 ## Exact next action
 
 Finish E02 before advancing:
 
-1. Open the imported Wealthfolio account and verify the actual activity count, holdings, and any review/draft flags. Record screenshots or a redacted receipt.
-2. Use Wealthfolio's supported export or backup UI. Do not read or mutate the live application SQLite database directly, and do not invent a backup schema.
-3. Keep the raw export/backup outside Git. Record only its path, SHA-256, application version, export timestamp, and redacted reconciliation results under `implementation-runs/E02/20260923-225605/`.
-4. Build the independent oracle from the original Smartbroker export, not from the prepared Wealthfolio CSV. Reconcile at minimum:
-   - expected imported activities: 330;
-   - per-security net quantity after the documented combined sell and skipped CVR;
-   - EUR trade cash totals, fees, and taxes;
-   - the set of 34 custom assets;
-   - review/draft/error count after import;
-   - Wealthfolio FIFO/lot output, clearly distinguished from IPOS weighted-average basis.
-5. Re-importing the same private file may be used to prove duplicate handling only after confirming it cannot mutate valid state unexpectedly. Expect zero new activities; cancel if the preview differs.
-6. Only after the product-native state and export reconcile should `ipos/portfolio/wealthfolio.py` be connected to a supported read/export interface and `INTEGRATION_STATUS` be changed. Add tests that fail when the real product output is absent; do not restore local simulations.
+1. Import the private 28-row probe into a new disposable EUR Transactions account named `IPOS E02 CAD Probe`.
+2. In Wealthfolio's native review, keep NDA and PSYC as EUR custom assets and confirm both transfers are external security transfers.
+3. Import, inspect holdings and cash, and create a new supported backup. Do not import the probe into the existing proven account.
+4. Compare the result with `implementation-runs/E02/20260923-225605/CAD_CUSTOM_ASSET_PROBE.md`.
 
-If Wealthfolio cannot provide a supported export/read surface with enough provenance, record E02 as partially useful but blocked at the integration boundary. Do not compensate with direct live-database writes or fabricated MCP behavior.
+Decision: if the probe reconciles, correct the real portfolio through supported Wealthfolio workflows and complete E02. If it fails, classify Wealthfolio as unsuitable for this ledger and stop investing effort in the integration. Do not compensate with live-database mutation, a facade, or broader debugging that cannot change this decision.
 
 ## Next value target after E02
 
@@ -144,14 +143,10 @@ Run on 2026-09-24:
 
 ## Required reporting format for the next chat
 
-Report using:
+Report using five concise lines:
 
 - target
 - intended_value
-- real_product_used
-- what_now_works
-- what_was_reused
-- what_had_to_change
-- evidence_from_real_use
-- remaining_real_gap
-- next_value_target
+- current_verdict
+- remaining_material_gap
+- next_action
