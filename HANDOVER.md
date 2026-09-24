@@ -1,5 +1,11 @@
 # HANDOVER — For the next AI agent continuing IPOS
 
+> **Current execution notice (2026-09-24):** Read
+> [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md)
+> before following the historical next-step text below. E01 is complete and E02
+> is active after a real Wealthfolio import; the immediate task is native result
+> inspection, export, and reconciliation.
+
 You are an AI agent. You have **only this repository** — no prior chat, no hidden context. This file plus `PROJECT_STATE.md` are everything you need to continue. Read both fully before acting.
 
 ---

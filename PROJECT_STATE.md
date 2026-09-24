@@ -5,7 +5,12 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-08-24 · **Updated by:** implementation & merge session (consolidated Advisor Engine, Backtest Engine, 120-registry candidate, and automation scripts) · **Branch of record:** `main` (direct commits only — no long-lived work branches)
+**Last updated:** 2026-09-24 · **Updated by:** target-product execution handover · **Branch of record:** `main` (direct commits only — no long-lived work branches)
+
+> **Active execution frontier:** read
+> [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md).
+> E01 is complete. E02 is active after a real Wealthfolio 3.8 import; native
+> result inspection, export, and independent reconciliation are next.
 
 ---
 
