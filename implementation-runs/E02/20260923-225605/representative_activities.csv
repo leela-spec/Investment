@@ -1,0 +1,7 @@
+date,symbol,instrumentType,quantity,activityType,unitPrice,currency,fee,tax,amount,fxRate,subtype
+2026-01-02,,,0,DEPOSIT,,EUR,0,0,2000,,
+2026-01-03,,,0,DEPOSIT,,USD,0,0,1000,,
+2026-01-05,SAP.DE,EQUITY,10,BUY,100,EUR,5,0,1005,,
+2026-02-10,SPY,EQUITY,4,BUY,200,USD,2,1,803,,
+2026-03-15,SAP.DE,EQUITY,3,SELL,120,EUR,3,2,355,,
+2026-04-20,SAP.DE,EQUITY,2,BUY,110,EUR,1,0,221,,

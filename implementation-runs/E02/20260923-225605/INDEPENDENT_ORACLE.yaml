@@ -1,0 +1,30 @@
+fixture: representative_activities.csv
+account_name: "IPOS E02 Disposable"
+tracking_mode: "transactions"
+expected:
+  activity_count: 6
+  holdings:
+    SAP.DE:
+      quantity: 9
+      known_purchase_cost_before_product_fifo: 924.50
+      note: "7 units remain from the 100.50-per-unit first lot; 2 units remain from the 110.50-per-unit second lot"
+    SPY:
+      quantity: 4
+      known_purchase_cost_before_product_fifo: 803.00
+  cash_by_native_currency:
+    EUR: 1129.00
+    USD: 197.00
+  fees_by_native_currency:
+    EUR: 9.00
+    USD: 2.00
+  taxes_by_native_currency:
+    EUR: 2.00
+    USD: 1.00
+  duplicate_reimport:
+    expected_new_activities: 0
+    reason: "Wealthfolio documents duplicate fingerprints for identical rows"
+comparison_rules:
+  - "Quantities and activity count must match exactly."
+  - "Cash and charges must remain separated by native currency."
+  - "Market values may differ because Wealthfolio can refresh current quotes."
+  - "FIFO/cost output must be attributed to Wealthfolio, not substituted by the oracle."

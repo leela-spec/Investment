@@ -1,0 +1,100 @@
+schema_version: "1.0"
+artifact_id: "imf-weo-update-2026-07-vzZpKJlpqKo"
+status: "PASS_WITH_AUDIT_GAPS"
+
+source:
+  title: "World Economic Outlook July 2026 Update: 3 Key Questions, Answered"
+  publisher: "International Monetary Fund"
+  url: "https://www.youtube.com/watch?v=vzZpKJlpqKo"
+  upload_date: "2026-07-08"
+  duration_seconds: 128.948
+  video: {codec: "av1", width: 1920, height: 1080}
+  audio: {codec: "opus", sample_rate_hz: 48000, channels: 2}
+  sha256: "b44060d28188e4b199d3e849075d84ffe8d67b72d64fe14313ba6704d82a4857"
+  content_addressed_path: "/home/gehma/ipos-media/e05-20260923-230911/current/source.mkv"
+  filesystem_immutable: false
+  metadata:
+    info_json_sha256: "fa6e18c13c693a65986f367c109e9a6ca13ee314655721da26e45f2d219250e6"
+    description_sha256: "49eb89a831912fcb1ba1fe2ae13ac047acd5732a5062a6ca50c4f12fca479c1a"
+    thumbnail_sha256: "027a79c8e469f15148c105b84dbbd1175d4812ad9f35c64ce5ea5f1db097139e"
+    ffprobe_sha256: "59cc1b07ddec62bc355935efc94956fed0a70c93988196c23fbad8b695a2d18e"
+
+products:
+  yt_dlp: "2026.08.19"
+  ffmpeg: "8.0.1-3ubuntu2"
+  whisperx: "3.8.6"
+  pyscenedetect: "0.7.1"
+  python: "3.12.14"
+
+audio:
+  path: "/home/gehma/ipos-media/e05-20260923-230911/current/audio.wav"
+  sha256: "0ac9aaad95437fecc03e3199cb909a6e2dd22c5f2eec2909bbe4a2827222e6c2"
+  format: "PCM signed 16-bit, mono, 16000 Hz"
+  decode_check: "PASS"
+
+transcript:
+  engine: "WhisperX small.en"
+  vad: "Silero"
+  alignment: "WhisperX phoneme alignment enabled"
+  language: "en"
+  segments: 11
+  aligned_words: 234
+  first_speech_seconds: 5.794
+  last_speech_seconds: 123.642
+  json_path: "/home/gehma/ipos-media/e05-20260923-230911/current/transcript/audio.json"
+  json_sha256: "6c4d790d869f2aa31d0a02299a1ba84fd75b498b537f3aa757882ae6e5343b76"
+  text_path: "/home/gehma/ipos-media/e05-20260923-230911/current/transcript/audio.txt"
+  text_sha256: "6e99453a6dab69136b26bb58b3abd771d64b41060fdc35054160a15545955860"
+  comparison_caption_kind: "YouTube automatic captions; not publisher-supplied subtitles and not fact authority"
+  comparison_caption_path: "/home/gehma/ipos-media/e05-20260923-230911/current/source.en-orig.vtt"
+  source_caption_sha256: "25357538bd1ee231e388b85d13bcc35722a7686b503f058494bd5e7a34b21640"
+  quality_notes:
+    - "Headline growth values 3.0% for 2026 and 3.4% for 2027 match the IMF-authored description and visible source captions."
+    - "Raw WhisperX says 'April wheel'; the source captions also contain that ASR error, while the intended term is April WEO. Preserve the raw transcript and correct only in a reviewed evidence layer."
+    - "Raw WhisperX says 'eroded pulse buffers'; the burned-in frame and source captions show 'eroded fiscal buffers'."
+    - "Raw WhisperX says 'Most priorities'; the source captions show 'Policy priorities'."
+    - "No raw transcript text has been silently rewritten; hashes detect later changes but the files are not protected by filesystem immutability."
+
+visual_evidence:
+  analysis_proxy:
+    reason: "The PySceneDetect OpenCV backend could not decode the original AV1 stream; FFmpeg produced an H.264 CRF-16 analysis proxy. The original remains authoritative."
+    path: "/home/gehma/ipos-media/e05-20260923-230911/current/analysis-proxy.mp4"
+    sha256: "335c7824f069ff1c454fe767b76ca35333d8cd6529e00ba7a995ba03533319ef"
+  detector: "PySceneDetect ContentDetector threshold 10"
+  scene_count: 19
+  scene_csv_path: "/home/gehma/ipos-media/e05-20260923-230911/current/scenes/analysis-proxy-Scenes.csv"
+  scene_csv_sha256: "a9a196244009ec37339f29cf988d339fbfcdb8a4dea84588871204232e5da701"
+  selected_frames:
+    - timestamp_seconds: 10.878
+      file: "analysis-proxy-Scene-002-02.jpg"
+      sha256: "75613adad71674d5af6aeb62a31f09f4952df9456dce4b92493b02a734a43dfe"
+      evidence: "Visible caption: growth projected at 3.0 percent in 2026 and 3.4 percent in 2027."
+    - timestamp_seconds: 39.423
+      file: "analysis-proxy-Scene-006-02.jpg"
+      sha256: "6a59221e0ac8cf305f73dedb8808842762223de4f4a972db56987a1ea28b6ab0"
+      evidence: "Visible caption: global inflation has been revised slightly upward."
+    - timestamp_seconds: 68.202
+      file: "analysis-proxy-Scene-010-02.jpg"
+      sha256: "54e49ce64d2c5923b8cce8dcbf1e3a1bc9559de9850d79d2a922dbc0cb697b80"
+      evidence: "Visible caption: trade fragmentation and technology-expectation correction are downside risks."
+    - timestamp_seconds: 107.708
+      file: "analysis-proxy-Scene-016-02.jpg"
+      sha256: "f220e7cf600afc3b0f80bb4d6c5b1586c60428b3c1d4a6394046227254d80374"
+      evidence: "Visible caption: rebuild fiscal buffers and use fiscal support sparingly."
+
+downstream_boundary:
+  may_use:
+    - "content-addressed raw transcript with timestamps"
+    - "reviewed correction notes"
+    - "timestamp-linked source frames"
+    - "source and artifact hashes"
+  must_not_assume:
+    - "raw ASR text is verified fact"
+    - "source claims are IPOS decisions"
+    - "captions or OCR are primary numerical authority"
+
+audit_gaps:
+  - "Original command stdout/stderr was observed live but not captured verbatim to receipt files; RUNTIME_RECEIPTS.md is a reconstructed execution record."
+  - "Same-source canonical deduplication (M08-T04) is not implemented or proven."
+  - "Private/unsupported source routing to SYSTEM (M08-T05) is not implemented or proven."
+  - "The complete 57-frame candidate set is not individually listed in this compact manifest; the scene CSV and four reviewed evidence frames are hashed."
