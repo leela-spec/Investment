@@ -1,18 +1,20 @@
-# E02 status: native acceptance pending
+# E02 status: real import complete; product reconciliation pending
 
 Wealthfolio 3.8.0 was installed from the official Windows release and its
-installer SHA-256 matched the release asset digest. The native import/export
-workflow has not yet been exercised because this task's computer-use bridge
-does not expose Windows applications. The bridge advertises native-app support
-but returns no applications and its runtime has no `getApp` function.
+installer SHA-256 matched the release asset digest. The operator completed the
+real five-step desktop import using the prepared Smartbroker activity file. The
+last pre-import review showed 330 of 331 candidate rows valid; the product's
+post-import activity count, holdings, cash, review flags, and FIFO/lot output
+still require native inspection or a supported Wealthfolio export.
 
 No Wealthfolio integration is claimed. IPOS remains fail-closed with
-`INTEGRATION_STATUS = "NOT_CONNECTED"`. The representative fixture and
-independent oracle in this directory are retained for a future native-product
-acceptance run.
+`INTEGRATION_STATUS = "NOT_CONNECTED"`. `SMARTBROKER_ORACLE.yaml` records the
+redacted independent control derived directly from the original private broker
+export. The broker file and prepared import remain outside Git.
 
-The fixture now follows Wealthfolio 3.8's documented native CSV semantics:
-cash rows leave symbol, quantity, and unit price blank; `amount` is the final
-cash total; and an omitted `fxRate` preserves the activity-currency cash
-balance. The remaining step is deliberately product-native: import and inspect
-the result in Wealthfolio, then use a supported export/read interface.
+The current Codex desktop-control surface exposes no native Windows
+applications, so this run could not inspect the imported Wealthfolio account or
+operate its export/backup UI. The remaining step is deliberately product-native:
+inspect the imported account and create a supported export/backup, then compare
+that result to `SMARTBROKER_ORACLE.yaml`. Direct live-database access is not an
+acceptable substitute.

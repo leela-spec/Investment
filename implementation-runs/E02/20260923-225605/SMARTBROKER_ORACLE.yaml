@@ -1,0 +1,70 @@
+source:
+  kind: "private Smartbroker transaction export"
+  path_recorded_outside_git: "C:\\Users\\gehma\\Downloads (account-bearing filename intentionally omitted)"
+  sha256: "4FD36847B400B0E011078F7AEC290F5FDDE705AAAF551FD709F9C51298D6927A"
+  total_rows: 363
+  confirmed_rows: 332
+  cancelled_rows_excluded: 31
+derivation:
+  source: "original broker export, not the prepared Wealthfolio CSV"
+  decimal_rule: "German numeric notation: period is thousands separator; comma is decimal separator"
+  activity_mapping:
+    BUY: BUY
+    SELL: SELL
+    ENTERINTOSECACCOUNT: TRANSFER_IN
+    TAKEOFFSECACCOUNT: TRANSFER_OUT
+  documented_adjustments:
+    - "Combine the two genuine DE000MK4AL67 sells on 2026-04-24 into one 1,500-unit sell; quantity and EUR 4,095 proceeds are unchanged."
+    - "Exclude the zero-consideration 500-unit XC000A42NLY5 TRANSFER_IN that Wealthfolio rejected."
+expected_product_result:
+  imported_activity_count: 330
+  review_draft_error_count: 0
+  custom_asset_count_from_native_review: 34
+  nonzero_position_count: 23
+  nonzero_net_quantities:
+    CA24477V1058: 200
+    CA64073L1013: 1000
+    CA74447P1009: 10000
+    DE000A2YN504: 50
+    DE000DN042H8: 1
+    DE000HM4PTX8: 22
+    DE000MA5E683: 1
+    DE000MB3FKR8: 105
+    DE000MK6QKZ0: 5
+    DE000MN4NFQ8: 800
+    DE000PS7JX34: 35
+    DE000SH7NDN5: 216
+    IE000YYE6WK5: 1
+    SE0007525332: 1
+    US04744L2051: 40
+    US20451W1018: 20
+    US48576U2050: 13
+    US49639K1016: 10
+    US5951121038: 1
+    US67066G1040: 1
+    US6974351057: 1
+    US72919P2020: 10
+    US88023B1035: 150
+  excluded_residual:
+    XC000A42NLY5:
+      quantity: 500
+      consideration_eur: 0
+      reason: "Wealthfolio rejected the zero-consideration CVR transfer."
+  eur_trade_totals:
+    buy_investment_before_fees: 678568.96
+    buy_fees: 240.72
+    buy_final_amount: 678809.68
+    sell_proceeds_before_fees: 683550.23
+    sell_fees: 217.55
+    sell_final_amount: 683332.68
+    taxes: 0.00
+  source_transfer_consideration_eur:
+    transfer_in: 72258.45
+    transfer_out: 23034.74
+    note: "These are provenance/cost inputs, not cash movements in the prepared Wealthfolio import."
+comparison_rules:
+  - "The product activity count, quantities, review flags, and custom-asset count must be verified in Wealthfolio or a supported Wealthfolio export."
+  - "Closed securities have zero net quantity and may be absent from the holdings view."
+  - "Market values are not reconciliation controls because live quotes can change."
+  - "Wealthfolio FIFO/lot output must be recorded separately from IPOS weighted-average economic basis."
+  - "Do not use the live Wealthfolio SQLite database as evidence or an integration surface."
