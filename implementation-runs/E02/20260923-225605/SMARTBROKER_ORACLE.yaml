@@ -20,6 +20,41 @@ expected_product_result:
   imported_activity_count: 330
   review_draft_error_count: 0
   custom_asset_count_from_native_review: 34
+  custom_asset_isins:
+    - CA60255C8850
+    - DE000DJ6E7R8
+    - DE000DN042H8
+    - DE000DY8SXG0
+    - DE000FA5VTY7
+    - DE000FD1D2J0
+    - DE000FD4UNY2
+    - DE000FD5E2J5
+    - DE000HC7EVK0
+    - DE000HM4PTX8
+    - DE000JF122F6
+    - DE000MA5E683
+    - DE000MB0VVT4
+    - DE000MB3FKR8
+    - DE000ME25XA1
+    - DE000ME9AWY4
+    - DE000MG2Z7N3
+    - DE000MJ796Z6
+    - DE000MK4AL67
+    - DE000MK4L382
+    - DE000MK6QKZ0
+    - DE000MN4NFQ8
+    - DE000MR18XE0
+    - DE000PF6R8L6
+    - DE000PH5KQZ4
+    - DE000PJ72XX7
+    - DE000PS7JX34
+    - DE000SH7NDN5
+    - DE000SX3REK9
+    - DE000VD53ND1
+    - DE000VJ1SPZ8
+    - NL0015000DX5
+    - SE0007525332
+    - US78392B1070
   nonzero_position_count: 23
   nonzero_net_quantities:
     CA24477V1058: 200
@@ -64,6 +99,7 @@ expected_product_result:
     note: "These are provenance/cost inputs, not cash movements in the prepared Wealthfolio import."
 comparison_rules:
   - "The product activity count, quantities, review flags, and custom-asset count must be verified in Wealthfolio or a supported Wealthfolio export."
+  - "The custom-asset ISIN set is the prepared-file ISIN-as-symbol set after excluding the rejected CVR and the ordinary JE00BDD9Q840 security that Wealthfolio resolved natively."
   - "Closed securities have zero net quantity and may be absent from the holdings view."
   - "Market values are not reconciliation controls because live quotes can change."
   - "Wealthfolio FIFO/lot output must be recorded separately from IPOS weighted-average economic basis."

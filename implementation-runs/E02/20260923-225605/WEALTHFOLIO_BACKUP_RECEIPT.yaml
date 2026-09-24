@@ -1,0 +1,101 @@
+target_product: "Wealthfolio"
+application_version: "3.8.0"
+official_interface: "Settings -> Backup & Export -> Backup"
+export:
+  path: "C:\\Users\\gehma\\Downloads\\wealthfolio_backup_20260924_140842.db"
+  sha256: "92001DC95B88C20108EA2A9C9762B7998C9251A717145904046D75AA35233CE6"
+  size_bytes: 8847360
+  export_timestamp_local: "2026-09-24T14:08:42+02:00"
+  sqlite_quick_check: "ok"
+  committed_to_git: false
+product_native_receipts:
+  import_run:
+    source_system: "csv"
+    mode: "INCREMENTAL"
+    status: "APPLIED"
+    fetched: 330
+    inserted: 330
+    updated: 0
+    skipped: 0
+    warnings: 0
+    errors: 0
+  activities:
+    total: 330
+    posted: 330
+    needs_review: 0
+    buy: 149
+    sell: 155
+    transfer_in: 20
+    transfer_out: 6
+  custom_assets:
+    manual_quote_assets: 34
+    manual_quote_asset_isins:
+      - CA60255C8850
+      - DE000DJ6E7R8
+      - DE000DN042H8
+      - DE000DY8SXG0
+      - DE000FA5VTY7
+      - DE000FD1D2J0
+      - DE000FD4UNY2
+      - DE000FD5E2J5
+      - DE000HC7EVK0
+      - DE000HM4PTX8
+      - DE000JF122F6
+      - DE000MA5E683
+      - DE000MB0VVT4
+      - DE000MB3FKR8
+      - DE000ME25XA1
+      - DE000ME9AWY4
+      - DE000MG2Z7N3
+      - DE000MJ796Z6
+      - DE000MK4AL67
+      - DE000MK4L382
+      - DE000MK6QKZ0
+      - DE000MN4NFQ8
+      - DE000MR18XE0
+      - DE000PF6R8L6
+      - DE000PH5KQZ4
+      - DE000PJ72XX7
+      - DE000PS7JX34
+      - DE000SH7NDN5
+      - DE000SX3REK9
+      - DE000VD53ND1
+      - DE000VJ1SPZ8
+      - NL0015000DX5
+      - SE0007525332
+      - US78392B1070
+  accounting:
+    configured_cost_basis_method: "FIFO"
+    persisted_lots: 151
+    persisted_lot_disposals: 235
+    persisted_open_lots: 27
+    persisted_open_lot_quantity: 1683
+    persisted_remaining_cost_basis_native: 42740.88
+    latest_snapshot_cost_basis_eur: 39456.43166667
+reconciliation:
+  expected_nonzero_positions: 23
+  activity_ledger_nonzero_positions: 23
+  computed_holdings_nonzero_positions: 21
+  missing_computed_holdings:
+    NDA:
+      expected_quantity: 1000
+      broker_isin: "CA64073L1013"
+    PSYC:
+      expected_quantity: 10000
+      broker_isin: "CA74447P1009"
+  expected_trade_cash_eur: 4523.00
+  wealthfolio_latest_cash_eur: 45560.75002311
+  cash_overstatement_eur: 41037.75000050
+  nda_buy_amount_omitted_from_computed_cash_eur: 41037.75000050
+  nda_sell_amount_included_in_computed_cash_eur: 33000.47002465
+verdict:
+  activity_import: "PASS"
+  review_and_error_state: "PASS"
+  custom_asset_count: "PASS"
+  custom_asset_identity_set: "PASS"
+  activity_ledger_quantities: "PASS"
+  computed_holdings: "FAIL"
+  computed_cash: "FAIL"
+  fifo_attribution: "PASS_WITH_INCOMPLETE_COVERAGE"
+  supported_export_interface: "PASS"
+  ipos_integration: "NOT_CONNECTED"
