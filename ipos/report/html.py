@@ -497,6 +497,50 @@ _TEMPLATE = """<!doctype html>
     {% endfor %}
   </tbody>
 </table>
+{% if s.action_matrix and s.action_matrix.risk_diagnostics and s.action_matrix.risk_diagnostics.asset_diagnostics %}
+<div style="margin-top: 1.5rem; margin-bottom: 0.5rem; display: flex; align-items: baseline; justify-content: space-between;">
+  <h3 style="margin: 0; font-size: 1.1rem;">Riskfolio-Lib Risk Diagnostics & Risk Parity</h3>
+  <span class="sub">Engine: <strong>Riskfolio-Lib v{{ s.action_matrix.risk_diagnostics.summary.riskfolio_version }}</strong> · Model: <strong>Classic MV / RP</strong></span>
+</div>
+<table style="margin-top: 0.5rem;">
+  <thead>
+    <tr>
+      <th>Holding / Asset</th>
+      <th>Proxy Series</th>
+      <th class="num">Capital Weight</th>
+      <th class="num">Volatility (Ann.)</th>
+      <th class="num">Risk Contribution</th>
+      <th class="num">Risk Skew Ratio</th>
+      <th class="num">Risk Parity Target</th>
+      <th>Risk Status</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for ad in s.action_matrix.risk_diagnostics['asset_diagnostics'] %}
+    <tr>
+      <td><strong>{{ ad.name }}</strong></td>
+      <td><code>{{ ad.proxy }}</code></td>
+      <td class="num">{{ "%.1f"|format(ad.capital_weight_pct) }}%</td>
+      <td class="num">{{ "%.1f"|format(ad.volatility_annualized_pct) }}%</td>
+      <td class="num" style="font-weight: 700;">{{ "%.1f"|format(ad.risk_contribution_pct) }}%</td>
+      <td class="num" style="font-weight: 600; color: {{ '#b91c1c' if ad.risk_skew_ratio > 1.25 else ('#15803d' if ad.risk_skew_ratio < 0.75 else 'inherit') }};">
+        {{ "%.2f"|format(ad.risk_skew_ratio) }}x
+      </td>
+      <td class="num" style="font-weight: 600;">{{ "%.1f"|format(ad.risk_parity_weight_pct) }}%</td>
+      <td>
+        {% if ad.risk_skew_ratio > 1.25 %}
+          <span class="pill" style="background:#fee2e2; color:#b91c1c; font-weight:700;">HIGH RISK SKEW</span>
+        {% elif ad.risk_skew_ratio < 0.75 %}
+          <span class="pill" style="background:#dcfce7; color:#15803d; font-weight:600;">DIVERSIFIER</span>
+        {% else %}
+          <span class="pill" style="background:#f3f4f6; color:#6b7280;">BALANCED</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
 {% endif %}
 
 <h2>{{ concept_tt("indicators_section", "Indicators")|safe }}</h2>

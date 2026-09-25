@@ -203,7 +203,27 @@ def run_weekly(
                     "confidence": overall_row[1],
                     "stance_vector": stance_dict,
                 }
-                am = build_action_matrix(positions, reg_info, ov_info, mapping, as_of=aod)
+                riskfolio_block = None
+                try:
+                    from ipos.portfolio.action_matrix import load_instrument_names
+                    from ipos.portfolio.returns import compute_portfolio_risk_diagnostics
+
+                    names_map = load_instrument_names()
+                    riskfolio_block = compute_portfolio_risk_diagnostics(
+                        positions, con, as_of=aod, names_map=names_map
+                    )
+                except Exception:
+                    riskfolio_block = None
+
+                am = build_action_matrix(
+                    positions,
+                    reg_info,
+                    ov_info,
+                    mapping,
+                    as_of=aod,
+                    risk_diagnostics=riskfolio_block,
+                    use_risk_parity=True,
+                )
                 action_matrix_summary = am.get("summary")
         result.stages["action_matrix"] = {
             "computed": action_matrix_summary is not None,

@@ -47,6 +47,8 @@ def build_action_matrix(
     *,
     threshold_pct: float = DEFAULT_REBALANCE_THRESHOLD_PCT,
     as_of: dt.date | None = None,
+    risk_diagnostics: dict[str, Any] | None = None,
+    use_risk_parity: bool = False,
 ) -> dict[str, Any]:
     """Generate the deterministic Action Matrix comparing actual holdings against macro targets.
 
@@ -58,9 +60,11 @@ def build_action_matrix(
         names: optional dict[instrument -> readable name]
         threshold_pct: minimum weight delta (%) to trigger BUY / TRIM
         as_of: optional date stamp
+        risk_diagnostics: optional quantitative Riskfolio-Lib intelligence
+        use_risk_parity: if True, target weights within risk budget follow Risk Parity
 
     Returns:
-        dict containing 'summary' and 'items' (the holding-by-holding action rows).
+        dict containing 'summary', 'risk_diagnostics', and 'items' (action rows).
     """
     if positions is None or positions.empty:
         return {"summary": None, "items": []}
@@ -125,6 +129,12 @@ def build_action_matrix(
     else:
         target_module_pct = {}
 
+    # Build asset diagnostics lookup if Riskfolio intelligence is supplied
+    asset_diag_map: dict[str, dict[str, Any]] = {}
+    if risk_diagnostics and "asset_diagnostics" in risk_diagnostics:
+        for ad in risk_diagnostics["asset_diagnostics"]:
+            asset_diag_map[str(ad["instrument"])] = ad
+
     # Build per-instrument action items
     items: list[dict[str, Any]] = []
     actions_count = {"BUY": 0, "TRIM": 0, "SELL": 0, "HOLD": 0}
@@ -141,11 +151,20 @@ def build_action_matrix(
 
         unit_price = (curr_val / qty) if qty > 0 and curr_val > 0 else 0.0
 
+        ad = asset_diag_map.get(inst)
+        vol_pct = ad.get("volatility_annualized_pct") if ad else None
+        rc_pct = ad.get("risk_contribution_pct") if ad else None
+        rp_wt = ad.get("risk_parity_weight_pct") if ad else None
+        skew_ratio = ad.get("risk_skew_ratio") if ad else None
+        status = ad.get("status") if ad else None
+
         # Calculate target weight for this instrument
         mod_val = module_groups.get(module, 0.0)
         mod_target_wt = target_module_pct.get(module, 0.0)
 
-        if mod_val > 0 and mod_target_wt > 0 and curr_val > 0:
+        if use_risk_parity and rp_wt is not None and target_risk_pct > 0:
+            target_wt = round((rp_wt / 100.0) * target_risk_pct, 2)
+        elif mod_val > 0 and mod_target_wt > 0 and curr_val > 0:
             inst_share_of_module = curr_val / mod_val
             target_wt = round(mod_target_wt * inst_share_of_module, 2)
         else:
@@ -199,6 +218,11 @@ def build_action_matrix(
             "policy_size": policy.get("position_size", "small"),
             "initial_stop": policy.get("initial_stop", "wide_buffer"),
             "trailing_stop": policy.get("trailing_stop", "defensive_quick_exit"),
+            "volatility_annualized_pct": vol_pct,
+            "risk_contribution_pct": rc_pct,
+            "risk_parity_weight_pct": rp_wt,
+            "risk_skew_ratio": skew_ratio,
+            "status": status,
             "notes": notes,
         })
 
@@ -221,6 +245,12 @@ def build_action_matrix(
         "rebalance_threshold_pct": threshold_pct,
         "actions_count": actions_count,
         "policy_selectors": policy,
+        "optimization_mode": "RiskParity" if (use_risk_parity and risk_diagnostics) else "Proportional",
+        "riskfolio_enabled": risk_diagnostics is not None,
     }
 
-    return {"summary": summary, "items": items}
+    return {
+        "summary": summary,
+        "risk_diagnostics": risk_diagnostics,
+        "items": items,
+    }

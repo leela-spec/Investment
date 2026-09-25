@@ -188,3 +188,135 @@ class RiskfolioOptimizer:
             "mean_weight_shift": mean_delta,
             "sensitivity_status": "STABLE" if max_delta < 0.5 else "HIGH_SENSITIVITY"
         }
+
+    def compute_risk_contributions(
+        self,
+        returns_df: pd.DataFrame,
+        weights: pd.Series | pd.DataFrame | np.ndarray,
+        annualization_factor: float = 52.0,
+    ) -> pd.DataFrame:
+        """Calculate asset annualized volatility, marginal risk contribution, and percentage risk contribution.
+
+        Args:
+            returns_df: DataFrame of periodic asset returns (columns = asset names)
+            weights: Vector or Series of weights matching assets in returns_df
+            annualization_factor: Factor to annualize volatility (52 for weekly, 252 for daily)
+
+        Returns:
+            DataFrame indexed by asset with columns:
+            [weight, volatility_annualized, mrc, rc_absolute, rc_percentage]
+        """
+        assets = list(returns_df.columns)
+        if isinstance(weights, pd.DataFrame):
+            w = weights.reindex(assets).iloc[:, 0].to_numpy(dtype=float)
+        elif isinstance(weights, pd.Series):
+            w = weights.reindex(assets).to_numpy(dtype=float)
+        else:
+            w = np.asarray(weights, dtype=float)
+
+        if len(w) != len(assets):
+            raise OptimizationException(f"Weight vector length ({len(w)}) != assets count ({len(assets)})")
+
+        sum_w = float(np.sum(w))
+        if sum_w <= 0.0:
+            raise OptimizationException("Weights sum must be positive")
+        w_norm = w / sum_w
+
+        cov = returns_df.cov().to_numpy(dtype=float)
+        port_variance = float(w_norm.T @ cov @ w_norm)
+        port_vol = np.sqrt(max(port_variance, 1e-12))
+
+        # Marginal risk contribution: d(sigma_p)/d(w_i) = (cov @ w)_i / sigma_p
+        mrc = (cov @ w_norm) / port_vol
+        # Absolute risk contribution: w_i * mrc_i
+        rc_abs = w_norm * mrc
+        # Percentage risk contribution: rc_abs_i / sigma_p * 100
+        rc_pct = (rc_abs / port_vol) * 100.0
+
+        asset_vols = returns_df.std().to_numpy(dtype=float) * np.sqrt(annualization_factor)
+
+        return pd.DataFrame({
+            "weight": w_norm,
+            "volatility_annualized": asset_vols,
+            "mrc": mrc,
+            "rc_absolute": rc_abs,
+            "rc_percentage": rc_pct,
+        }, index=assets)
+
+    def optimize_risk_parity(
+        self,
+        returns_df: pd.DataFrame,
+        b: Optional[pd.DataFrame | np.ndarray] = None,
+        min_weight: float = 0.0,
+        max_weight: float = 1.0,
+    ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+        """Run Riskfolio-Lib convex Risk Parity / Risk Budgeting optimization."""
+        return self.optimize_portfolio(
+            returns_df=returns_df,
+            model="Classic",
+            rm="MV",
+            obj="RiskParity",
+            min_weight=min_weight,
+            max_weight=max_weight,
+            b=b,
+        )
+
+    def optimize_hrp(
+        self,
+        returns_df: pd.DataFrame,
+        codependence: str = "pearson",
+        linkage: str = "ward",
+        rm: str = "MV",
+    ) -> Tuple[pd.DataFrame, Dict[str, Any]]:
+        """Run Riskfolio-Lib Hierarchical Risk Parity (HRP) optimization."""
+        assets = list(returns_df.columns)
+        n_assets = len(assets)
+        if n_assets == 0:
+            raise OptimizationException("Empty return series provided for HRP")
+
+        try:
+            port = rp.HCPortfolio(returns=returns_df)
+            w = port.optimization(
+                model="HRP",
+                codependence=codependence,
+                rm=rm,
+                linkage=linkage,
+            )
+        except Exception as e:
+            raise OptimizationException(f"Riskfolio HRP solver failed: {e}") from e
+
+        if w is None or not isinstance(w, pd.DataFrame) or len(w) == 0:
+            raise OptimizationException("Riskfolio HRP solver returned empty result")
+
+        weights = w.iloc[:, 0].to_numpy(dtype=float)
+        sum_w = float(np.sum(weights))
+        df_weights = pd.DataFrame(weights, index=assets, columns=["weights"])
+
+        diagnostics = {
+            "solution_status": "SOLUTION_RETURNED",
+            "solver_engine": "Riskfolio-Lib-HRP",
+            "riskfolio_version": rp.__version__,
+            "model": "HRP",
+            "codependence": codependence,
+            "linkage": linkage,
+            "risk_metric": rm,
+            "seed": self.seed,
+            "assets_count": n_assets,
+            "weights_sum": sum_w,
+            "network_required": False,
+        }
+        return df_weights, diagnostics
+
+
+def compute_risk_contributions(
+    returns_df: pd.DataFrame,
+    weights: pd.Series | pd.DataFrame | np.ndarray,
+    annualization_factor: float = 52.0,
+) -> pd.DataFrame:
+    """Calculate asset annualized volatility, marginal risk contribution, and percentage risk contribution."""
+    return RiskfolioOptimizer().compute_risk_contributions(
+        returns_df=returns_df,
+        weights=weights,
+        annualization_factor=annualization_factor,
+    )
+

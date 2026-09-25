@@ -180,7 +180,7 @@ def cmd_doctor(argv: list[str] | None = None) -> int:
     # the canonical value and produce scores indistinguishable from real ones
     # (fact_score has no vintage column). Third occurrence found 2026-07-27.
     if syn_weekly:
-        print(f"synthetic data: ⚠️  {syn_weekly} CANONICAL row(s) are synthetic — these FEED "
+        print(f"synthetic data: [!] {syn_weekly} CANONICAL row(s) are synthetic -- these FEED "
               f"SCORING. Run `python scripts/purge_synthetic.py` (dry run) to inspect.")
     elif syn_obs:
         print(f"synthetic data: {syn_obs} synthetic observation(s) present but none reached "

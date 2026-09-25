@@ -80,6 +80,16 @@ _Capital: €{{ "%.0f"|format(action_matrix.summary.total_value_eur) }} · Regim
 |---|---|---|---|---|---|---|---|---|
 {% for it in action_matrix['items'] %}| `{{ it.instrument }}` | **{{ it.name }}** | {{ item.module if item is defined else it.module }} | €{{ "%.0f"|format(it.current_value_eur) }} ({{ "%.1f"|format(it.current_weight_pct) }}%) | {{ "%.1f"|format(it.target_weight_pct) }}% | {{ "%+.0f"|format(it.delta_value_eur) }} | **{{ it.action }}**{% if it.action_units != 0 %} ({{ "%+d"|format(it.action_units) }}){% endif %} | {{ it.trailing_stop }} | {{ it.notes }} |
 {% endfor %}
+{% if action_matrix.risk_diagnostics and action_matrix.risk_diagnostics.asset_diagnostics %}
+
+### Riskfolio-Lib Risk Diagnostics & Risk Parity
+_Engine: Riskfolio-Lib v{{ action_matrix.risk_diagnostics.summary.riskfolio_version }} · Solver: {{ action_matrix.risk_diagnostics.summary.solver_engine }} · Active Positions: {{ action_matrix.risk_diagnostics.summary.active_positions_count }}_
+
+| Holding / Asset | Proxy | Capital Wt | Volatility (Ann.) | Risk Contribution | Risk Skew | RP Target Wt | Status |
+|---|---|---|---|---|---|---|---|
+{% for ad in action_matrix.risk_diagnostics['asset_diagnostics'] %}| **{{ ad.name }}** | `{{ ad.proxy }}` | {{ "%.1f"|format(ad.capital_weight_pct) }}% | {{ "%.1f"|format(ad.volatility_annualized_pct) }}% | **{{ "%.1f"|format(ad.risk_contribution_pct) }}%** | {{ "%.2f"|format(ad.risk_skew_ratio) }}x | {{ "%.1f"|format(ad.risk_parity_weight_pct) }}% | {% if ad.risk_skew_ratio > 1.25 %}⚠️ **HIGH RISK SKEW**{% elif ad.risk_skew_ratio < 0.75 %}🛡️ DIVERSIFIER{% else %}BALANCED{% endif %} |
+{% endfor %}
+{% endif %}
 {% endif %}
 
 ## Top movers (Δscore vs prior week)

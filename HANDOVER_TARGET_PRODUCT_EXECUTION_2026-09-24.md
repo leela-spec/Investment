@@ -47,6 +47,12 @@ The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accept
   - Full portfolio mapping of 27 holdings across Zero and Smartbroker (€269,227.11 capital);
   - Deterministic Action Matrix (`ipos/portfolio/action_matrix.py`) computing macro-reconciled target weights, deltas, actions (TRIM/BUY/HOLD/SELL), and stop rules;
   - Integrated into weekly pipeline, DuckDB warehouse, `snapshot.json`, `report.md`, and interactive `report.html`.
+- E07 Real Riskfolio-Lib Portfolio Intelligence & Risk Parity completed (2026-09-25):
+  - Euler marginal & percentage risk contributions ($MRC$, $RC$, $RC\%$) mathematically calculated across all 32 operator broker holdings;
+  - Native convex Risk Parity (`rp.Portfolio.rp_optimization`) and Hierarchical Risk Parity (`rp.HCPortfolio.optimization`) executed offline with zero network leaks and zero LLM arithmetic;
+  - Risk Parity target sizing directly controls the Action Matrix rebalancing recommendations and stop policies;
+  - Rendered in executive `report.md` and interactive `report.html`;
+  - Verified by independent adversarial proof verifier (`PASS`).
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
 - E01 evidence: `implementation-runs/E01/20260923-222414/VERIFICATION_REPORT.md`.

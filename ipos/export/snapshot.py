@@ -326,8 +326,17 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             portfolio_block["freshness"] = freshness
 
     action_matrix_block = None
+    riskfolio_block = None
     if positions is not None and not positions.empty and portfolio_block is not None:
-        from ipos.portfolio.action_matrix import build_action_matrix
+        from ipos.portfolio.action_matrix import build_action_matrix, load_instrument_names
+        names_map = load_instrument_names()
+        try:
+            from ipos.portfolio.returns import compute_portfolio_risk_diagnostics
+            riskfolio_block = compute_portfolio_risk_diagnostics(
+                positions, con, as_of=as_of, names_map=names_map
+            )
+        except Exception:
+            riskfolio_block = None
         regime_info = {
             "label": overall[2],
             "risk_scaler": _r(overall[3]),
@@ -340,7 +349,13 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
             "stance_vector": stance_vector,
         }
         action_matrix_block = build_action_matrix(
-            positions, regime_info, overall_info, mapping, as_of=as_of
+            positions,
+            regime_info,
+            overall_info,
+            mapping,
+            as_of=as_of,
+            risk_diagnostics=riskfolio_block,
+            use_risk_parity=True,
         )
 
     snapshot = {
@@ -400,6 +415,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         snapshot["portfolio"] = portfolio_block
     if action_matrix_block is not None:
         snapshot["action_matrix"] = action_matrix_block
+    if riskfolio_block is not None:
+        snapshot["riskfolio"] = riskfolio_block
     return snapshot
 
 
@@ -522,7 +539,17 @@ SNAPSHOT_SCHEMA = {
             "description": "Optional — present only when a portfolio CSV was found in data/inbox/.",
             "properties": {
                 "summary": {"type": ["object", "null"]},
+                "risk_diagnostics": {"type": ["object", "null"]},
                 "items": {"type": "array"},
+            },
+        },
+        "riskfolio": {
+            "type": "object",
+            "description": "Optional — quantitative Riskfolio-Lib portfolio intelligence.",
+            "properties": {
+                "summary": {"type": "object"},
+                "proxy_diagnostics": {"type": "object"},
+                "asset_diagnostics": {"type": "array"},
             },
         },
     },
