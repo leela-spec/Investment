@@ -32,8 +32,16 @@
 mappings:
   # --- finanzen.net Zero Holdings -----------------------------------------
   AU0000185993: EquityRisk    # IREN Ltd (Iris Energy) — Bitcoin mining / AI data-centre equity
+  CH0454664027: EquityRisk    # 21Shares Ethereum ETP/ETC
+  CH0496454155: EquityRisk    # 21Shares Binance BNB ETP/ETC
+  CH1102728750: EquityRisk    # 21Shares Cardano ETP/ETC
+  CH1114873776: EquityRisk    # 21Shares Solana SOL ETP/ETC
+  DE000A3GV1T7: EquityRisk    # VanEck Avalanche ETP/ETC
+  DE000MG8GGU2: EquityRisk    # Morgan Stanley Mini Long Tencent
   DE000MN4NFQ8: EquityRisk    # MS Discount Call SoFi 18.12.26 — equity-linked derivative
+  DE000VX8PY08: EquityRisk    # Vontobel Long Mini Alibaba
   US0079031078: EquityRisk    # Advanced Micro Devices (AMD)
+  US09175A2069: EquityRisk    # Bitmine Immersion Technologies
   US67066G1040: EquityRisk    # NVIDIA Corp
   US83406F1021: EquityRisk    # SoFi Technologies
 
@@ -82,18 +90,26 @@ instrument_names:
   CA24477V1058: "Definium Therapeutics"
   CA64073L1013: "Neptune Digital Assets"
   CA74447P1009: "Psyched Wellness"
+  CH0454664027: "21Shares Ethereum"
+  CH0496454155: "21Shares Binance BNB"
+  CH1102728750: "21Shares Cardano"
+  CH1114873776: "21Shares Solana"
   DE000A2YN504: "Knaus Tabbert AG"
+  DE000A3GV1T7: "VanEck Avalanche"
   DE000DN042H8: "DZ Bank MiniL Micron"
   DE000HM4PTX8: "HSBC TurboC Seagate"
   DE000MA5E683: "MS FaktL Brent Crude"
   DE000MB3FKR8: "MS TurboL Copper Future"
+  DE000MG8GGU2: "MS MiniL Tencent"
   DE000MK6QKZ0: "MS TurboL Broadcom"
   DE000MN4NFQ8: "MS DiscC SoFi 18.12.26"
   DE000PS7JX34: "BNP MiniL Gold"
   DE000SH7NDN5: "SG MiniL Pinduoduo"
+  DE000VX8PY08: "Vontobel MiniL Alibaba"
   IE000YYE6WK5: "VanEck Defense ETF"
   SE0007525332: "Coinshares XBT (Bitcoin)"
   US0079031078: "Advanced Micro Devices (AMD)"
+  US09175A2069: "Bitmine Immersion Tech"
   US04744L2051: "Athersys Inc."
   US20451W1018: "Compass Pathways"
   US48576U2050: "Karyopharm Therapeutics"

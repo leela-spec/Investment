@@ -18,6 +18,8 @@ import datetime as dt
 import io
 import math
 from pathlib import Path
+import re
+import zlib
 
 import pandas as pd
 
@@ -25,6 +27,15 @@ from ipos.config.load import REPO_ROOT
 
 INBOX = REPO_ROOT / "data" / "inbox"
 GLOB = "portfolio*.csv"
+PORTFOLIO_PATTERNS = (
+    "portfolio*.csv",
+    "ZERO-pos*.csv",
+    "zero-pos*.csv",
+    "3370191001*.pdf",
+    "portfolio*.pdf",
+    "*Depot*.pdf",
+    "*depot*.pdf",
+)
 
 # Column-name candidates, English first, then the German broker-export names
 # seen in the wild (finanzen.net Zero: ISIN/Anzahl/Wert/Kurs). ISIN is
@@ -45,7 +56,7 @@ STALE_AFTER_DAYS = 14  # mirrors configs/scoring_defaults.yaml's W-frequency
 
 
 def latest_portfolio_file(inbox: Path | None = None) -> Path | None:
-    matches = sorted((inbox or INBOX).glob(GLOB))
+    matches = all_portfolio_files(inbox)
     return matches[-1] if matches else None
 
 
@@ -86,12 +97,78 @@ def _parse_number(series: pd.Series, *, german_locale: bool) -> pd.Series:
 
 
 def all_portfolio_files(inbox: Path | None = None) -> list[Path]:
-    """Return all matching portfolio CSV files in the inbox, sorted by name."""
-    return sorted((inbox or INBOX).glob(GLOB))
+    """Return all matching portfolio files (CSV and PDF) in the inbox, sorted by name."""
+    box = inbox or INBOX
+    files: list[Path] = []
+    seen: set[Path] = set()
+    for pat in PORTFOLIO_PATTERNS:
+        for p in sorted(box.glob(pat)):
+            resolved = p.resolve()
+            if resolved not in seen and p.is_file():
+                seen.add(resolved)
+                files.append(p)
+    return sorted(files, key=lambda p: p.name)
+
+
+def _parse_smartbroker_pdf(src: Path) -> pd.DataFrame:
+    """Parse Smartbroker+ Depotübersicht PDF export directly using standard library (re + zlib).
+    Extracts table rows: instrument (ISIN), quantity, value_eur, currency (EUR)."""
+    raw = src.read_bytes()
+    streams = re.findall(b"stream\r?\n(.*?)endstream", raw, re.DOTALL)
+    tokens: list[str] = []
+    for s in streams:
+        try:
+            d = zlib.decompress(s).decode("latin1", errors="replace")
+            matches = re.findall(r"\[(.*?)\]\s*TJ|\((.*?)\)\s*Tj", d)
+            for m in matches:
+                if m[0]:
+                    parts = re.findall(r"\((.*?)\)", m[0])
+                    tokens.append("".join(parts))
+                elif m[1]:
+                    tokens.append(m[1])
+        except Exception:
+            continue
+
+    isin_pattern = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$")
+    isin_indices = [idx for idx, t in enumerate(tokens) if isin_pattern.match(t)]
+    if not isin_indices:
+        raise RuntimeError(f"{src.name}: no valid ISINs found in PDF depot overview")
+
+    def _clean_eur_num(val_str: str) -> float:
+        s = val_str.replace("\xa0", "").replace("\x80", "").replace("€", "").strip()
+        s = s.replace(".", "").replace(",", ".")
+        return float(s)
+
+    records = []
+    for k, idx in enumerate(isin_indices):
+        isin = tokens[idx]
+        next_idx = isin_indices[k + 1] if k + 1 < len(isin_indices) else len(tokens)
+        row_tokens = tokens[idx + 1 : next_idx]
+        if not row_tokens:
+            continue
+        try:
+            qty = _clean_eur_num(row_tokens[0])
+            val = _clean_eur_num(row_tokens[4]) if len(row_tokens) > 4 else 0.0
+        except (ValueError, IndexError):
+            continue
+
+        records.append({
+            "instrument": isin,
+            "quantity": qty,
+            "value_eur": val,
+            "currency": DEFAULT_CURRENCY,
+        })
+
+    if not records:
+        raise RuntimeError(f"{src.name}: failed to extract holdings rows from PDF")
+
+    return pd.DataFrame(records)[["instrument", "quantity", "value_eur", "currency"]]
 
 
 def _load_single_positions_file(src: Path) -> pd.DataFrame:
-    """Parse one portfolio file into DataFrame[instrument, quantity, value_eur, currency]."""
+    """Parse one portfolio file (CSV or Smartbroker PDF) into DataFrame[instrument, quantity, value_eur, currency]."""
+    if src.suffix.lower() == ".pdf":
+        return _parse_smartbroker_pdf(src)
     text = _read_text(src)
     header_line = text.splitlines()[0] if text else ""
     sep = _sniff_delimiter(header_line)

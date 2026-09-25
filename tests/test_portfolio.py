@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import datetime as dt
 import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -443,4 +444,41 @@ def test_load_positions_consolidates_multiple_inbox_files(tmp_path):
     assert by_inst["SPY"]["value_eur"] == 7500.0
     assert by_inst["AAPL"]["quantity"] == 5.0
     assert by_inst["MSFT"]["quantity"] == 2.0
+
+
+def test_load_positions_discovers_zero_pos_filename_convention(tmp_path):
+    f_zero = tmp_path / "ZERO-pos-25.09.2026.csv"
+    f_zero.write_text(
+        "Name;ISIN;WKN;Art;Anzahl;Verfügbar;Kaufkurs;Kaufwert;Kurs;Kurszeit;Kursdatum;Wert;Erfolg [%];Erfolg [EUR];Notiz\n"
+        "21Shares Ethereum ETP/ETC;CH0454664027;A2T68Z;ETF;20;20;37,654;753,08;26,078;17:14:35;25.09.2026;521,56;-30,74;-231,52;\n",
+        encoding="utf-8",
+    )
+    files = portfolio_csv.all_portfolio_files(inbox=tmp_path)
+    assert len(files) == 1
+    assert files[0].name == "ZERO-pos-25.09.2026.csv"
+
+    df = portfolio_csv.load_positions(inbox=tmp_path)
+    assert len(df) == 1
+    assert df.iloc[0]["instrument"] == "CH0454664027"
+    assert df.iloc[0]["quantity"] == 20.0
+    assert df.iloc[0]["value_eur"] == 521.56
+    assert df.iloc[0]["currency"] == "EUR"
+
+
+def test_parse_smartbroker_pdf_empty_stream_raises(tmp_path):
+    fake_pdf = tmp_path / "3370191001-empty.pdf"
+    fake_pdf.write_bytes(b"%PDF-1.7\nstream\nendstream\n")
+    with pytest.raises(RuntimeError, match="no valid ISINs found"):
+        portfolio_csv._parse_smartbroker_pdf(fake_pdf)
+
+
+def test_parse_smartbroker_pdf_real_download_file():
+    real_pdf = Path(r"C:\Users\gehma\Downloads\3370191001-2026-09-25T15-15-35.459Z.pdf")
+    if not real_pdf.exists():
+        pytest.skip("Real Smartbroker PDF download not present")
+    df = portfolio_csv._parse_smartbroker_pdf(real_pdf)
+    assert len(df) == 24
+    assert pytest.approx(df["value_eur"].sum(), 0.01) == 36411.09
+
+
 
