@@ -449,6 +449,56 @@ _TEMPLATE = """<!doctype html>
 <div class="sub">Total portfolio value: €{{ "%.0f"|format(s.portfolio.total_value_eur) }}</div>
 {% else %}<div class="sub">Drop a portfolio CSV export in <code>data/inbox/</code> (<code>portfolio*.csv</code>) to compare your actual exposure against this week's stance vector.</div>{% endif %}
 
+{% if s.action_matrix and s.action_matrix.summary %}
+<h2>Action Matrix (Monday Execution & Stop Policies)</h2>
+<div class="sub" style="margin-bottom: 8px;">
+  Total Capital: <strong>€{{ "%.0f"|format(s.action_matrix.summary.total_value_eur) }}</strong> · 
+  Regime: <strong>{{ s.action_matrix.summary.regime_label }}</strong> (scaler {{ s.action_matrix.summary.risk_scaler }}) · 
+  Risk Budget: <strong>{{ "%.1f"|format(s.action_matrix.summary.risk_budget) }}%</strong> · 
+  Target Defensive / Cash: <strong>{{ "%.1f"|format(s.action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(s.action_matrix.summary.target_cash_value_eur) }})</strong>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Holding</th>
+      <th>Module</th>
+      <th class="num">Current</th>
+      <th class="num">Target</th>
+      <th class="num">Delta (€)</th>
+      <th style="text-align:center;">Action</th>
+      <th>Stop Policy</th>
+      <th>Execution Guidance</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for it in s.action_matrix['items'] %}
+    <tr>
+      <td><strong>{{ it.name }}</strong><br><code class="sub" style="font-size:0.75rem;">{{ it.instrument }}</code></td>
+      <td>{{ it.module }}</td>
+      <td class="num">€{{ "%.0f"|format(it.current_value_eur) }}<br><span class="sub">{{ "%.1f"|format(it.current_weight_pct) }}%</span></td>
+      <td class="num">€{{ "%.0f"|format(it.target_value_eur) }}<br><span class="sub">{{ "%.1f"|format(it.target_weight_pct) }}%</span></td>
+      <td class="num" style="font-weight:600; color: {{ '#b91c1c' if it.delta_value_eur < -500 else ('#15803d' if it.delta_value_eur > 500 else 'inherit') }};">
+        {{ "%+.0f"|format(it.delta_value_eur) }}
+      </td>
+      <td style="text-align:center;">
+        {% if it.action == 'TRIM' %}
+          <span class="pill" style="background:#fef3c7; color:#b45309; font-weight:700;">TRIM ({{ "%+d"|format(it.action_units) }})</span>
+        {% elif it.action == 'SELL' %}
+          <span class="pill" style="background:#fee2e2; color:#b91c1c; font-weight:700;">SELL ALL</span>
+        {% elif it.action == 'BUY' %}
+          <span class="pill" style="background:#dcfce7; color:#15803d; font-weight:700;">BUY ({{ "%+d"|format(it.action_units) }})</span>
+        {% else %}
+          <span class="pill" style="background:#f3f4f6; color:#6b7280;">HOLD</span>
+        {% endif %}
+      </td>
+      <td><code>{{ it.trailing_stop }}</code></td>
+      <td class="sub">{{ it.notes }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <h2>{{ concept_tt("indicators_section", "Indicators")|safe }}</h2>
 <table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">{{ concept_tt("delta_value", "Δ value 1w / 4w / 12w")|safe }}</th><th>{{ concept_tt("level_pctile", "Level %ile")|safe }}</th><th>Trend</th><th class="num">{{ concept_tt("score", "Score")|safe }}</th><th>{{ concept_tt("score_horizons", "1w · 1m · 1q · 1y")|safe }}</th><th>52w score</th><th class="num">{{ concept_tt("confidence", "Conf")|safe }}</th><th>{{ concept_tt("stale", "Stale")|safe }}</th></tr></thead><tbody>
 {% for i in indicators %}<tr id="ind-{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>

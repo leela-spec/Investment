@@ -325,6 +325,24 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         if freshness is not None:
             portfolio_block["freshness"] = freshness
 
+    action_matrix_block = None
+    if positions is not None and not positions.empty and portfolio_block is not None:
+        from ipos.portfolio.action_matrix import build_action_matrix
+        regime_info = {
+            "label": overall[2],
+            "risk_scaler": _r(overall[3]),
+            "policy_selectors": regime_policy,
+            "base_risk_budget": _r(regime_params.get("base_risk_budget")),
+        }
+        overall_info = {
+            "risk_budget": _r(overall[0]),
+            "confidence": _r(overall[1]),
+            "stance_vector": stance_vector,
+        }
+        action_matrix_block = build_action_matrix(
+            positions, regime_info, overall_info, mapping, as_of=as_of
+        )
+
     snapshot = {
         "schema_version": SCHEMA_VERSION,
         "scoring_version": defaults.scoring_version,
@@ -380,6 +398,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         snapshot["budget_attribution"] = attribution
     if portfolio_block is not None:
         snapshot["portfolio"] = portfolio_block
+    if action_matrix_block is not None:
+        snapshot["action_matrix"] = action_matrix_block
     return snapshot
 
 
@@ -495,6 +515,14 @@ SNAPSHOT_SCHEMA = {
                         "stale": {"type": "boolean"},
                     },
                 },
+            },
+        },
+        "action_matrix": {
+            "type": "object",
+            "description": "Optional — present only when a portfolio CSV was found in data/inbox/.",
+            "properties": {
+                "summary": {"type": ["object", "null"]},
+                "items": {"type": "array"},
             },
         },
     },

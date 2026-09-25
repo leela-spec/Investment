@@ -13,6 +13,7 @@ resolution does, preserving determinism for a fixed ``as_of``.
 from __future__ import annotations
 
 import datetime as dt
+import json
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -174,6 +175,45 @@ def run_weekly(
                    detail=("no portfolio CSV found" if portfolio_block is None
                            else f"modules={len(portfolio_block['modules'])} "
                                 f"unmapped={len(portfolio_block['unmapped'])}"))
+
+        # --- stage: action_matrix (WF-07 Stage 5 / US-07) ---
+        t0 = dt.datetime.now()
+        action_matrix_summary = None
+        if positions is not None and not positions.empty and portfolio_block is not None:
+            from ipos.portfolio.action_matrix import build_action_matrix
+            overall_row = con.execute(
+                "SELECT risk_budget_0_100, confidence_0_100, regime_label, risk_scaler, policy_json, params_json "
+                "FROM agg_regime WHERE as_of_date = ?", [aod]
+            ).fetchone()
+            if overall_row:
+                pol = json.loads(overall_row[4]) if overall_row[4] else {}
+                par = json.loads(overall_row[5]) if overall_row[5] else {}
+                reg_info = {
+                    "label": overall_row[2] or "UNCERTAIN",
+                    "risk_scaler": overall_row[3],
+                    "policy_selectors": pol,
+                    "base_risk_budget": par.get("base_risk_budget"),
+                }
+                mod_rows = con.execute(
+                    "SELECT stance_dim, stance_value FROM agg_module WHERE as_of_date = ?", [aod]
+                ).fetchall()
+                stance_dict = {dim: val for dim, val in mod_rows}
+                ov_info = {
+                    "risk_budget": overall_row[0],
+                    "confidence": overall_row[1],
+                    "stance_vector": stance_dict,
+                }
+                am = build_action_matrix(positions, reg_info, ov_info, mapping, as_of=aod)
+                action_matrix_summary = am.get("summary")
+        result.stages["action_matrix"] = {
+            "computed": action_matrix_summary is not None,
+            "actions": action_matrix_summary.get("actions_count") if action_matrix_summary else {},
+            "net_trim_eur": action_matrix_summary.get("net_trim_eur") if action_matrix_summary else 0.0,
+            "net_buy_eur": action_matrix_summary.get("net_buy_eur") if action_matrix_summary else 0.0,
+        }
+        _log_stage(con, run_id, aod, "action_matrix", "OK", t0,
+                   detail=("no action matrix" if action_matrix_summary is None
+                           else f"actions={action_matrix_summary.get('actions_count')}"))
 
         # --- stage: forecast log (record-before-the-verdict) ---
         #     Writes down this week's falsifiable calls so they can be scored

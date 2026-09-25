@@ -30,47 +30,92 @@
 #     CSV. Mapping them now costs nothing and makes that automatic later.
 
 mappings:
-  # --- finanzen.net Zero (from ZERO-pos CSV export) ----------------------
-  AU0000185993: EquityRisk    # IREN Ltd — data-centre / bitcoin-mining equity
-  DE000MN4NFQ8: EquityRisk    # Morgan Stanley discount call on SoFi — equity-linked derivative
+  # --- finanzen.net Zero Holdings -----------------------------------------
+  AU0000185993: EquityRisk    # IREN Ltd (Iris Energy) — Bitcoin mining / AI data-centre equity
+  DE000MN4NFQ8: EquityRisk    # MS Discount Call SoFi 18.12.26 — equity-linked derivative
   US0079031078: EquityRisk    # Advanced Micro Devices (AMD)
   US67066G1040: EquityRisk    # NVIDIA Corp
   US83406F1021: EquityRisk    # SoFi Technologies
 
-  # --- Smartbroker (from Depotübersicht PDF) -----------------------------
+  # --- Smartbroker Holdings (Aktien & Equity-Linked Derivate) -------------
+  CA24477V1058: EquityRisk    # Definium Therapeutics Inc.
+  CA64073L1013: EquityRisk    # Neptune Digital Assets Corp.
+  CA74447P1009: EquityRisk    # Psyched Wellness Ltd.
+  DE000A2YN504: EquityRisk    # Knaus Tabbert AG
+  DE000DN042H8: EquityRisk    # DZ BANK Mini Long Micron
+  DE000HM4PTX8: EquityRisk    # HSBC Turbo Call Seagate
+  DE000MK6QKZ0: EquityRisk    # MS Turbo Long Broadcom
+  DE000SH7NDN5: EquityRisk    # SG Mini Long Pinduoduo
+  IE000YYE6WK5: EquityRisk    # VanEck Defense ETF
+  SE0007525332: EquityRisk    # Coinshares XBT Provider (Bitcoin tracker)
+  US04744L2051: EquityRisk    # Athersys Inc.
+  US20451W1018: EquityRisk    # Compass Pathways PLC
+  US48576U2050: EquityRisk    # Karyopharm Therapeutics Inc.
+  US49639K1016: EquityRisk    # Kingsoft Cloud Holdings
+  US5951121038: EquityRisk    # Micron Technology Inc.
+  US6974351057: EquityRisk    # Palo Alto Networks Inc.
+  US72919P2020: EquityRisk    # Plug Power Inc.
+  US88023B1035: EquityRisk    # Tempus AI Inc.
+  XC000A42NLY5: EquityRisk    # AtaiBeckley Inc. Contingent Value Rights
+
+  # --- Smartbroker Holdings (Commodity Derivate) --------------------------
+  DE000MA5E683: Commodities   # MS Factor Long Brent Crude
+  DE000MB3FKR8: Commodities   # MS Turbo Long Copper Future
+  DE000PS7JX34: Commodities   # BNP Paribas Mini Long Gold
+
+  # --- Smartbroker Depotübersicht / Reference Equities -------------------
   DE0008404005: EquityRisk    # Allianz SE
   US0937121079: EquityRisk    # Bloom Energy Corp
   US55024U1097: EquityRisk    # Lumentum Holdings
-  US5951121038: EquityRisk    # Micron Technology
   DE000A2NB650: EquityRisk    # Mutares SE & Co. KGaA
   DE0008430026: EquityRisk    # Münchener Rückversicherung (Munich Re)
   NL0009805522: EquityRisk    # Nebius Group N.V.
   DK0062498333: EquityRisk    # Novo Nordisk A/S
-
-  DE000A0S9GB0: Commodities   # Xetra-Gold (Deut. Börse Commodities) — physically-backed gold
-  LU1829218749: Commodities   # Amundi Bloomberg Equal-weight Commodity ex-Agriculture ETF
-
-  # --- REVIEW THESE THREE: commodity-producer *equities* -----------------
-  # Each is a share, but its price is driven mainly by an underlying commodity,
-  # so it arguably belongs with the commodities tilt rather than broad equity
-  # risk. Defaulted to Commodities on that reasoning; switch any of them to
-  # EquityRisk if you'd rather read them as equity exposure. This choice moves
-  # weight between the two modules and so changes what the report tells you.
+  DE000A0S9GB0: Commodities   # Xetra-Gold (Deut. Börse Commodities)
+  LU1829218749: Commodities   # Amundi Bloomberg Equal-weight Commodity ex-Agri ETF
   DE000A0XYG76: Commodities   # Deutsche Rohstoff AG — oil & gas producer
   US02215L2097: Commodities   # Kinetik Holdings — midstream energy
-  US71654V4086: Commodities   # Petróleo Brasileiro (Petrobras) — integrated oil
+  US71654V4086: Commodities   # Petróleo Brasileiro (Petrobras)
 
-  # --- CANNOT CLASSIFY FROM THE EXPORT ----------------------------------
-  # DE000VV9F645: ?           # Vontobel Financial Products — a structured
-  #   product / warrant. The PDF names only the issuer, not the underlying, so
-  #   there is no honest way to assign it. Left unmapped deliberately: it still
-  #   counts toward total portfolio value and appears in the report's "unmapped"
-  #   list. Tell me the underlying (or uncomment with the right module) to fix.
+instrument_names:
+  AU0000185993: "IREN Ltd (Iris Energy)"
+  CA24477V1058: "Definium Therapeutics"
+  CA64073L1013: "Neptune Digital Assets"
+  CA74447P1009: "Psyched Wellness"
+  DE000A2YN504: "Knaus Tabbert AG"
+  DE000DN042H8: "DZ Bank MiniL Micron"
+  DE000HM4PTX8: "HSBC TurboC Seagate"
+  DE000MA5E683: "MS FaktL Brent Crude"
+  DE000MB3FKR8: "MS TurboL Copper Future"
+  DE000MK6QKZ0: "MS TurboL Broadcom"
+  DE000MN4NFQ8: "MS DiscC SoFi 18.12.26"
+  DE000PS7JX34: "BNP MiniL Gold"
+  DE000SH7NDN5: "SG MiniL Pinduoduo"
+  IE000YYE6WK5: "VanEck Defense ETF"
+  SE0007525332: "Coinshares XBT (Bitcoin)"
+  US0079031078: "Advanced Micro Devices (AMD)"
+  US04744L2051: "Athersys Inc."
+  US20451W1018: "Compass Pathways"
+  US48576U2050: "Karyopharm Therapeutics"
+  US49639K1016: "Kingsoft Cloud"
+  US5951121038: "Micron Technology"
+  US67066G1040: "NVIDIA Corp"
+  US6974351057: "Palo Alto Networks"
+  US72919P2020: "Plug Power"
+  US83406F1021: "SoFi Technologies"
+  US88023B1035: "Tempus AI Inc."
+  XC000A42NLY5: "AtaiBeckley CVR"
+  DE0008404005: "Allianz SE"
+  US0937121079: "Bloom Energy"
+  US55024U1097: "Lumentum Holdings"
+  DE000A2NB650: "Mutares SE"
+  DE0008430026: "Munich Re"
+  NL0009805522: "Nebius Group"
+  DK0062498333: "Novo Nordisk"
+  DE000A0S9GB0: "Xetra-Gold"
+  LU1829218749: "Amundi Commodity ETF"
+  DE000A0XYG76: "Deutsche Rohstoff"
+  US02215L2097: "Kinetik Holdings"
+  US71654V4086: "Petrobras"
 
-# What to do with an instrument in the portfolio CSV that has no entry above.
-# In every case its value still counts toward total portfolio value (it's
-# real money you hold) and toward no module's weight (it isn't mapped to one).
-#   warn  (default) - surfaced in the report as "unmapped".
-#   ignore           - left out of the report; still counted in the total.
-#   error            - aborts the portfolio section for this run.
 unmapped_policy: warn

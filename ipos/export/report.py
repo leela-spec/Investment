@@ -71,6 +71,16 @@ _Unmapped in `configs/portfolio_mapping.yaml` (not counted toward any module's w
 _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 {% else %}_Drop a portfolio CSV export in `data/inbox/` (`portfolio*.csv`) to compare your actual exposure against this week's stance vector._
 {% endif %}
+{% if action_matrix and action_matrix.summary %}
+
+## Action Matrix (Monday Execution & Stop Policies)
+_Capital: €{{ "%.0f"|format(action_matrix.summary.total_value_eur) }} · Regime: {{ action_matrix.summary.regime_label }} (scaler {{ action_matrix.summary.risk_scaler }}) · Risk Budget: {{ "%.1f"|format(action_matrix.summary.risk_budget) }}% · Target Cash/Defensive: {{ "%.1f"|format(action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(action_matrix.summary.target_cash_value_eur) }})_
+
+| Instrument | Holding / Asset | Module | Current (€ / %) | Target % | Delta (€) | Action | Stop Policy | Notes |
+|---|---|---|---|---|---|---|---|---|
+{% for it in action_matrix['items'] %}| `{{ it.instrument }}` | **{{ it.name }}** | {{ item.module if item is defined else it.module }} | €{{ "%.0f"|format(it.current_value_eur) }} ({{ "%.1f"|format(it.current_weight_pct) }}%) | {{ "%.1f"|format(it.target_weight_pct) }}% | {{ "%+.0f"|format(it.delta_value_eur) }} | **{{ it.action }}**{% if it.action_units != 0 %} ({{ "%+d"|format(it.action_units) }}){% endif %} | {{ it.trailing_stop }} | {{ it.notes }} |
+{% endfor %}
+{% endif %}
 
 ## Top movers (Δscore vs prior week)
 {% if top_movers %}| Indicator | Δscore 1w |
@@ -146,6 +156,7 @@ def render_report(snapshot: dict) -> str:
         modules_sorted=sorted(snapshot["modules"], key=lambda m: m["module"]),
         portfolio_rows=portfolio_vs_stance(snapshot),
         portfolio=snapshot.get("portfolio"),
+        action_matrix=snapshot.get("action_matrix"),
         top_movers=snapshot["top_movers"],
         contradictions=snapshot["contradictions"],
         events=snapshot.get("events", []),
