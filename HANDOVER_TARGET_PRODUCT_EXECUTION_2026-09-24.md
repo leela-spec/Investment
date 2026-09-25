@@ -43,6 +43,10 @@ The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accept
   - M11 basis is explicitly weighted-average economic basis with currency semantics;
   - fake Wealthfolio backup/MCP behavior was removed;
   - Riskfolio-Lib 7.3.0 is declared, locked, genuinely invoked, and independently checked.
+- Commit `b80e082` completed E09 Action Matrix engine & WF-07 Stage 5:
+  - Full portfolio mapping of 27 holdings across Zero and Smartbroker (€269,227.11 capital);
+  - Deterministic Action Matrix (`ipos/portfolio/action_matrix.py`) computing macro-reconciled target weights, deltas, actions (TRIM/BUY/HOLD/SELL), and stop rules;
+  - Integrated into weekly pipeline, DuckDB warehouse, `snapshot.json`, `report.md`, and interactive `report.html`.
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
 - E01 evidence: `implementation-runs/E01/20260923-222414/VERIFICATION_REPORT.md`.
