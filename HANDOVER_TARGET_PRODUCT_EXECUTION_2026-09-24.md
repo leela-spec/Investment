@@ -31,9 +31,10 @@ Before continuing an investigation, ask whether its result can change the curren
 
 ## Current frontier
 
-**E01 is complete. E02 is active but failed reconciliation. Do not start E03 yet.**
+**E01 is complete. E02 partial product proof is accepted with non-blocking gaps. Active frontier: E03 & E04.**
 
-The real Wealthfolio 3.8.0 import and supported native backup are proven. The 330 posted activities reconcile, but Wealthfolio's computed holdings omit NDA 1,000 and PSYC 10,000, and computed EUR cash is overstated by EUR 41,037.75. IPOS remains fail-closed. The only active action is the bounded EUR custom-asset probe documented in `implementation-runs/E02/20260923-225605/CAD_CUSTOM_ASSET_PROBE.md`.
+The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accepted as sufficient partial E02 product proof. Remaining product calculation gaps (holdings omit NDA 1,000 and PSYC 10,000; EUR trade cash overstatement of EUR 41,037.75; and lot engine partial coverage) are recorded as explicit non-blocking limitations. `ipos/portfolio/wealthfolio.py` remains fail-closed (`INTEGRATION_STATUS = "NOT_CONNECTED"`). The active target is **E03: real broker-document ingestion through Portfolio Performance** followed by **E04: coherent portfolio accounting and transaction history**.
+
 
 ## Completed and committed work
 
@@ -101,27 +102,25 @@ The real Wealthfolio 3.8.0 import and supported native backup are proven. The 33
 | Imported activity count is actually 330 | Native backup contains one applied 330-row import with zero review flags/errors | PASS |
 | Activity-ledger quantities, fees, taxes, and 34 custom assets agree | Reconciled to the independent Smartbroker oracle | PASS |
 | Computed holdings agree with broker control | NDA 1,000 and PSYC 10,000 are missing | FAIL |
-| Computed EUR cash agrees | Overstated by EUR 41,037.75 | FAIL |
-| Wealthfolio FIFO behavior is genuinely invoked | Persisted FIFO lots/disposals exist, but coverage omits NDA and PSYC | PARTIAL |
+| Computed EUR cash agrees | Overstated by EUR 41,037.75 | NON-BLOCKING GAP |
+| Wealthfolio FIFO behavior is genuinely invoked | Persisted FIFO lots/disposals exist, but coverage omits NDA and PSYC | NON-BLOCKING GAP |
 | Supported native export/read interface works | Native backup exported and inspected read-only | PASS |
-| IPOS consumes real Wealthfolio output | No; code intentionally fails closed | BLOCKED |
+| IPOS consumes real Wealthfolio output | No; code intentionally fails closed | FAIL-CLOSED / NON-BLOCKING |
 
 ## Exact next action
 
-Finish E02 before advancing:
+Advance to **E03 (broker-document ingestion via Portfolio Performance)** and **E04 (coherent portfolio accounting and history)**:
 
-1. Import the private 28-row probe into a new disposable EUR Transactions account named `IPOS E02 CAD Probe`.
-2. In Wealthfolio's native review, keep NDA and PSYC as EUR custom assets and confirm both transfers are external security transfers.
-3. Import, inspect holdings and cash, and create a new supported backup. Do not import the probe into the existing proven account.
-4. Compare the result with `implementation-runs/E02/20260923-225605/CAD_CUSTOM_ASSET_PROBE.md`.
+1. **Portfolio Performance Ingestion (E03)**:
+   - Provide a typed adapter (`pp_adapter`) in `ipos/portfolio/` to parse standard Portfolio Performance CSV exports (`Buchungen` / transactions and `Vermögensaufstellung` / holdings).
+   - Normalize PP exports into canonical IPOS activity records and holdings schemas with preserved provenance (ISIN, WKN, transaction type, fees, taxes, currency).
+   - Ingest broker PDFs (DAB/BNP and Baader) through Portfolio Performance's native desktop document importer.
 
-Decision: if the probe reconciles, correct the real portfolio through supported Wealthfolio workflows and complete E02. If it fails, classify Wealthfolio as unsuitable for this ledger and stop investing effort in the integration. Do not compensate with live-database mutation, a facade, or broader debugging that cannot change this decision.
+2. **Portfolio Accounting & Pipeline Integration (E04)**:
+   - Wire normalized holdings and activity ledgers into `ipos/run.py` and DuckDB warehouse.
+   - Reconcile multi-currency cash flows, weighted-average economic cost basis, and valuation timestamps.
+   - Connect normalized actual holdings directly to the downstream quantitative engine: Riskfolio-Lib optimizer (E07), macro stance tilt (E08), and the Action Matrix (E09).
 
-## Next value target after E02
-
-Proceed to **E03: real broker-document ingestion through Portfolio Performance**, using actual Smartbroker/DAB/Baader PDF documents and Portfolio Performance's supported desktop import/export workflow. This is for repeatable broker-document parsing; it is not a replacement for finishing the Wealthfolio result verification above.
-
-E05 product-proof material already exists in `implementation-runs/E05/20260923-230911/`. Do not redo it merely because E05 appears later in the canonical order; inspect its receipts when that stage becomes active.
 
 ## Repository and operating constraints
 

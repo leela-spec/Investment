@@ -93,6 +93,23 @@ def test_load_positions_parses_german_semicolon_export(tmp_path):
     assert list(df["currency"]) == ["EUR", "EUR"]  # no currency column -> default
 
 
+def test_load_positions_parses_smartbroker_comma_quoted_export(tmp_path):
+    p = tmp_path / "portfolio_smartbroker.csv"
+    p.write_text(
+        '"DATUM","KUNDENNUMMER","DEPOTNUMMER","ISIN","WKN","KÜRZEL","NAME 1","NAME 2","ASSETKLASSE","STÜCKE","EINSTANDSKURS PRO STÜCK","MARKTKURS PRO STÜCK","EINSTANDSWERT","MARKTWERT","GEWINN RELATIV","GEWINN ABSOLUT","KURSGEWINN","WÄHRUNGSGEWINN","ZINSGEWINN","NOTIERUNG","LAGERLAND","WÄHRUNG","KURSDATUM","BÖRSE"\n'
+        '"2026-09-24 10:45:09","3370191","3370191001","CA24477V1058","A420P3","DEF","Definium Inc.","Shares","Aktien","200","34,385","33,1","6.877","6.620","-3,74","-257","-257","0","0","UNITQUOTATION","DE","EUR","2026-09-23 22:02:47","EDG"\n'
+        '"2026-09-24 10:45:09","3370191","3370191001","CA64073L1013","A3C22F","NDA","NDA Inc.","Shares","Aktien","1.000","0,50","0,412","500","412","-17,6","-88","-88","0","0","UNITQUOTATION","DE","EUR","2026-09-23 22:02:47","EDG"\n',
+        encoding="utf-8",
+    )
+    df = portfolio_csv.load_positions(p)
+    assert list(df["instrument"]) == ["CA24477V1058", "CA64073L1013"]
+    assert df.iloc[0]["quantity"] == pytest.approx(200)
+    assert df.iloc[0]["value_eur"] == pytest.approx(6620.00)
+    assert df.iloc[1]["quantity"] == pytest.approx(1000)  # "1.000" -> 1000
+    assert df.iloc[1]["value_eur"] == pytest.approx(412.00)
+    assert list(df["currency"]) == ["EUR", "EUR"]
+
+
 # --- currency (05_blueprint/03_PORTFOLIO_MODULE.md §8 follow-up 3) ----------
 
 def test_load_positions_defaults_currency_to_eur_when_absent(tmp_path):
@@ -412,3 +429,18 @@ def test_snapshot_includes_portfolio_when_inbox_file_present(populated_db, as_of
     assert snap["portfolio"]["freshness"] == {"age_days": 0, "stale": False}
     rows = portfolio_vs_stance(snap)
     assert any(r["module"] == "EquityRisk" for r in rows)
+
+
+def test_load_positions_consolidates_multiple_inbox_files(tmp_path):
+    f1 = tmp_path / "portfolio_zero.csv"
+    f1.write_text("instrument,quantity,value_eur\nSPY,10,5000.0\nAAPL,5,1000.0\n", encoding="utf-8")
+    f2 = tmp_path / "portfolio_smartbroker.csv"
+    f2.write_text("instrument,quantity,value_eur\nSPY,5,2500.0\nMSFT,2,800.0\n", encoding="utf-8")
+    df = portfolio_csv.load_positions(inbox=tmp_path)
+    assert len(df) == 3
+    by_inst = {r["instrument"]: r for _, r in df.iterrows()}
+    assert by_inst["SPY"]["quantity"] == 15.0
+    assert by_inst["SPY"]["value_eur"] == 7500.0
+    assert by_inst["AAPL"]["quantity"] == 5.0
+    assert by_inst["MSFT"]["quantity"] == 2.0
+

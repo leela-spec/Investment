@@ -9,8 +9,10 @@
 
 > **Active execution frontier:** read
 > [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md).
-> E01 is complete. E02 is active after a real Wealthfolio 3.8 import; native
-> result inspection, export, and independent reconciliation are next.
+> E01 is complete. E02 partial product proof is accepted with non-blocking gaps.
+> Active frontier: E03 (broker-document ingestion via Portfolio Performance) and
+> E04 (coherent portfolio accounting and transaction history).
+
 
 ---
 
