@@ -5,12 +5,11 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-09-25 · **Updated by:** Riskfolio-Lib portfolio intelligence (E07) · **Branch of record:** `main` (direct commits only — no long-lived work branches)
+**Last updated:** 2026-09-26 · **Updated by:** Source-Grounded Claims & Action/Watch Register (E05/E06) · **Branch of record:** `main` (direct commits only — no long-lived work branches)
 
 > **Active execution frontier:** read
 > [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md).
-> E01 is complete. E02 partial product proof is accepted with non-blocking gaps.
-> E07 (Real Riskfolio-Lib Portfolio Intelligence & Risk Parity) and E09 (Action Matrix) are complete.
+> E01, E05/E06, E07, E09, and E10 are complete and verified. E02 partial product proof is accepted with non-blocking gaps.
 > Active frontier: E03 (broker-document ingestion via Portfolio Performance) and
 > E04 (coherent portfolio accounting and transaction history).
 
@@ -37,6 +36,7 @@ A **local-first, weekly Investment Process OS** on Windows/WSL: ~60 free-source 
 | **A / E09 — Action Matrix Engine (`ipos/portfolio/action_matrix.py`)** | ✅ **DONE (2026-09-25)** — WF-07 Stage 5 / US-07 Action Matrix: deterministic macro-to-portfolio reconciliation. Native Smartbroker+ PDF & Zero CSV ingestion (`ipos/etl/portfolio_csv.py`), 32 holdings mapped (€40.2k capital), target weights, deltas, TRIM/BUY/HOLD/SELL actions, and regime stop policies rendered in `report.md` and `report.html`. |
 | **A / E07 — Riskfolio-Lib Portfolio Intelligence & Risk Parity (`ipos/portfolio/returns.py`, `optimizer.py`)** | ✅ **DONE (2026-09-25)** — Native convex Risk Parity (`rp.Portfolio.rp_optimization`) & Hierarchical Risk Parity (`rp.HCPortfolio.optimization`), Euler marginal & percentage risk contributions ($RC\%$), Effective Number of Bets (ENC = 2.08), annualized volatility, and risk skew ratio computed across all 32 holdings. Directly scales Action Matrix rebalancing targets and renders in `report.md` and `report.html`. Verified by independent adversarial proof verifier (PASS). |
 | **A / E10 — Operational Automation (`scripts/run_pipeline_automated.ps1`, `register_scheduler.ps1`)** | ✅ **DONE (2026-09-26)** — Full weekly pipeline scheduled via Windows Task Scheduler (`IPOS Weekly Pipeline`, Saturdays 06:00, Ready state). Headless runner with BOM-free status JSON export (`data/exports/automation_status.json`), log rotation (`logs/scheduled/`), and quick launcher (`scripts/open_latest_report.ps1`). Verified by independent adversarial proof verifier (PASS). |
+| **A / E05 & E06 — Source-Grounded Claim Extraction & Action/Watch Register (`ipos/evidence/`)** | ✅ **DONE (2026-09-26)** — WF-07 Stage 3 / M06 Evidence & Register engine: authentic WhisperX ASR transcript resolution & cryptographic verification (`audio.json`, SHA256 `6c4d790d...`), mathematical word-level timestamp grounding, boundary prompt injection defense, strict FSM status transitions (`OPEN` -> `TRIGGERED` -> `RESOLVED`), single-writer atomic BOM-free JSON persistence (`data/action_watch_register.json`), and weekly pipeline rendering in `report.md` and `report.html`. Verified by independent adversarial proof verifier (PASS). |
 
 ---
 
