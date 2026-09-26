@@ -176,11 +176,13 @@ def run_weekly(
                            else f"modules={len(portfolio_block['modules'])} "
                                 f"unmapped={len(portfolio_block['unmapped'])}"))
 
-        # --- stage: action_matrix (WF-07 Stage 5 / US-07) ---
+        # --- stage: macro_decision (WF-07 Stage 4 / US-06) ---
         t0 = dt.datetime.now()
-        action_matrix_summary = None
+        macro_decision_summary = None
+        macro_decision_obj = None
+        reg_info = None
+        ov_info = None
         if positions is not None and not positions.empty and portfolio_block is not None:
-            from ipos.portfolio.action_matrix import build_action_matrix
             overall_row = con.execute(
                 "SELECT risk_budget_0_100, confidence_0_100, regime_label, risk_scaler, policy_json, params_json "
                 "FROM agg_regime WHERE as_of_date = ?", [aod]
@@ -203,28 +205,54 @@ def run_weekly(
                     "confidence": overall_row[1],
                     "stance_vector": stance_dict,
                 }
-                riskfolio_block = None
-                try:
-                    from ipos.portfolio.action_matrix import load_instrument_names
-                    from ipos.portfolio.returns import compute_portfolio_risk_diagnostics
-
-                    names_map = load_instrument_names()
-                    riskfolio_block = compute_portfolio_risk_diagnostics(
-                        positions, con, as_of=aod, names_map=names_map
-                    )
-                except Exception:
-                    riskfolio_block = None
-
-                am = build_action_matrix(
-                    positions,
-                    reg_info,
-                    ov_info,
-                    mapping,
+                from ipos.portfolio.decision import MacroPortfolioDecisionEngine
+                dec_engine = MacroPortfolioDecisionEngine()
+                macro_decision_obj = dec_engine.evaluate_decision(
+                    positions=positions,
+                    regime_info=reg_info,
+                    overall_info=ov_info,
                     as_of=aod,
-                    risk_diagnostics=riskfolio_block,
-                    use_risk_parity=True,
                 )
-                action_matrix_summary = am.get("summary")
+                macro_decision_summary = macro_decision_obj.to_dict()
+        result.stages["macro_decision"] = {
+            "computed": macro_decision_summary is not None,
+            "sectors": len(macro_decision_summary.get("sector_allocations", [])) if macro_decision_summary else 0,
+            "confidence_gate": macro_decision_summary.get("gating", {}).get("confidence_gate") if macro_decision_summary else "N/A",
+            "allow_adds": macro_decision_summary.get("gating", {}).get("allow_adds") if macro_decision_summary else False,
+        }
+        _log_stage(con, run_id, aod, "macro_decision", "OK", t0,
+                   detail=("no macro decision" if macro_decision_summary is None
+                           else f"confidence_gate={macro_decision_summary.get('gating', {}).get('confidence_gate')} "
+                                f"allow_adds={macro_decision_summary.get('gating', {}).get('allow_adds')}"))
+
+        # --- stage: action_matrix (WF-07 Stage 5 / US-07) ---
+        t0 = dt.datetime.now()
+        action_matrix_summary = None
+        if positions is not None and not positions.empty and portfolio_block is not None and reg_info and ov_info:
+            from ipos.portfolio.action_matrix import build_action_matrix
+            riskfolio_block = None
+            try:
+                from ipos.portfolio.action_matrix import load_instrument_names
+                from ipos.portfolio.returns import compute_portfolio_risk_diagnostics
+
+                names_map = load_instrument_names()
+                riskfolio_block = compute_portfolio_risk_diagnostics(
+                    positions, con, as_of=aod, names_map=names_map
+                )
+            except Exception:
+                riskfolio_block = None
+
+            am = build_action_matrix(
+                positions,
+                reg_info,
+                ov_info,
+                mapping,
+                as_of=aod,
+                risk_diagnostics=riskfolio_block,
+                use_risk_parity=True,
+                macro_decision=macro_decision_obj,
+            )
+            action_matrix_summary = am.get("summary")
         result.stages["action_matrix"] = {
             "computed": action_matrix_summary is not None,
             "actions": action_matrix_summary.get("actions_count") if action_matrix_summary else {},

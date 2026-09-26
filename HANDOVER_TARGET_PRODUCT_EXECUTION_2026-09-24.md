@@ -31,7 +31,9 @@ Before continuing an investigation, ask whether its result can change the curren
 
 ## Current frontier
 
-**E01, E03, E04, E05, E06, E07, E09, and E10 are complete and verified. Active frontier: WF-07 Stage 4 Macro-to-Portfolio Decision Connection (E08) and Phase 3 indicator expansion.**
+**E01, E03, E04, E05, E06, E07, E08, E09, and E10 are complete and verified. Active frontier: Phase 3 indicator expansion (from `configs/registry_120.yaml` to expand active 22 indicators to 60/120) and research evidence ingestion expansion.**
+
+WF-07 Stage 4 / E08 (Macro-to-Portfolio Decision Connection) is fully implemented and verified. Pure-numeric deterministic sector tilt engine maps all portfolio holdings into 6 core sector clusters, dynamically cascades macro stance vector into bounded multipliers [0.20, 1.80], penalizes research-invalidated sectors (0.80x), executes systematic asymmetric gating (Confidence Gate < 50% or UNCERTAIN regime gates BUY -> HOLD (GATED) while preserving defensive TRIM/SELL), and runs Riskfolio-Lib Hierarchical Risk Parity (rp.HCPortfolio). Independent adversarial proof verifier confirmed PASS.
 
 E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger accounting) are fully implemented and verified. Real operator transaction activities (`3370191001-2026-09-24T09-02-24.190Z.csv`, 332 confirmed trades) replayed chronologically produce exactly 24 open holdings matching the official broker statement PDF (`3370191001-2026-09-25T15-15-35.459Z.pdf`) with 0 discrepancies (100% MATCH reconciliation), preserving NDA (1,000) and PSYC (10,000). Independent adversarial proof verifier confirmed PASS.
 
@@ -68,6 +70,14 @@ E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger acc
   - `PortfolioPerformanceAdapter` (`ipos/portfolio/pp_adapter.py`) ingesting PP Buchungen and Vermögensaufstellung (German and English locales) and raw Smartbroker/DAB transaction exports;
   - `PortfolioLedger` (`ipos/portfolio/accounting.py`) executing genuine chronological activity replay with type priority tiebreakers, multi-currency cash tracking (`EUR`, `USD`, `CAD`, `CHF`), weighted-average economic cost basis tracking across partial sales, and realized capital gains attribution;
   - Replayed 332 confirmed activities from `3370191001-2026-09-24T09-02-24.190Z.csv`, achieving exact 100% MATCH against official broker control PDF (`3370191001-2026-09-25T15-15-35.459Z.pdf`) with 0 discrepancies across all 24 open holdings;
+  - Verified by independent adversarial proof verifier (`PASS`).
+- WF-07 Stage 4 / E08 Macro-to-Portfolio Decision Connection completed (2026-09-26):
+  - Deterministic pure-numeric sector tilt engine (`ipos/portfolio/decision.py`) mapping portfolio holdings to 6 core sector clusters (`TECHNOLOGY_AI`, `CRYPTO_DIGITAL_ASSETS`, `HEALTHCARE_BIOTECH`, `ENERGY_COMMODITIES`, `DEFENSE_INDUSTRIALS`, `FINANCIALS_VALUE`);
+  - Dynamic cascading of macro stance vector (`equity`, `duration`, `credit`, `usd`, `commodities`, `growth`) into sector tilts bounded strictly to `[0.20, 1.80]`;
+  - Active research thesis-invalidation penalty (0.80x) applying directly to target sectors from `data/action_watch_register.json`;
+  - Systematic asymmetric rebalancing gating (Confidence Gate < 50% or `UNCERTAIN` regime converts `BUY` -> `HOLD (GATED)` while preserving defensive `TRIM` and `SELL`);
+  - Riskfolio-Lib Hierarchical Risk Parity (`rp.HCPortfolio`) optimization running alongside classic Risk Parity;
+  - Full end-to-end integration into `ipos/run.py`, `snapshot.json`, `report.md`, and interactive `report.html`;
   - Verified by independent adversarial proof verifier (`PASS`).
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
@@ -135,18 +145,16 @@ E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger acc
 
 ## Exact next action
 
-Advance to **E03 (broker-document ingestion via Portfolio Performance)** and **E04 (coherent portfolio accounting and history)**:
+Advance to **Phase 3 Indicator Expansion (60/120 Indicators)**:
 
-1. **Portfolio Performance Ingestion (E03)**:
-   - Provide a typed adapter (`pp_adapter`) in `ipos/portfolio/` to parse standard Portfolio Performance CSV exports (`Buchungen` / transactions and `Vermögensaufstellung` / holdings).
-   - Normalize PP exports into canonical IPOS activity records and holdings schemas with preserved provenance (ISIN, WKN, transaction type, fees, taxes, currency).
-   - Ingest broker PDFs (DAB/BNP and Baader) through Portfolio Performance's native desktop document importer.
+1. **Indicator Expansion (`configs/registry_120.yaml`)**:
+   - Systematically expand the active 22-indicator registry (`configs/registry.yaml`) to the 60-indicator core set from `configs/registry_120.yaml`.
+   - Implement missing macro and market series feeds (e.g. real yields, breakeven inflation, credit spreads, commodity breadth, liquidity indexes).
+   - Wire expanded indicators into `ipos/macro/engine.py` to enrich macro regime confidence scoring, stance vector determination, and anomaly detection.
 
-2. **Portfolio Accounting & Pipeline Integration (E04)**:
-   - Wire normalized holdings and activity ledgers into `ipos/run.py` and DuckDB warehouse.
-   - Reconcile multi-currency cash flows, weighted-average economic cost basis, and valuation timestamps.
-   - Connect normalized actual holdings directly to the downstream quantitative engine: Riskfolio-Lib optimizer (E07), macro stance tilt (E08), and the Action Matrix (E09).
-
+2. **Research & Pipeline Deepening**:
+   - Deepen automated evidence ingestion from research transcripts directly into `data/action_watch_register.json`.
+   - Maintain strict asymmetric gating and Riskfolio-Lib portfolio intelligence downstream.
 
 ## Repository and operating constraints
 
@@ -160,11 +168,13 @@ Advance to **E03 (broker-document ingestion via Portfolio Performance)** and **E
 
 ## Latest local verification
 
-Run on 2026-09-24:
+Run on 2026-09-26:
 
-- `uv run pytest tests/test_m12_wealthfolio.py -q` -> 2 passed
-- `uv run python scripts/qa_repo.py` -> all required checks passed; existing warnings remain informational
-- Working tree contained only the unrelated untracked file noted above before this handover was created.
+- `uv run pytest` -> 259 passed, 0 failures across the test suite
+- `uv run pytest tests/test_macro_decision.py -v` -> 6 passed
+- `uv run python scripts/qa_repo.py` -> all required checks passed
+- `uv run python -m ipos.cli weekly --seed-offline --as-of 2026-09-25 --provider none` -> completed with `status=OK`
+- Independent adversarial proof verifier confirmed PASS for WF-07 Stage 4 / E08.
 
 ## Required reporting format for the next chat
 

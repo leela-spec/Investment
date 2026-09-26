@@ -49,6 +49,7 @@ def build_action_matrix(
     as_of: dt.date | None = None,
     risk_diagnostics: dict[str, Any] | None = None,
     use_risk_parity: bool = False,
+    macro_decision: Any = None,
 ) -> dict[str, Any]:
     """Generate the deterministic Action Matrix comparing actual holdings against macro targets.
 
@@ -62,6 +63,7 @@ def build_action_matrix(
         as_of: optional date stamp
         risk_diagnostics: optional quantitative Riskfolio-Lib intelligence
         use_risk_parity: if True, target weights within risk budget follow Risk Parity
+        macro_decision: optional Stage 4 MacroPortfolioDecision or dict
 
     Returns:
         dict containing 'summary', 'risk_diagnostics', and 'items' (action rows).
@@ -130,6 +132,35 @@ def build_action_matrix(
         target_module_pct = {}
 
     # Build asset diagnostics lookup if Riskfolio intelligence is supplied
+    from ipos.portfolio.decision import MacroPortfolioDecisionEngine, MacroPortfolioDecision
+
+    if macro_decision is None:
+        dec_engine = MacroPortfolioDecisionEngine()
+        macro_dec_obj = dec_engine.evaluate_decision(
+            positions=positions,
+            regime_info=regime_info,
+            overall_info=overall_info,
+            as_of=as_of,
+        )
+        macro_decision_dict = macro_dec_obj.to_dict()
+    elif isinstance(macro_decision, MacroPortfolioDecision):
+        macro_dec_obj = macro_decision
+        macro_decision_dict = macro_dec_obj.to_dict()
+    elif isinstance(macro_decision, dict):
+        macro_dec_obj = None
+        macro_decision_dict = macro_decision
+    else:
+        macro_dec_obj = None
+        macro_decision_dict = None
+
+    gating = macro_decision_dict.get("gating", {}) if macro_decision_dict else {}
+    allow_adds = gating.get("allow_adds", True)
+    inst_sectors = macro_dec_obj.instrument_sectors if macro_dec_obj else (macro_decision_dict.get("instrument_sectors", {}) if macro_decision_dict else {})
+    sector_allocs_map = {
+        sa["sector_id"]: sa
+        for sa in (macro_decision_dict.get("sector_allocations") or [])
+    } if macro_decision_dict else {}
+
     asset_diag_map: dict[str, dict[str, Any]] = {}
     if risk_diagnostics and "asset_diagnostics" in risk_diagnostics:
         for ad in risk_diagnostics["asset_diagnostics"]:
@@ -137,7 +168,7 @@ def build_action_matrix(
 
     # Build per-instrument action items
     items: list[dict[str, Any]] = []
-    actions_count = {"BUY": 0, "TRIM": 0, "SELL": 0, "HOLD": 0}
+    actions_count = {"BUY": 0, "TRIM": 0, "SELL": 0, "HOLD": 0, "HOLD (GATED)": 0}
     net_trim_eur = 0.0
     net_buy_eur = 0.0
 
@@ -155,8 +186,16 @@ def build_action_matrix(
         vol_pct = ad.get("volatility_annualized_pct") if ad else None
         rc_pct = ad.get("risk_contribution_pct") if ad else None
         rp_wt = ad.get("risk_parity_weight_pct") if ad else None
+        hrp_wt = ad.get("hrp_weight_pct") if ad else None
         skew_ratio = ad.get("risk_skew_ratio") if ad else None
         status = ad.get("status") if ad else None
+
+        # Sector attribution
+        sec_id = inst_sectors.get(inst, "OTHER_UNCLASSIFIED")
+        sec_info = sector_allocs_map.get(sec_id, {})
+        sec_display = sec_info.get("display_name", sec_id.replace("_", " ").title())
+        hw_tw = sec_info.get("headwind_tailwind", "NEUTRAL")
+        alert_items = sec_info.get("active_register_items", [])
 
         # Calculate target weight for this instrument
         mod_val = module_groups.get(module, 0.0)
@@ -174,7 +213,7 @@ def build_action_matrix(
         delta_pct = round(target_wt - curr_wt, 2)
         delta_val = round(target_val - curr_val, 2)
 
-        # Action logic
+        # Action logic with deterministic gating
         if curr_val <= 0 and target_val <= 0:
             action = "HOLD"
             action_units = 0
@@ -190,10 +229,16 @@ def build_action_matrix(
                 notes = f"Trim {abs(delta_pct):.1f}% (€{abs(delta_val):,.0f}) to align with {regime_label} risk budget ({target_risk_pct:.1f}%)."
             net_trim_eur += abs(delta_val)
         elif delta_pct > threshold_pct:
-            action = "BUY"
-            action_units = int(round(delta_val / unit_price)) if unit_price > 0 else 0
-            notes = f"Add {delta_pct:.1f}% (€{delta_val:,.0f}) to reach target allocation."
-            net_buy_eur += delta_val
+            if not allow_adds:
+                action = "HOLD (GATED)"
+                action_units = 0
+                gating_reasons = "; ".join(gating.get("gating_rationale") or ["Additions gated by macro policy."])
+                notes = f"Add gated ({delta_pct:.1f}% / €{delta_val:,.0f}): {gating_reasons}"
+            else:
+                action = "BUY"
+                action_units = int(round(delta_val / unit_price)) if unit_price > 0 else 0
+                notes = f"Add {delta_pct:.1f}% (€{delta_val:,.0f}) to reach target allocation."
+                net_buy_eur += delta_val
         else:
             action = "HOLD"
             action_units = 0
@@ -205,6 +250,10 @@ def build_action_matrix(
             "instrument": inst,
             "name": name,
             "module": module,
+            "sector": sec_id,
+            "sector_name": sec_display,
+            "headwind_tailwind": hw_tw,
+            "active_register_items": alert_items,
             "quantity": qty,
             "unit_price_eur": round(unit_price, 4),
             "current_value_eur": round(curr_val, 2),
@@ -221,6 +270,7 @@ def build_action_matrix(
             "volatility_annualized_pct": vol_pct,
             "risk_contribution_pct": rc_pct,
             "risk_parity_weight_pct": rp_wt,
+            "hrp_weight_pct": hrp_wt,
             "risk_skew_ratio": skew_ratio,
             "status": status,
             "notes": notes,
@@ -247,6 +297,10 @@ def build_action_matrix(
         "policy_selectors": policy,
         "optimization_mode": "RiskParity" if (use_risk_parity and risk_diagnostics) else "Proportional",
         "riskfolio_enabled": risk_diagnostics is not None,
+        "rebalance_gating": gating,
+        "allow_adds": allow_adds,
+        "gated_adds_count": actions_count.get("HOLD (GATED)", 0),
+        "macro_decision": macro_decision_dict,
     }
 
     return {

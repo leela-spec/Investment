@@ -48,6 +48,15 @@ def load_mapping(path: Path | None = None) -> tuple[dict[str, str], str]:
     return dict(raw.get("mappings") or {}), policy
 
 
+def load_sector_mapping(path: Path | None = None) -> tuple[dict[str, str], dict[str, Any]]:
+    """Returns (instrument -> sector_id, sector_definitions)."""
+    p = path or MAPPING_PATH
+    if not p.exists():
+        return {}, {}
+    raw = yaml.safe_load(p.read_text(encoding="utf-8")) or {}
+    return dict(raw.get("sectors") or {}), dict(raw.get("sector_definitions") or {})
+
+
 def aggregate_portfolio(
     positions: pd.DataFrame,
     mapping: dict[str, str],

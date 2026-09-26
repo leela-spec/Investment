@@ -415,6 +415,8 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         snapshot["portfolio"] = portfolio_block
     if action_matrix_block is not None:
         snapshot["action_matrix"] = action_matrix_block
+        if action_matrix_block.get("summary", {}).get("macro_decision"):
+            snapshot["macro_portfolio_decision"] = action_matrix_block["summary"]["macro_decision"]
     if riskfolio_block is not None:
         snapshot["riskfolio"] = riskfolio_block
     try:
@@ -571,6 +573,20 @@ SNAPSHOT_SCHEMA = {
                 "active_watches": {"type": "array"},
                 "active_actions": {"type": "array"},
                 "total_items": {"type": "integer"},
+            },
+        },
+        "macro_portfolio_decision": {
+            "type": "object",
+            "description": "Optional — WF-07 Stage 4 macro-to-portfolio decision flow and rebalancing gating.",
+            "properties": {
+                "as_of": {"type": ["string", "null"]},
+                "regime_label": {"type": "string"},
+                "risk_budget": {"type": "number"},
+                "macro_confidence": {"type": "number"},
+                "stance_vector": {"type": "object"},
+                "gating": {"type": "object"},
+                "sector_allocations": {"type": "array"},
+                "sector_target_weights": {"type": "object"},
             },
         },
     },

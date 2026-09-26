@@ -191,6 +191,11 @@ def compute_portfolio_risk_diagnostics(
     opt = RiskfolioOptimizer()
     rc_df = opt.compute_risk_contributions(returns_df, proxy_weights)
     w_rp, rp_diag = opt.optimize_risk_parity(returns_df)
+    try:
+        w_hrp, hrp_diag = opt.optimize_hrp(returns_df)
+    except Exception:
+        w_hrp = w_rp.copy()
+        hrp_diag = {"error": "HRP fallback to RP"}
 
     active_pos = positions[positions["value_eur"] > 0].copy()
     total_val = float(active_pos["value_eur"].sum())
@@ -209,10 +214,12 @@ def compute_portfolio_risk_diagnostics(
         proxy_rc_pct = float(rc_df.loc[proxy, "rc_percentage"])
         proxy_vol = float(rc_df.loc[proxy, "volatility_annualized"])
         proxy_rp_wt = float(w_rp.loc[proxy, "weights"])
+        proxy_hrp_wt = float(w_hrp.loc[proxy, "weights"]) if proxy in w_hrp.index else proxy_rp_wt
 
         share_of_proxy = (val / proxy_val) if proxy_val > 0 else 0.0
         asset_rc_pct = proxy_rc_pct * share_of_proxy
         asset_rp_wt_pct = proxy_rp_wt * share_of_proxy * 100.0
+        asset_hrp_wt_pct = proxy_hrp_wt * share_of_proxy * 100.0
 
         skew = round(asset_rc_pct / cap_wt, 2) if cap_wt > 0 else 1.0
         status = "HIGH RISK SKEW" if skew > 1.25 else ("DIVERSIFIER" if skew < 0.75 else "BALANCED")
@@ -225,6 +232,7 @@ def compute_portfolio_risk_diagnostics(
             "volatility_annualized_pct": round(proxy_vol * 100.0, 2),
             "risk_contribution_pct": round(asset_rc_pct, 2),
             "risk_parity_weight_pct": round(asset_rp_wt_pct, 2),
+            "hrp_weight_pct": round(asset_hrp_wt_pct, 2),
             "risk_skew_ratio": skew,
             "status": status,
         })
@@ -246,6 +254,10 @@ def compute_portfolio_risk_diagnostics(
         p: round(float(w_rp.loc[p, "weights"]) * 100.0, 2)
         for p in returns_df.columns
     }
+    hrp_weights_dict = {
+        p: round(float(w_hrp.loc[p, "weights"]) * 100.0, 2)
+        for p in returns_df.columns if p in w_hrp.index
+    }
 
     # Convert proxy diagnostics to clean serializable dict
     proxy_diag_dict = {}
@@ -255,6 +267,7 @@ def compute_portfolio_risk_diagnostics(
             "volatility_annualized_pct": round(float(rc_df.loc[p, "volatility_annualized"]) * 100.0, 2),
             "risk_contribution_pct": round(float(rc_df.loc[p, "rc_percentage"]), 2),
             "optimal_risk_parity_weight_pct": round(float(w_rp.loc[p, "weights"]) * 100.0, 2),
+            "optimal_hrp_weight_pct": round(float(w_hrp.loc[p, "weights"]) * 100.0, 2) if p in w_hrp.index else None,
         }
 
     return {
@@ -266,6 +279,7 @@ def compute_portfolio_risk_diagnostics(
             "portfolio_volatility_annualized_pct": round(port_vol_ann, 2),
             "effective_number_of_bets_enc": round(enc, 2),
             "risk_parity_weights": rp_weights_dict,
+            "hrp_weights": hrp_weights_dict,
             "solver_engine": "Riskfolio-Lib",
             "riskfolio_version": rp.__version__,
         },

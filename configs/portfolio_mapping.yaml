@@ -135,3 +135,100 @@ instrument_names:
   US71654V4086: "Petrobras"
 
 unmapped_policy: warn
+
+# ---------------------------------------------------------------------------
+# WF-07 Stage 4 / E08: Sector Taxonomy
+# Maps each portfolio instrument to an industry/economic sector cluster
+# for macro stance cascading, hierarchical risk parity, and headwind/tailwind analysis.
+# ---------------------------------------------------------------------------
+sectors:
+  # Technology, AI, Software & Semiconductor
+  DE000DN042H8: TECHNOLOGY_AI
+  DE000HM4PTX8: TECHNOLOGY_AI
+  DE000MG8GGU2: TECHNOLOGY_AI
+  DE000MK6QKZ0: TECHNOLOGY_AI
+  DE000MN4NFQ8: TECHNOLOGY_AI
+  DE000SH7NDN5: TECHNOLOGY_AI
+  DE000VX8PY08: TECHNOLOGY_AI
+  US0079031078: TECHNOLOGY_AI
+  US49639K1016: TECHNOLOGY_AI
+  US5951121038: TECHNOLOGY_AI
+  US67066G1040: TECHNOLOGY_AI
+  US6974351057: TECHNOLOGY_AI
+  US83406F1021: TECHNOLOGY_AI
+  US88023B1035: TECHNOLOGY_AI
+  US55024U1097: TECHNOLOGY_AI
+  NL0009805522: TECHNOLOGY_AI
+
+  # Crypto, Web3 & Digital Assets
+  AU0000185993: CRYPTO_DIGITAL_ASSETS
+  CA64073L1013: CRYPTO_DIGITAL_ASSETS
+  CH0454664027: CRYPTO_DIGITAL_ASSETS
+  CH0496454155: CRYPTO_DIGITAL_ASSETS
+  CH1102728750: CRYPTO_DIGITAL_ASSETS
+  CH1114873776: CRYPTO_DIGITAL_ASSETS
+  DE000A3GV1T7: CRYPTO_DIGITAL_ASSETS
+  SE0007525332: CRYPTO_DIGITAL_ASSETS
+  US09175A2069: CRYPTO_DIGITAL_ASSETS
+
+  # Healthcare, Biotech & CNS Therapeutics
+  CA24477V1058: HEALTHCARE_BIOTECH
+  CA74447P1009: HEALTHCARE_BIOTECH
+  US04744L2051: HEALTHCARE_BIOTECH
+  US20451W1018: HEALTHCARE_BIOTECH
+  US48576U2050: HEALTHCARE_BIOTECH
+  XC000A42NLY5: HEALTHCARE_BIOTECH
+  DK0062498333: HEALTHCARE_BIOTECH
+
+  # Energy, Commodities & Real Assets
+  DE000MA5E683: ENERGY_COMMODITIES
+  DE000MB3FKR8: ENERGY_COMMODITIES
+  DE000PS7JX34: ENERGY_COMMODITIES
+  DE000A0S9GB0: ENERGY_COMMODITIES
+  DE000A0XYG76: ENERGY_COMMODITIES
+  LU1829218749: ENERGY_COMMODITIES
+  US02215L2097: ENERGY_COMMODITIES
+  US71654V4086: ENERGY_COMMODITIES
+  US72919P2020: ENERGY_COMMODITIES
+
+  # Defense, Industrials & Engineering
+  DE000A2YN504: DEFENSE_INDUSTRIALS
+  DE000A2NB650: DEFENSE_INDUSTRIALS
+  IE000YYE6WK5: DEFENSE_INDUSTRIALS
+  US0937121079: DEFENSE_INDUSTRIALS
+
+  # Financials & Value Preservers
+  DE0008404005: FINANCIALS_VALUE
+  DE0008430026: FINANCIALS_VALUE
+
+sector_definitions:
+  TECHNOLOGY_AI:
+    display_name: "Technology, AI & Semiconductors"
+    primary_stance_driver: "equity"
+    duration_sensitivity: "HIGH_NEGATIVE"    # higher yields = headwind
+    credit_sensitivity: "MODERATE_POSITIVE"
+  CRYPTO_DIGITAL_ASSETS:
+    display_name: "Crypto & Digital Assets"
+    primary_stance_driver: "equity"
+    duration_sensitivity: "HIGH_NEGATIVE"
+    credit_sensitivity: "HIGH_POSITIVE"     # liquidity & risk appetite
+  HEALTHCARE_BIOTECH:
+    display_name: "Healthcare & Biotechnology"
+    primary_stance_driver: "equity"
+    duration_sensitivity: "HIGH_NEGATIVE"    # early-stage biotech is long duration
+    credit_sensitivity: "HIGH_POSITIVE"
+  ENERGY_COMMODITIES:
+    display_name: "Energy & Commodities"
+    primary_stance_driver: "commodities"
+    duration_sensitivity: "NEUTRAL_TO_POSITIVE"
+    credit_sensitivity: "MODERATE_POSITIVE"
+  DEFENSE_INDUSTRIALS:
+    display_name: "Defense & Industrials"
+    primary_stance_driver: "growth"
+    duration_sensitivity: "LOW_NEGATIVE"
+    credit_sensitivity: "MODERATE_POSITIVE"
+  FINANCIALS_VALUE:
+    display_name: "Financials & Value Preservers"
+    primary_stance_driver: "equity"
+    duration_sensitivity: "POSITIVE"        # higher rates expand net interest margin
+    credit_sensitivity: "HIGH_POSITIVE"

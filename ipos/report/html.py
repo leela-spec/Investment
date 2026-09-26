@@ -450,18 +450,66 @@ _TEMPLATE = """<!doctype html>
 {% else %}<div class="sub">Drop a portfolio CSV export in <code>data/inbox/</code> (<code>portfolio*.csv</code>) to compare your actual exposure against this week's stance vector.</div>{% endif %}
 
 {% if s.action_matrix and s.action_matrix.summary %}
+{% if s.action_matrix.summary.macro_decision %}
+{% set md = s.action_matrix.summary.macro_decision %}
+<h2>Macro-to-Portfolio Decision Flow (WF-07 Stage 4)</h2>
+<div class="sub" style="margin-bottom: 8px;">
+  Macro Confidence: <strong>{{ "%.1f"|format(md.macro_confidence) }}%</strong> (Gate: <strong>{{ md.gating.confidence_gate }}</strong>) · 
+  Rebalance Gating: <strong>{{ "ADDITIONS PERMITTED" if md.gating.allow_adds else "ADDITIONS GATED (TRIMS / EXITS ONLY)" }}</strong> · 
+  Active Research Alerts: <strong>{{ md.gating.active_open_actions_count }}</strong>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Sector Cluster</th>
+      <th class="num">Current Value</th>
+      <th class="num">Macro Tilt</th>
+      <th style="text-align:center;">Stance Flow</th>
+      <th class="num">Target %</th>
+      <th class="num">Delta %</th>
+      <th>Active Alerts</th>
+      <th>Macro Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for sa in md.sector_allocations %}
+    <tr>
+      <td><strong>{{ sa.display_name }}</strong></td>
+      <td class="num">€{{ "%.0f"|format(sa.current_value_eur) }}<br><span class="sub">{{ "%.1f"|format(sa.current_weight_pct) }}%</span></td>
+      <td class="num"><strong>{{ "%.2f"|format(sa.macro_tilt_multiplier) }}x</strong></td>
+      <td style="text-align:center;">
+        {% if sa.headwind_tailwind == "TAILWIND" %}
+          <span class="pill" style="background:#dcfce7; color:#15803d; font-weight:700;">TAILWIND</span>
+        {% elif sa.headwind_tailwind == "HEADWIND" %}
+          <span class="pill" style="background:#fee2e2; color:#b91c1c; font-weight:700;">HEADWIND</span>
+        {% else %}
+          <span class="pill" style="background:#f3f4f6; color:#6b7280;">NEUTRAL</span>
+        {% endif %}
+      </td>
+      <td class="num"><strong>{{ "%.1f"|format(sa.target_weight_pct) }}%</strong><br><span class="sub">€{{ "%.0f"|format(sa.target_value_eur) }}</span></td>
+      <td class="num" style="font-weight:600; color: {{ '#b91c1c' if sa.delta_weight_pct < -1.0 else ('#15803d' if sa.delta_weight_pct > 1.0 else 'inherit') }};">
+        {{ "%+.1f"|format(sa.delta_weight_pct) }}%
+      </td>
+      <td>{% if sa.active_register_items %}<code>{{ sa.active_register_items|join(", ") }}</code>{% else %}<span class="sub">—</span>{% endif %}</td>
+      <td class="sub">{{ sa.rationale }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <h2>Action Matrix (Monday Execution & Stop Policies)</h2>
 <div class="sub" style="margin-bottom: 8px;">
   Total Capital: <strong>€{{ "%.0f"|format(s.action_matrix.summary.total_value_eur) }}</strong> · 
   Regime: <strong>{{ s.action_matrix.summary.regime_label }}</strong> (scaler {{ s.action_matrix.summary.risk_scaler }}) · 
   Risk Budget: <strong>{{ "%.1f"|format(s.action_matrix.summary.risk_budget) }}%</strong> · 
-  Target Defensive / Cash: <strong>{{ "%.1f"|format(s.action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(s.action_matrix.summary.target_cash_value_eur) }})</strong>
+  Target Defensive / Cash: <strong>{{ "%.1f"|format(s.action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(s.action_matrix.summary.target_cash_value_eur) }})</strong>{% if s.action_matrix.summary.gated_adds_count > 0 %} · Gated Additions: <strong>{{ s.action_matrix.summary.gated_adds_count }}</strong>{% endif %}
 </div>
 <table>
   <thead>
     <tr>
       <th>Holding</th>
-      <th>Module</th>
+      <th>Sector</th>
       <th class="num">Current</th>
       <th class="num">Target</th>
       <th class="num">Delta (€)</th>
@@ -474,7 +522,7 @@ _TEMPLATE = """<!doctype html>
     {% for it in s.action_matrix['items'] %}
     <tr>
       <td><strong>{{ it.name }}</strong><br><code class="sub" style="font-size:0.75rem;">{{ it.instrument }}</code></td>
-      <td>{{ it.module }}</td>
+      <td><span class="pill" style="font-size:0.75rem;">{{ it.sector_name }}</span></td>
       <td class="num">€{{ "%.0f"|format(it.current_value_eur) }}<br><span class="sub">{{ "%.1f"|format(it.current_weight_pct) }}%</span></td>
       <td class="num">€{{ "%.0f"|format(it.target_value_eur) }}<br><span class="sub">{{ "%.1f"|format(it.target_weight_pct) }}%</span></td>
       <td class="num" style="font-weight:600; color: {{ '#b91c1c' if it.delta_value_eur < -500 else ('#15803d' if it.delta_value_eur > 500 else 'inherit') }};">
@@ -487,6 +535,8 @@ _TEMPLATE = """<!doctype html>
           <span class="pill" style="background:#fee2e2; color:#b91c1c; font-weight:700;">SELL ALL</span>
         {% elif it.action == 'BUY' %}
           <span class="pill" style="background:#dcfce7; color:#15803d; font-weight:700;">BUY ({{ "%+d"|format(it.action_units) }})</span>
+        {% elif it.action == 'HOLD (GATED)' %}
+          <span class="pill" style="background:#fef08a; color:#854d0e; font-weight:700;">HOLD (GATED)</span>
         {% else %}
           <span class="pill" style="background:#f3f4f6; color:#6b7280;">HOLD</span>
         {% endif %}

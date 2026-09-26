@@ -72,22 +72,33 @@ _Total portfolio value: €{{ "%.0f"|format(portfolio.total_value_eur) }}_
 {% else %}_Drop a portfolio CSV export in `data/inbox/` (`portfolio*.csv`) to compare your actual exposure against this week's stance vector._
 {% endif %}
 {% if action_matrix and action_matrix.summary %}
+{% if action_matrix.summary.macro_decision %}
+{% set md = action_matrix.summary.macro_decision %}
+
+## Macro-to-Portfolio Decision Flow (WF-07 Stage 4)
+_Macro Confidence: **{{ "%.1f"|format(md.macro_confidence) }}%** (Gate: **{{ md.gating.confidence_gate }}**) · Rebalancing Stance: **{{ "ADDITIONS PERMITTED" if md.gating.allow_adds else "ADDITIONS GATED (TRIMS / EXITS ONLY)" }}** · Active Research Alerts: **{{ md.gating.active_open_actions_count }}**_
+
+| Sector Cluster | Current (€ / %) | Macro Tilt | Stance Flow | Target % | Delta % | Active Research Alerts | Rationale |
+|---|---|---|---|---|---|---|---|
+{% for sa in md.sector_allocations %}| **{{ sa.display_name }}** | €{{ "%.0f"|format(sa.current_value_eur) }} ({{ "%.1f"|format(sa.current_weight_pct) }}%) | {{ "%.2f"|format(sa.macro_tilt_multiplier) }}x | {% if sa.headwind_tailwind == "TAILWIND" %}🟢 **TAILWIND**{% elif sa.headwind_tailwind == "HEADWIND" %}🔴 **HEADWIND**{% else %}⚪ NEUTRAL{% endif %} | {{ "%.1f"|format(sa.target_weight_pct) }}% | {{ "%+.1f"|format(sa.delta_weight_pct) }}% | {% if sa.active_register_items %}`{{ sa.active_register_items|join(", ") }}`{% else %}—{% endif %} | {{ sa.rationale }} |
+{% endfor %}
+{% endif %}
 
 ## Action Matrix (Monday Execution & Stop Policies)
-_Capital: €{{ "%.0f"|format(action_matrix.summary.total_value_eur) }} · Regime: {{ action_matrix.summary.regime_label }} (scaler {{ action_matrix.summary.risk_scaler }}) · Risk Budget: {{ "%.1f"|format(action_matrix.summary.risk_budget) }}% · Target Cash/Defensive: {{ "%.1f"|format(action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(action_matrix.summary.target_cash_value_eur) }})_
+_Capital: €{{ "%.0f"|format(action_matrix.summary.total_value_eur) }} · Regime: {{ action_matrix.summary.regime_label }} (scaler {{ action_matrix.summary.risk_scaler }}) · Risk Budget: {{ "%.1f"|format(action_matrix.summary.risk_budget) }}% · Target Cash/Defensive: {{ "%.1f"|format(action_matrix.summary.target_cash_weight_pct) }}% (€{{ "%.0f"|format(action_matrix.summary.target_cash_value_eur) }}){% if action_matrix.summary.gated_adds_count > 0 %} · Gated Additions: {{ action_matrix.summary.gated_adds_count }}{% endif %}_
 
-| Instrument | Holding / Asset | Module | Current (€ / %) | Target % | Delta (€) | Action | Stop Policy | Notes |
+| Instrument | Holding / Asset | Sector | Current (€ / %) | Target % | Delta (€) | Action | Stop Policy | Notes |
 |---|---|---|---|---|---|---|---|---|
-{% for it in action_matrix['items'] %}| `{{ it.instrument }}` | **{{ it.name }}** | {{ item.module if item is defined else it.module }} | €{{ "%.0f"|format(it.current_value_eur) }} ({{ "%.1f"|format(it.current_weight_pct) }}%) | {{ "%.1f"|format(it.target_weight_pct) }}% | {{ "%+.0f"|format(it.delta_value_eur) }} | **{{ it.action }}**{% if it.action_units != 0 %} ({{ "%+d"|format(it.action_units) }}){% endif %} | {{ it.trailing_stop }} | {{ it.notes }} |
+{% for it in action_matrix['items'] %}| `{{ it.instrument }}` | **{{ it.name }}** | {{ it.sector_name }} | €{{ "%.0f"|format(it.current_value_eur) }} ({{ "%.1f"|format(it.current_weight_pct) }}%) | {{ "%.1f"|format(it.target_weight_pct) }}% | {{ "%+.0f"|format(it.delta_value_eur) }} | **{{ it.action }}**{% if it.action_units != 0 %} ({{ "%+d"|format(it.action_units) }}){% endif %} | {{ it.trailing_stop }} | {{ it.notes }} |
 {% endfor %}
 {% if action_matrix.risk_diagnostics and action_matrix.risk_diagnostics.asset_diagnostics %}
 
 ### Riskfolio-Lib Risk Diagnostics & Risk Parity
 _Engine: Riskfolio-Lib v{{ action_matrix.risk_diagnostics.summary.riskfolio_version }} · Solver: {{ action_matrix.risk_diagnostics.summary.solver_engine }} · Active Positions: {{ action_matrix.risk_diagnostics.summary.active_positions_count }}_
 
-| Holding / Asset | Proxy | Capital Wt | Volatility (Ann.) | Risk Contribution | Risk Skew | RP Target Wt | Status |
-|---|---|---|---|---|---|---|---|
-{% for ad in action_matrix.risk_diagnostics['asset_diagnostics'] %}| **{{ ad.name }}** | `{{ ad.proxy }}` | {{ "%.1f"|format(ad.capital_weight_pct) }}% | {{ "%.1f"|format(ad.volatility_annualized_pct) }}% | **{{ "%.1f"|format(ad.risk_contribution_pct) }}%** | {{ "%.2f"|format(ad.risk_skew_ratio) }}x | {{ "%.1f"|format(ad.risk_parity_weight_pct) }}% | {% if ad.risk_skew_ratio > 1.25 %}⚠️ **HIGH RISK SKEW**{% elif ad.risk_skew_ratio < 0.75 %}🛡️ DIVERSIFIER{% else %}BALANCED{% endif %} |
+| Holding / Asset | Proxy | Capital Wt | Volatility (Ann.) | Risk Contribution | Risk Skew | RP Wt | HRP Wt | Status |
+|---|---|---|---|---|---|---|---|---|
+{% for ad in action_matrix.risk_diagnostics['asset_diagnostics'] %}| **{{ ad.name }}** | `{{ ad.proxy }}` | {{ "%.1f"|format(ad.capital_weight_pct) }}% | {{ "%.1f"|format(ad.volatility_annualized_pct) }}% | **{{ "%.1f"|format(ad.risk_contribution_pct) }}%** | {{ "%.2f"|format(ad.risk_skew_ratio) }}x | {{ "%.1f"|format(ad.risk_parity_weight_pct) }}% | {{ "%.1f"|format(ad.hrp_weight_pct) if ad.hrp_weight_pct is defined else "—" }}% | {% if ad.risk_skew_ratio > 1.25 %}⚠️ **HIGH RISK SKEW**{% elif ad.risk_skew_ratio < 0.75 %}🛡️ DIVERSIFIER{% else %}BALANCED{% endif %} |
 {% endfor %}
 {% endif %}
 {% endif %}
