@@ -543,6 +543,45 @@ _TEMPLATE = """<!doctype html>
 {% endif %}
 {% endif %}
 
+{% if s.action_watch_register and (s.action_watch_register.active_watches or s.action_watch_register.active_actions) %}
+<h2>{{ concept_tt("action_watch_register", "Active Research Theses & Watch Register")|safe }}</h2>
+<div class="sub">Tracked qualitative macro hypotheses & falsifiable triggers (WF-07 Stage 3 / E05 & E06)</div>
+<table>
+  <thead>
+    <tr>
+      <th>Item ID</th>
+      <th>Class</th>
+      <th>Topic / Instrument</th>
+      <th>Action / Invalidation Trigger</th>
+      <th>Status</th>
+      <th>Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for w in s.action_watch_register.active_watches %}
+    <tr>
+      <td><code>{{ w.item_id }}</code></td>
+      <td><span class="pill" style="background:#e0f2fe; color:#0369a1; font-weight:700;">WATCH</span></td>
+      <td><strong>{{ w.instrument_or_topic }}</strong></td>
+      <td>{{ w.action_or_condition }}</td>
+      <td><span class="pill" style="background:{{ '#fef3c7; color:#b45309;' if w.status == 'TRIGGERED' else '#eaf6ec; color:#15803d;' }}">{{ w.status }}</span></td>
+      <td class="sub">{{ w.reason_short }}</td>
+    </tr>
+    {% endfor %}
+    {% for a in s.action_watch_register.active_actions %}
+    <tr>
+      <td><code>{{ a.item_id }}</code></td>
+      <td><span class="pill" style="background:#fef3c7; color:#b45309; font-weight:700;">ACTION</span></td>
+      <td><strong>{{ a.instrument_or_topic }}</strong></td>
+      <td>{{ a.action_or_condition }}</td>
+      <td><span class="pill" style="background:{{ '#fef3c7; color:#b45309;' if a.status == 'TRIGGERED' else '#eaf6ec; color:#15803d;' }}">{{ a.status }}</span></td>
+      <td class="sub">{{ a.reason_short }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
 <h2>{{ concept_tt("indicators_section", "Indicators")|safe }}</h2>
 <table><thead><tr><th>ID</th><th>Module</th><th class="num">Value</th><th class="num">{{ concept_tt("delta_value", "Δ value 1w / 4w / 12w")|safe }}</th><th>{{ concept_tt("level_pctile", "Level %ile")|safe }}</th><th>Trend</th><th class="num">{{ concept_tt("score", "Score")|safe }}</th><th>{{ concept_tt("score_horizons", "1w · 1m · 1q · 1y")|safe }}</th><th>52w score</th><th class="num">{{ concept_tt("confidence", "Conf")|safe }}</th><th>{{ concept_tt("stale", "Stale")|safe }}</th></tr></thead><tbody>
 {% for i in indicators %}<tr id="ind-{{ i.id }}"><td>{{ indicator_tt(i.id)|safe }}</td><td>{{ module_tt(i.module)|safe }}</td>

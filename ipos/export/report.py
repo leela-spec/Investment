@@ -91,6 +91,17 @@ _Engine: Riskfolio-Lib v{{ action_matrix.risk_diagnostics.summary.riskfolio_vers
 {% endfor %}
 {% endif %}
 {% endif %}
+{% if action_watch_register and (action_watch_register.active_watches or action_watch_register.active_actions) %}
+
+## Active Research Theses & Watch Register
+_Tracked qualitative macro hypotheses & falsifiable triggers (WF-07 Stage 3)_
+
+| Item ID | Class | Topic / Instrument | Action / Invalidation Trigger | Status | Rationale |
+|---|---|---|---|---|---|
+{% for w in action_watch_register.active_watches %}| `{{ w.item_id }}` | **{{ w.item_class }}** | `{{ w.instrument_or_topic }}` | {{ w.action_or_condition }} | `{{ w.status }}` | {{ w.reason_short }} |
+{% endfor %}{% for a in action_watch_register.active_actions %}| `{{ a.item_id }}` | **{{ a.item_class }}** | `{{ a.instrument_or_topic }}` | {{ a.action_or_condition }} | `{{ a.status }}` | {{ a.reason_short }} |
+{% endfor %}
+{% endif %}
 
 ## Top movers (Δscore vs prior week)
 {% if top_movers %}| Indicator | Δscore 1w |
@@ -167,6 +178,7 @@ def render_report(snapshot: dict) -> str:
         portfolio_rows=portfolio_vs_stance(snapshot),
         portfolio=snapshot.get("portfolio"),
         action_matrix=snapshot.get("action_matrix"),
+        action_watch_register=snapshot.get("action_watch_register"),
         top_movers=snapshot["top_movers"],
         contradictions=snapshot["contradictions"],
         events=snapshot.get("events", []),

@@ -2,6 +2,7 @@
 /data/
 !/data/.gitkeep
 !/data/**/.gitkeep
+!/data/action_watch_register.json
 
 # --- secrets ---
 .env

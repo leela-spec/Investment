@@ -84,6 +84,7 @@ def test_html_every_heading_and_column_is_explained(populated_db, as_of):
         "Module", "Dimension", "ID", "Value", "Trend", "Now", "Date", "When",
         "Event", "Category", "Indicator", "Read", "Your weight", "Suggested tilt",
         "vs 1m", "52w score", "26w path", "26w",
+        "Item ID", "Class", "Topic / Instrument", "Action / Invalidation Trigger", "Status", "Rationale",
     }
 
     def _text(fragment: str) -> str:

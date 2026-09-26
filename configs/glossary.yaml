@@ -55,6 +55,11 @@ concepts:
       The suggested lean for this module this week, derived from its score.
       Positive = supportive, negative = headwind, near zero = neutral. A
       description of conditions, never a trade instruction.
+  action_watch_register:
+    title: "Active Research Theses & Watch Register"
+    body: >
+      Qualitative macro theses, invalidation triggers, and proposed portfolio actions
+      extracted with source-grounded verbatim provenance from research briefings and media (E05/E06).
   delta_value:
     title: "Δ value (1w / 4w / 12w)"
     body: >

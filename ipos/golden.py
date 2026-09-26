@@ -59,6 +59,8 @@ def build_golden_min(workdir: Path, as_of: dt.date = SEED_ANCHOR) -> str:
     inbox.mkdir(parents=True, exist_ok=True)
     portfolio_csv.INBOX = inbox
     portfolio_mod.MAPPING_PATH = workdir / "no_portfolio_mapping.yaml"
+    import ipos.evidence.register as register_mod
+    register_mod.DEFAULT_REGISTER_PATH = workdir / "no_action_watch_register.json"
 
     res = run_weekly(
         as_of=as_of,

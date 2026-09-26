@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-09-26T11:45:50.550430+00:00",
+  "items": [
+    {
+      "item_id": "WATCH-IMF-GDP-001",
+      "item_class": "WATCH",
+      "instrument_or_topic": "GLOBAL_GDP",
+      "action_or_condition": "Global GDP projection downgraded below 2.8%",
+      "reason_short": "IMF baseline 3.0% (2026) / 3.4% (2027) indicates growth vulnerability below historical averages",
+      "linked_claim_ids": [
+        "CLM-IMF-2026-07-001"
+      ],
+      "evidence_refs": [],
+      "status": "OPEN",
+      "created_at": "2026-09-26T11:45:50.548429+00:00",
+      "invalidation_metric": "GLOBAL_GDP",
+      "target_threshold": 2.8
+    },
+    {
+      "item_id": "WATCH-IMF-TRADE-001",
+      "item_class": "WATCH",
+      "instrument_or_topic": "TRADE_GEOPOLITICS",
+      "action_or_condition": "Escalation in tech export restrictions or bilateral tariff announcements",
+      "reason_short": "Trade barriers and tech correction threaten supply chains and capital expenditure",
+      "linked_claim_ids": [
+        "CLM-IMF-2026-07-002"
+      ],
+      "evidence_refs": [],
+      "status": "OPEN",
+      "created_at": "2026-09-26T11:45:50.549430+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    },
+    {
+      "item_id": "WATCH-IMF-RATE-001",
+      "item_class": "WATCH",
+      "instrument_or_topic": "US10Y",
+      "action_or_condition": "US 10-Year yield crosses above 4.50% / sticky inflation repricing",
+      "reason_short": "Upward inflation revision creates vulnerability to sharp yield spikes across asset classes",
+      "linked_claim_ids": [
+        "CLM-IMF-2026-07-003"
+      ],
+      "evidence_refs": [],
+      "status": "OPEN",
+      "created_at": "2026-09-26T11:45:50.549430+00:00",
+      "invalidation_metric": "US10Y",
+      "target_threshold": 4.5
+    }
+  ]
+}

@@ -417,6 +417,18 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         snapshot["action_matrix"] = action_matrix_block
     if riskfolio_block is not None:
         snapshot["riskfolio"] = riskfolio_block
+    try:
+        from ipos.evidence.register import ActionWatchRegister
+        reg_mgr = ActionWatchRegister()
+        active_items = reg_mgr.get_active_items()
+        if active_items:
+            snapshot["action_watch_register"] = {
+                "active_watches": [i.model_dump() for i in active_items if i.item_class == "WATCH"],
+                "active_actions": [i.model_dump() for i in active_items if i.item_class == "ACTION"],
+                "total_items": len(active_items),
+            }
+    except Exception:
+        pass
     return snapshot
 
 
@@ -550,6 +562,15 @@ SNAPSHOT_SCHEMA = {
                 "summary": {"type": "object"},
                 "proxy_diagnostics": {"type": "object"},
                 "asset_diagnostics": {"type": "array"},
+            },
+        },
+        "action_watch_register": {
+            "type": "object",
+            "description": "Optional — active macro research watches and triggers from E05/E06.",
+            "properties": {
+                "active_watches": {"type": "array"},
+                "active_actions": {"type": "array"},
+                "total_items": {"type": "integer"},
             },
         },
     },
