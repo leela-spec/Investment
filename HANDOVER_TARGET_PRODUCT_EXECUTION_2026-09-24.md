@@ -53,6 +53,11 @@ The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accept
   - Risk Parity target sizing directly controls the Action Matrix rebalancing recommendations and stop policies;
   - Rendered in executive `report.md` and interactive `report.html`;
   - Verified by independent adversarial proof verifier (`PASS`).
+- E10 Operational Automation completed (2026-09-26):
+  - Registered Windows Task Scheduler task `IPOS Weekly Pipeline` (Saturdays 06:00, Ready state);
+  - Headless runner (`scripts/run_pipeline_automated.ps1`) capturing logs to `logs/scheduled/` and writing BOM-free JSON status records (`data/exports/automation_status.json`);
+  - Operator quick launcher script `scripts/open_latest_report.ps1`;
+  - Verified by independent adversarial proof verifier (`PASS`).
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
 - E01 evidence: `implementation-runs/E01/20260923-222414/VERIFICATION_REPORT.md`.

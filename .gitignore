@@ -20,3 +20,6 @@ __pycache__/
 # --- duckdb ---
 *.duckdb
 *.duckdb.wal
+
+# --- logs ---
+logs/

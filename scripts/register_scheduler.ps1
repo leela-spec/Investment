@@ -2,77 +2,91 @@
 # IPOS weekly pipeline — Windows Task Scheduler registration
 #
 # Registers a scheduled task that runs the full IPOS weekly pipeline every
-# SATURDAY at 05:00 local time, headless (no window flash), logging output to
-# logs\scheduled\.
+# SATURDAY at 06:00 local time, headless (no window flash), logging output to
+# logs\scheduled\ and recording status to data\exports\automation_status.json.
 #
-# USAGE (from an elevated PowerShell in the repo root):
+# USAGE (from PowerShell in the repo root):
 #   .\scripts\register_scheduler.ps1                 # register/update task
+#   .\scripts\register_scheduler.ps1 -Status         # check task registration & last run
 #   .\scripts\register_scheduler.ps1 -Unregister     # remove the task
 #   .\scripts\register_scheduler.ps1 -RunNow         # trigger one run immediately
 #
 # PARAMETERS (all overridable):
-#   -PythonExe   : python.exe to use (defaults to repo .venv, else PATH python)
-#   -RepoRoot    : defaults to the parent of this script's directory
-#
-# SAFETY:
-#   * Never passes --seed-offline. A failed pull must NOT fill synthetic rows
-#     into live tables (see purge_synthetic.py incident 2026-07-27).
-#   * The task runs whether or not the user is logged on (-LogonType S4U is
-#     avoided deliberately; we use the current user interactive token so the
-#     venv and any mounted drives resolve normally).
+#   -TaskName    : Scheduled task name (default: "IPOS Weekly Pipeline")
+#   -RunTime     : Time of day to run on Saturday (default: "06:00")
+#   -RepoRoot    : Root directory of repository (default: auto-detected)
 # =============================================================================
 
 [CmdletBinding()]
 param(
     [switch]$Unregister,
     [switch]$RunNow,
+    [switch]$Status,
     [string]$TaskName = "IPOS Weekly Pipeline",
-    [string]$RepoRoot = (Split-Path -Parent $PSScriptRoot),
-    [string]$PythonExe = "",
-    [string]$RunTime = "05:00"
+    [string]$RepoRoot = "",
+    [string]$RunTime = "06:00"
 )
 
 $ErrorActionPreference = "Stop"
 
+if (-not $RepoRoot) {
+    if ($PSScriptRoot) {
+        $RepoRoot = Split-Path -Parent $PSScriptRoot
+    } else {
+        $RepoRoot = (Get-Location).Path
+    }
+}
+
 function Info($msg)  { Write-Host "[ipos-scheduler] $msg" }
 function Fail($msg)  { Write-Error "[ipos-scheduler] $msg"; exit 1 }
 
-# --- resolve paths -----------------------------------------------------------
-$LogsDir = Join-Path $RepoRoot "logs\scheduled"
-if (-not (Test-Path $LogsDir)) { New-Item -ItemType Directory -Path $LogsDir | Out-Null }
-
-# Prefer the project venv's python; fall back to whatever is on PATH.
-if (-not $PythonExe) {
-    $venvPy = Join-Path $RepoRoot ".venv\Scripts\python.exe"
-    if (Test-Path $venvPy) { $PythonExe = $venvPy } else { $PythonExe = "python.exe" }
-}
-if (-not (Get-Command $PythonExe -ErrorAction SilentlyContinue) -and -not (Test-Path $PythonExe)) {
-    Fail "python executable not found: $PythonExe"
-}
-
-# The weekly entrypoint. run.py exposes the full staged pipeline;
-# `python -m ipos.run` executes it with default (live-pull) settings.
-$Runner = Join-Path $RepoRoot "ipos\run.py"
-if (-not (Test-Path $Runner)) { Fail "runner not found: $Runner" }
-
-$ActionArgs = @("-X", "utf8", "-m", "ipos.run")
-Info "repo      : $RepoRoot"
-Info "python    : $PythonExe"
-Info "action    : $PythonExe $($ActionArgs -join ' ')"
-Info "schedule  : every Saturday at $RunTime"
-
-# --- unregister mode ---------------------------------------------------------
-if ($Unregister) {
-    if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
-        Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
-        Info "task '$TaskName' removed."
-    } else {
-        Info "task '$TaskName' not present; nothing to remove."
+# --- 1. Query Status Mode ---
+if ($Status) {
+    $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
+    if (-not $existing) {
+        Info "Task '$TaskName' is NOT registered."
+        exit 0
+    }
+    $info = Get-ScheduledTaskInfo -TaskName $TaskName -ErrorAction SilentlyContinue
+    Info "Task Name       : $TaskName"
+    Info "State           : $($existing.State)"
+    Info "Last Run Time   : $($info.LastRunTime)"
+    Info "Last Task Result: $($info.LastTaskResult)"
+    Info "Next Run Time   : $($info.NextRunTime)"
+    
+    $statusJson = Join-Path $RepoRoot "data\exports\automation_status.json"
+    if (Test-Path $statusJson) {
+        Info "--- Latest Automation Status Record ---"
+        Get-Content $statusJson | Write-Host
     }
     exit 0
 }
 
-# --- build trigger / settings / action ---------------------------------------
+# --- 2. Unregister Mode ---
+if ($Unregister) {
+    if (Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue) {
+        Unregister-ScheduledTask -TaskName $TaskName -Confirm:$false
+        Info "Task '$TaskName' removed successfully."
+    } else {
+        Info "Task '$TaskName' not present; nothing to remove."
+    }
+    exit 0
+}
+
+# --- 3. Resolve Runner Script ---
+$AutomatedRunner = Join-Path $RepoRoot "scripts\run_pipeline_automated.ps1"
+if (-not (Test-Path $AutomatedRunner)) {
+    Fail "Automated runner script not found at: $AutomatedRunner"
+}
+
+$PowershellExe = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$ActionArgs = "-NoProfile -ExecutionPolicy Bypass -File `"$AutomatedRunner`""
+
+Info "Repo Root : $RepoRoot"
+Info "Runner    : $AutomatedRunner"
+Info "Schedule  : Every Saturday at $RunTime"
+
+# --- 4. Build Trigger / Settings / Action ---
 $Trigger = New-ScheduledTaskTrigger -Weekly -DaysOfWeek Saturday -At $RunTime
 
 $Settings = New-ScheduledTaskSettingsSet `
@@ -81,43 +95,34 @@ $Settings = New-ScheduledTaskSettingsSet `
     -AllowStartIfOnBatteries `
     -ExecutionTimeLimit (New-TimeSpan -Hours 2) `
     -MultipleInstances IgnoreNew
-# StartWhenAvailable: run missed schedules after wake/sleep.
-# MultipleInstances IgnoreNew: never overlap two weekly runs.
 
 $Action = New-ScheduledTaskAction `
-    -Execute $PythonExe `
-    -Argument ($ActionArgs -join " ") `
+    -Execute $PowershellExe `
+    -Argument $ActionArgs `
     -WorkingDirectory $RepoRoot
 
 $Principal = New-ScheduledTaskPrincipal -UserId $env:USERNAME -LogonType Interactive -RunLevel Limited
 
-# --- register ----------------------------------------------------------------
+# --- 5. Register Task ---
 $existing = Get-ScheduledTask -TaskName $TaskName -ErrorAction SilentlyContinue
 if ($existing) {
     Set-ScheduledTask -TaskName $TaskName -Trigger $Trigger -Settings $Settings -Action $Action | Out-Null
-    Info "task '$TaskName' UPDATED."
+    Info "Task '$TaskName' successfully UPDATED."
 } else {
     Register-ScheduledTask -TaskName $TaskName `
         -Action $Action -Trigger $Trigger -Settings $Settings `
         -Principal $Principal -Description `
-        "IPOS weekly macro pipeline: data pull -> DuckDB -> scoring -> regime -> snapshot export." | Out-Null
-    Info "task '$TaskName' REGISTERED."
+        "IPOS weekly investment pipeline: pull -> score -> aggregate -> riskfolio -> action matrix -> export." | Out-Null
+    Info "Task '$TaskName' successfully REGISTERED."
 }
 
-# Wrap the action with log capture by registering a cmd wrapper instead, so
-# stdout/stderr land in logs\scheduled\<date>.log for auditability.
-$WrapCmd = "/c cd /d `"$RepoRoot`" && `"$PythonExe`" -X utf8 -m ipos.run >> `"$LogsDir\run_%DATE:/=-%.log`" 2>&1"
-$WrapAction = New-ScheduledTaskAction -Execute "$env:ComSpec" -Argument $WrapCmd -WorkingDirectory $RepoRoot
-Set-ScheduledTask -TaskName $TaskName -Action $WrapAction | Out-Null
-Info "log capture wired -> $LogsDir"
-
-# --- optional immediate run ---------------------------------------------------
+# --- 6. Immediate Run ---
 if ($RunNow) {
-    Info "triggering one run now..."
+    Info "Triggering task '$TaskName' now..."
     Start-ScheduledTask -TaskName $TaskName
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 3
     $state = (Get-ScheduledTask -TaskName $TaskName).State
-    Info "task state: $state"
+    Info "Task current state: $state"
 }
 
-Info "done."
+Info "Done."

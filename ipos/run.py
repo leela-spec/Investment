@@ -293,3 +293,11 @@ def run_weekly(
     if result.stale or result.missing:
         result.status = "DEGRADED"
     return result
+
+
+if __name__ == "__main__":
+    import sys
+    from ipos.cli import cmd_weekly
+
+    sys.exit(cmd_weekly(sys.argv[1:]))
+
