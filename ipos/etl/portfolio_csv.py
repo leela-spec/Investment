@@ -32,9 +32,18 @@ PORTFOLIO_PATTERNS = (
     "ZERO-pos*.csv",
     "zero-pos*.csv",
     "3370191001*.pdf",
+    "3370191001*.csv",
     "portfolio*.pdf",
     "*Depot*.pdf",
     "*depot*.pdf",
+    "Buchungen*.csv",
+    "buchungen*.csv",
+    "Vermögensaufstellung*.csv",
+    "vermoegensaufstellung*.csv",
+    "Wertpapiere*.csv",
+    "wertpapiere*.csv",
+    "pp-*.csv",
+    "PP-*.csv",
 )
 
 # Column-name candidates, English first, then the German broker-export names
@@ -171,6 +180,36 @@ def _load_single_positions_file(src: Path) -> pd.DataFrame:
         return _parse_smartbroker_pdf(src)
     text = _read_text(src)
     header_line = text.splitlines()[0] if text else ""
+    header_clean = header_line.replace('"', '').replace('\ufeff', '').strip()
+
+    # Check for Portfolio Performance export formats
+    from ipos.portfolio.pp_adapter import PortfolioPerformanceAdapter
+    if PortfolioPerformanceAdapter.is_buchungen_export(header_clean):
+        from ipos.portfolio.accounting import PortfolioLedger
+        adapter = PortfolioPerformanceAdapter()
+        df_acts = adapter.parse_buchungen(src)
+        ledger = PortfolioLedger()
+        ledger.replay_activities(df_acts)
+        df_pp = ledger.to_ipos_positions()
+        if not df_pp.empty:
+            return df_pp[["instrument", "quantity", "value_eur", "currency"]].reset_index(drop=True)
+
+    if PortfolioPerformanceAdapter.is_holdings_export(header_clean):
+        adapter = PortfolioPerformanceAdapter()
+        df_pp = adapter.to_ipos_positions(src)
+        if not df_pp.empty:
+            return df_pp[["instrument", "quantity", "value_eur", "currency"]].reset_index(drop=True)
+
+    if PortfolioPerformanceAdapter.is_smartbroker_activities_export(header_clean):
+        from ipos.portfolio.accounting import PortfolioLedger
+        adapter = PortfolioPerformanceAdapter()
+        df_acts = adapter.parse_smartbroker_activities(src)
+        ledger = PortfolioLedger(account_name="SMARTBROKER")
+        ledger.replay_activities(df_acts)
+        df_pp = ledger.to_ipos_positions()
+        if not df_pp.empty:
+            return df_pp[["instrument", "quantity", "value_eur", "currency"]].reset_index(drop=True)
+
     sep = _sniff_delimiter(header_line)
     raw = pd.read_csv(io.StringIO(text), sep=sep, dtype=str)
     german_locale = _detect_german_locale(header_line, raw, sep)

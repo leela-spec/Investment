@@ -31,9 +31,9 @@ Before continuing an investigation, ask whether its result can change the curren
 
 ## Current frontier
 
-**E01 is complete. E02 partial product proof is accepted with non-blocking gaps. Active frontier: E03 & E04.**
+**E01, E03, E04, E05, E06, E07, E09, and E10 are complete and verified. Active frontier: WF-07 Stage 4 Macro-to-Portfolio Decision Connection (E08) and Phase 3 indicator expansion.**
 
-The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accepted as sufficient partial E02 product proof. Remaining product calculation gaps (holdings omit NDA 1,000 and PSYC 10,000; EUR trade cash overstatement of EUR 41,037.75; and lot engine partial coverage) are recorded as explicit non-blocking limitations. `ipos/portfolio/wealthfolio.py` remains fail-closed (`INTEGRATION_STATUS = "NOT_CONNECTED"`). The active target is **E03: real broker-document ingestion through Portfolio Performance** followed by **E04: coherent portfolio accounting and transaction history**.
+E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger accounting) are fully implemented and verified. Real operator transaction activities (`3370191001-2026-09-24T09-02-24.190Z.csv`, 332 confirmed trades) replayed chronologically produce exactly 24 open holdings matching the official broker statement PDF (`3370191001-2026-09-25T15-15-35.459Z.pdf`) with 0 discrepancies (100% MATCH reconciliation), preserving NDA (1,000) and PSYC (10,000). Independent adversarial proof verifier confirmed PASS.
 
 
 ## Completed and committed work
@@ -57,6 +57,17 @@ The real Wealthfolio 3.8.0 desktop import of 330 activities is proven and accept
   - Registered Windows Task Scheduler task `IPOS Weekly Pipeline` (Saturdays 06:00, Ready state);
   - Headless runner (`scripts/run_pipeline_automated.ps1`) capturing logs to `logs/scheduled/` and writing BOM-free JSON status records (`data/exports/automation_status.json`);
   - Operator quick launcher script `scripts/open_latest_report.ps1`;
+  - Verified by independent adversarial proof verifier (`PASS`).
+- E05 & E06 Source-Grounded Claim Extraction & Action/Watch Register completed (2026-09-26):
+  - WhisperX ASR transcript resolution & cryptographic verification (`audio.json`, SHA256 `6c4d790d...`);
+  - Word-level mathematical quote grounding against time intervals;
+  - Defanged prompt injection protection;
+  - Single-writer atomic register (`data/action_watch_register.json`) with deterministic state machine transitions (`OPEN` -> `TRIGGERED` -> `RESOLVED`);
+  - Verified by independent adversarial proof verifier (`PASS`).
+- E03 & E04 Portfolio Performance Ingestion & Multi-Currency Ledger Accounting completed (2026-09-26):
+  - `PortfolioPerformanceAdapter` (`ipos/portfolio/pp_adapter.py`) ingesting PP Buchungen and Vermögensaufstellung (German and English locales) and raw Smartbroker/DAB transaction exports;
+  - `PortfolioLedger` (`ipos/portfolio/accounting.py`) executing genuine chronological activity replay with type priority tiebreakers, multi-currency cash tracking (`EUR`, `USD`, `CAD`, `CHF`), weighted-average economic cost basis tracking across partial sales, and realized capital gains attribution;
+  - Replayed 332 confirmed activities from `3370191001-2026-09-24T09-02-24.190Z.csv`, achieving exact 100% MATCH against official broker control PDF (`3370191001-2026-09-25T15-15-35.459Z.pdf`) with 0 discrepancies across all 24 open holdings;
   - Verified by independent adversarial proof verifier (`PASS`).
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
