@@ -176,8 +176,36 @@ def run_weekly(
                            else f"modules={len(portfolio_block['modules'])} "
                                 f"unmapped={len(portfolio_block['unmapped'])}"))
 
+        # --- stage: evidence_ingest (WF-07 Stages 1–3) ---
+        t0 = dt.datetime.now()
+        evidence_ingest_summary = None
+        try:
+            from ipos.evidence.ingest import ingest_all_pending_evidence
+            ingest_res = ingest_all_pending_evidence()
+            evidence_ingest_summary = ingest_res.to_dict()
+        except Exception as exc:
+            log.warning("evidence ingestion failed or skipped: %s", exc)
+            evidence_ingest_summary = {"error": str(exc)}
+
+        result.stages["evidence_ingest"] = {
+            "computed": evidence_ingest_summary is not None,
+            "discovered": evidence_ingest_summary.get("files_discovered", 0) if evidence_ingest_summary else 0,
+            "processed": evidence_ingest_summary.get("files_processed", 0) if evidence_ingest_summary else 0,
+            "claims_verified": evidence_ingest_summary.get("claims_verified", 0) if evidence_ingest_summary else 0,
+            "watches_registered": evidence_ingest_summary.get("watches_registered", 0) if evidence_ingest_summary else 0,
+            "actions_registered": evidence_ingest_summary.get("actions_registered", 0) if evidence_ingest_summary else 0,
+            "quarantined": evidence_ingest_summary.get("quarantined_count", 0) if evidence_ingest_summary else 0,
+        }
+        _log_stage(con, run_id, aod, "evidence_ingest", "OK", t0,
+                   detail=("no evidence processed" if not evidence_ingest_summary or evidence_ingest_summary.get("files_processed", 0) == 0
+                           else f"processed={evidence_ingest_summary.get('files_processed')} "
+                                f"claims={evidence_ingest_summary.get('claims_verified')} "
+                                f"actions={evidence_ingest_summary.get('actions_registered')} "
+                                f"watches={evidence_ingest_summary.get('watches_registered')}"))
+
         # --- stage: macro_decision (WF-07 Stage 4 / US-06) ---
         t0 = dt.datetime.now()
+
         macro_decision_summary = None
         macro_decision_obj = None
         reg_info = None

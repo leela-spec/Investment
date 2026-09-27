@@ -247,11 +247,39 @@ def cmd_replay(argv: list[str] | None = None) -> int:
     return 0
 
 
+def cmd_ingest_evidence(argv: list[str] | None = None) -> int:
+    """Ingest pending research drops from data/inbox/research/ into the Action/Watch Register."""
+    _load_dotenv()
+    p = argparse.ArgumentParser(
+        prog="ipos-ingest-evidence",
+        description="Ingest research drops into the Action/Watch Register.",
+    )
+    p.add_argument("--inbox", help="Path to research inbox directory (default: data/inbox/research)")
+    p.add_argument("-v", "--verbose", action="store_true")
+    args = p.parse_args(argv)
+    _setup_logging(args.verbose)
+    from ipos.evidence.ingest import ingest_all_pending_evidence
+
+    inbox_path = Path(args.inbox) if args.inbox else None
+    res = ingest_all_pending_evidence(inbox_dir=inbox_path)
+    print(
+        f"ipos-ingest-evidence: discovered={res.files_discovered}, processed={res.files_processed}, "
+        f"skipped={res.files_skipped_receipt}, claims={res.claims_verified}, "
+        f"watches={res.watches_registered}, actions={res.actions_registered}, "
+        f"quarantined={res.quarantined_count}"
+    )
+    if res.errors:
+        for err in res.errors:
+            print(f"  [ERROR] {err}", file=sys.stderr)
+        return 1
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     p = argparse.ArgumentParser(prog="ipos", description="Investment Process OS CLI.")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("init", "pull", "score", "weekly", "doctor", "backfill", "replay"):
+    for name in ("init", "pull", "score", "weekly", "doctor", "backfill", "replay", "ingest-evidence"):
         sub.add_parser(name, add_help=False)
     if not argv:
         p.print_help()
@@ -260,7 +288,7 @@ def main(argv: list[str] | None = None) -> int:
     dispatch = {
         "init": cmd_init, "pull": cmd_pull, "score": cmd_score,
         "weekly": cmd_weekly, "doctor": cmd_doctor, "backfill": cmd_backfill,
-        "replay": cmd_replay,
+        "replay": cmd_replay, "ingest-evidence": cmd_ingest_evidence,
     }
     if cmd not in dispatch:
         p.print_help()
@@ -270,3 +298,4 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+

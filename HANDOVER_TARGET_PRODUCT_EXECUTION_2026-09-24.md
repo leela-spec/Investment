@@ -31,7 +31,9 @@ Before continuing an investigation, ask whether its result can change the curren
 
 ## Current frontier
 
-**E01, E03, E04, E05, E06, E07, E08, E09, E10, and WF-07 Stage 6 are complete and verified. Active frontier: Phase 3 indicator expansion (from `configs/registry_120.yaml` to expand active 22 indicators to 60/120) and research evidence ingestion expansion.**
+**E01, E03, E04, E05, E06, E07, E08, E09, E10, WF-07 Stage 6, and WF-07 Stages 1–3 (Automated Evidence Ingestion) are complete and verified. Active frontier: Phase 3 indicator expansion (from `configs/registry_120.yaml` to expand active 22 indicators to 60/120).**
+
+WF-07 Stages 1–3 (Automated Evidence Ingestion) is fully implemented and verified. Ingest engine (`ipos/evidence/ingest.py`) monitors inbox drops (`data/inbox/research/` and `data/inbox/`), resolves WhisperX ASR transcript paths, validates mathematical word-level timestamp quote grounding against exact transcripts, sanitizes and quarantines adversarial prompt injection attempts, maps research sector references to the 6 canonical IPOS clusters, writes cryptographic tamper-evident receipts (`.receipt.json`), and idempotently upserts structured claims, watches, and actions into `data/action_watch_register.json`. Evidence ingestion runs early in `ipos.run`, allowing qualitative alerts to directly cascade into Stage 4 quantitative sector tilt penalties (0.80x), Stage 5 Action Matrix rebalancing, and Stage 6 Staged Orders. Independent adversarial proof verifier confirmed PASS.
 
 WF-07 Stage 6 (Staged Order Generation & Broker Order Tickets) is fully implemented and verified. Pure-numeric order staging engine maps Action Matrix recommendations to broker-specific staged order tickets (`SMARTBROKER` vs `ZERO`), enforces deterministic priority batching (Batch 1 capital releases TRIM/SELL execute before Batch 2 rebalance additions BUY), computes limit prices with 0.5% buffers, rounds to whole shares, and isolates gated additions. Zero execution leak verified. Independent adversarial proof verifier confirmed PASS.
 
@@ -89,6 +91,14 @@ E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger acc
   - Gated additions (`HOLD (GATED)`) strictly quarantined to `gated_holdings` with zero executable ticket emissions;
   - Zero execution leak verified (strictly zero API keys, endpoints, sockets, or automated orders);
   - Full weekly pipeline runner logging, snapshot schema validation, and rendering in `report.md` and `report.html`;
+  - WF-07 Stages 1–3 Automated Qualitative Evidence Ingestion completed (2026-09-27):
+  - Ingestion engine (`ipos/evidence/ingest.py`) scanning `data/inbox/research/` and `data/inbox/` for qualitative drops;
+  - WhisperX transcript resolution with word-level mathematical quote grounding against time intervals;
+  - Boundary prompt injection detection & defensive sanitization/quarantining;
+  - Canonical sector mapping to the 6 IPOS clusters (`TECHNOLOGY_AI`, etc.) enabling automatic downstream $0.80\times$ thesis-invalidation penalties in Stage 4;
+  - Idempotent upserting into single-writer register (`data/action_watch_register.json`) with persistent SHA-256 receipts (`.receipt.json`);
+  - Weekly pipeline (`ipos/run.py`) early wiring logging ingest stats to DuckDB `run_log`;
+  - CLI command `ipos ingest-evidence` added;
   - Verified by independent adversarial proof verifier (`PASS`).
 
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
@@ -182,11 +192,13 @@ Advance to **Phase 3 Indicator Expansion (60/120 Indicators)**:
 
 Run on 2026-09-27:
 
-- `uv run pytest` -> 265 passed, 0 failures across the test suite
+- `uv run pytest` -> 271 passed, 0 failures across the test suite
+- `uv run pytest tests/test_evidence_ingest.py -v` -> 6 passed
 - `uv run pytest tests/test_order_staging.py -v` -> 6 passed
 - `uv run python scripts/qa_repo.py` -> all required checks passed
 - `uv run python -m ipos.cli weekly --seed-offline --as-of 2026-09-25 --provider none` -> completed with `status=OK` (17 staged orders, €31,638 capital release, €5,384 deployment, €+26,253 net cash impact)
-- Independent adversarial proof verifier confirmed PASS for WF-07 Stage 6 (zero execution leaks, zero facades).
+- `uv run python -m ipos.cli ingest-evidence` -> completed with `status=OK`
+- Independent adversarial proof verifier confirmed PASS for WF-07 Stages 1–3 and WF-07 Stage 6 (zero execution leaks, zero facades).
 
 
 ## Required reporting format for the next chat

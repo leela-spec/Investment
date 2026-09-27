@@ -151,7 +151,12 @@ class MacroPortfolioDecisionEngine:
         try:
             data = json.loads(self.register_path.read_text(encoding="utf-8"))
             items = data.get("items") or []
-            return [it for it in items if str(it.get("status")).upper() == "OPEN" and str(it.get("class")).upper() == "ACTION"]
+            return [
+                it for it in items
+                if str(it.get("status")).upper() == "OPEN"
+                and str(it.get("item_class") or it.get("class")).upper() == "ACTION"
+            ]
+
         except Exception:
             return []
 
@@ -264,11 +269,13 @@ class MacroPortfolioDecisionEngine:
         # Map active register actions to sectors
         sector_alert_map: dict[str, list[str]] = {}
         for it in open_actions:
-            sec = str(it.get("sector", "")).upper()
+            sec = str(it.get("instrument_or_topic", "") or it.get("sector", "")).upper()
             item_id = str(it.get("item_id", ""))
             # Cross-map standard sector names
             mapped_sec = None
-            if "TECH" in sec or "INFORMATION_TECHNOLOGY" in sec:
+            if sec in self.sector_definitions:
+                mapped_sec = sec
+            elif "TECH" in sec or "INFORMATION_TECHNOLOGY" in sec or "SEMICONDUCTOR" in sec:
                 mapped_sec = "TECHNOLOGY_AI"
             elif "CRYPTO" in sec or "DIGITAL" in sec:
                 mapped_sec = "CRYPTO_DIGITAL_ASSETS"
@@ -278,6 +285,7 @@ class MacroPortfolioDecisionEngine:
                 mapped_sec = "ENERGY_COMMODITIES"
             elif "DEFENSE" in sec or "INDUSTRIAL" in sec:
                 mapped_sec = "DEFENSE_INDUSTRIALS"
+
 
             if mapped_sec:
                 sector_alert_map.setdefault(mapped_sec, []).append(item_id)
