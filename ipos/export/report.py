@@ -102,6 +102,44 @@ _Engine: Riskfolio-Lib v{{ action_matrix.risk_diagnostics.summary.riskfolio_vers
 {% endfor %}
 {% endif %}
 {% endif %}
+{% if staged_orders and staged_orders.summary and staged_orders.summary.total_tickets_count > 0 %}
+
+## Staged Broker Order Tickets (WF-07 Stage 6)
+_Sovereign Manual Execution Gate · Total Executable Tickets: **{{ staged_orders.summary.total_tickets_count }}** · Capital Release (Batch 1): **€{{ "%.0f"|format(staged_orders.summary.batch_1_estimated_release_eur) }}** · Capital Deployment (Batch 2): **€{{ "%.0f"|format(staged_orders.summary.batch_2_estimated_deploy_eur) }}** · Net Cash Impact: **€{{ "%+.0f"|format(staged_orders.summary.net_estimated_cash_change_eur) }}**_
+
+> ⚠️ **Sovereign Execution Notice**: Orders are staged strictly for manual review and sovereign entry into broker portals. Zero automated trade execution.
+
+{% if staged_orders.batch_1_tickets %}
+### Batch 1: Capital Release & Risk Reduction (Execute First)
+_Defensive TRIM / SELL actions to liberate cash and reduce portfolio volatility before rebalancing._
+
+| Priority | Broker | Action | Instrument | Holding / Asset | Shares | Ref Price | Limit Price (Buffer -{{ "%.1f"|format(staged_orders.summary.price_buffer_pct) }}%) | Est. Value (€) | Order Type | TIF | Stop Policy |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+{% for t in staged_orders.batch_1_tickets %}| **#{{ t.priority }}** | `{{ t.broker }}` | **{{ t.action }}** | `{{ t.instrument }}` | **{{ t.name }}** | {{ t.shares }} | €{{ "%.2f"|format(t.reference_price_eur) }} | €{{ "%.4f"|format(t.limit_price_eur) }} | €{{ "%.2f"|format(t.estimated_consideration_eur) }} | {{ t.order_type }} | {{ t.time_in_force }} | {{ t.trailing_stop_policy }} |
+{% endfor %}
+{% endif %}
+
+{% if staged_orders.batch_2_tickets %}
+### Batch 2: Capital Deployment & Rebalancing (Execute Second)
+_Permitted additions to reach target portfolio weights funded by Batch 1 capital release._
+
+| Priority | Broker | Action | Instrument | Holding / Asset | Shares | Ref Price | Limit Price (Cap +{{ "%.1f"|format(staged_orders.summary.price_buffer_pct) }}%) | Est. Value (€) | Order Type | TIF | Stop Policy |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+{% for t in staged_orders.batch_2_tickets %}| **#{{ t.priority }}** | `{{ t.broker }}` | **{{ t.action }}** | `{{ t.instrument }}` | **{{ t.name }}** | {{ t.shares }} | €{{ "%.2f"|format(t.reference_price_eur) }} | €{{ "%.4f"|format(t.limit_price_eur) }} | €{{ "%.2f"|format(t.estimated_consideration_eur) }} | {{ t.order_type }} | {{ t.time_in_force }} | {{ t.trailing_stop_policy }} |
+{% endfor %}
+{% endif %}
+
+{% if staged_orders.gated_holdings %}
+### Gated Additions (No Orders Placed)
+_Additions restricted by macro policy to preserve capital in caution regimes._
+
+| Broker | Instrument | Holding / Asset | Sector | Current (€ / %) | Target Delta (€ / %) | Gating Rationale |
+|---|---|---|---|---|---|---|
+{% for g in staged_orders.gated_holdings %}| `{{ g.broker }}` | `{{ g.instrument }}` | **{{ g.name }}** | {{ g.sector_name }} | €{{ "%.0f"|format(g.current_value_eur) }} | €{{ "%+.0f"|format(g.delta_value_eur) }} ({{ "%+.1f"|format(g.delta_weight_pct) }}%) | {{ g.notes }} |
+{% endfor %}
+{% endif %}
+{% endif %}
+
 {% if action_watch_register and (action_watch_register.active_watches or action_watch_register.active_actions) %}
 
 ## Active Research Theses & Watch Register
@@ -189,6 +227,7 @@ def render_report(snapshot: dict) -> str:
         portfolio_rows=portfolio_vs_stance(snapshot),
         portfolio=snapshot.get("portfolio"),
         action_matrix=snapshot.get("action_matrix"),
+        staged_orders=snapshot.get("staged_orders"),
         action_watch_register=snapshot.get("action_watch_register"),
         top_movers=snapshot["top_movers"],
         contradictions=snapshot["contradictions"],

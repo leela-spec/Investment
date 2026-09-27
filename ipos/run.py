@@ -228,6 +228,7 @@ def run_weekly(
         # --- stage: action_matrix (WF-07 Stage 5 / US-07) ---
         t0 = dt.datetime.now()
         action_matrix_summary = None
+        am = None
         if positions is not None and not positions.empty and portfolio_block is not None and reg_info and ov_info:
             from ipos.portfolio.action_matrix import build_action_matrix
             riskfolio_block = None
@@ -262,6 +263,28 @@ def run_weekly(
         _log_stage(con, run_id, aod, "action_matrix", "OK", t0,
                    detail=("no action matrix" if action_matrix_summary is None
                            else f"actions={action_matrix_summary.get('actions_count')}"))
+
+        # --- stage: order_staging (WF-07 Stage 6) ---
+        t0 = dt.datetime.now()
+        staged_orders_summary = None
+        if am is not None and am.get("items"):
+            from ipos.portfolio.order_staging import stage_orders_from_action_matrix
+            staged = stage_orders_from_action_matrix(am, as_of=aod)
+            staged_orders_summary = staged.get("summary")
+        result.stages["order_staging"] = {
+            "computed": staged_orders_summary is not None,
+            "tickets_count": staged_orders_summary.get("total_tickets_count", 0) if staged_orders_summary else 0,
+            "batch_1_count": staged_orders_summary.get("batch_1_capital_release_count", 0) if staged_orders_summary else 0,
+            "batch_2_count": staged_orders_summary.get("batch_2_rebalance_deploy_count", 0) if staged_orders_summary else 0,
+            "gated_count": staged_orders_summary.get("gated_holdings_count", 0) if staged_orders_summary else 0,
+        }
+        _log_stage(con, run_id, aod, "order_staging", "OK", t0,
+                   detail=("no staged orders" if staged_orders_summary is None
+                           else f"tickets={staged_orders_summary.get('total_tickets_count')} "
+                                f"batch_1={staged_orders_summary.get('batch_1_capital_release_count')} "
+                                f"batch_2={staged_orders_summary.get('batch_2_rebalance_deploy_count')} "
+                                f"gated={staged_orders_summary.get('gated_holdings_count')}"))
+
 
         # --- stage: forecast log (record-before-the-verdict) ---
         #     Writes down this week's falsifiable calls so they can be scored

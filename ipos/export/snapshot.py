@@ -417,7 +417,15 @@ def build_snapshot(con: duckdb.DuckDBPyConnection, registry: Registry, as_of: dt
         snapshot["action_matrix"] = action_matrix_block
         if action_matrix_block.get("summary", {}).get("macro_decision"):
             snapshot["macro_portfolio_decision"] = action_matrix_block["summary"]["macro_decision"]
+        try:
+            from ipos.portfolio.order_staging import stage_orders_from_action_matrix
+            staged_block = stage_orders_from_action_matrix(action_matrix_block, as_of=as_of)
+            if staged_block and staged_block.get("summary"):
+                snapshot["staged_orders"] = staged_block
+        except Exception:
+            pass
     if riskfolio_block is not None:
+
         snapshot["riskfolio"] = riskfolio_block
     try:
         from ipos.evidence.register import ActionWatchRegister
@@ -587,6 +595,17 @@ SNAPSHOT_SCHEMA = {
                 "gating": {"type": "object"},
                 "sector_allocations": {"type": "array"},
                 "sector_target_weights": {"type": "object"},
+            },
+        },
+        "staged_orders": {
+            "type": "object",
+            "description": "Optional — WF-07 Stage 6 staged broker order tickets for manual execution.",
+            "properties": {
+                "summary": {"type": ["object", "null"]},
+                "batch_1_tickets": {"type": "array"},
+                "batch_2_tickets": {"type": "array"},
+                "gated_holdings": {"type": "array"},
+                "all_tickets": {"type": "array"},
             },
         },
     },

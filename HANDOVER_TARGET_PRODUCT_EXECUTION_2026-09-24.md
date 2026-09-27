@@ -31,9 +31,12 @@ Before continuing an investigation, ask whether its result can change the curren
 
 ## Current frontier
 
-**E01, E03, E04, E05, E06, E07, E08, E09, and E10 are complete and verified. Active frontier: Phase 3 indicator expansion (from `configs/registry_120.yaml` to expand active 22 indicators to 60/120) and research evidence ingestion expansion.**
+**E01, E03, E04, E05, E06, E07, E08, E09, E10, and WF-07 Stage 6 are complete and verified. Active frontier: Phase 3 indicator expansion (from `configs/registry_120.yaml` to expand active 22 indicators to 60/120) and research evidence ingestion expansion.**
+
+WF-07 Stage 6 (Staged Order Generation & Broker Order Tickets) is fully implemented and verified. Pure-numeric order staging engine maps Action Matrix recommendations to broker-specific staged order tickets (`SMARTBROKER` vs `ZERO`), enforces deterministic priority batching (Batch 1 capital releases TRIM/SELL execute before Batch 2 rebalance additions BUY), computes limit prices with 0.5% buffers, rounds to whole shares, and isolates gated additions. Zero execution leak verified. Independent adversarial proof verifier confirmed PASS.
 
 WF-07 Stage 4 / E08 (Macro-to-Portfolio Decision Connection) is fully implemented and verified. Pure-numeric deterministic sector tilt engine maps all portfolio holdings into 6 core sector clusters, dynamically cascades macro stance vector into bounded multipliers [0.20, 1.80], penalizes research-invalidated sectors (0.80x), executes systematic asymmetric gating (Confidence Gate < 50% or UNCERTAIN regime gates BUY -> HOLD (GATED) while preserving defensive TRIM/SELL), and runs Riskfolio-Lib Hierarchical Risk Parity (rp.HCPortfolio). Independent adversarial proof verifier confirmed PASS.
+
 
 E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger accounting) are fully implemented and verified. Real operator transaction activities (`3370191001-2026-09-24T09-02-24.190Z.csv`, 332 confirmed trades) replayed chronologically produce exactly 24 open holdings matching the official broker statement PDF (`3370191001-2026-09-25T15-15-35.459Z.pdf`) with 0 discrepancies (100% MATCH reconciliation), preserving NDA (1,000) and PSYC (10,000). Independent adversarial proof verifier confirmed PASS.
 
@@ -79,6 +82,15 @@ E03 (Portfolio Performance adapter) and E04 (Multi-Currency Portfolio Ledger acc
   - Riskfolio-Lib Hierarchical Risk Parity (`rp.HCPortfolio`) optimization running alongside classic Risk Parity;
   - Full end-to-end integration into `ipos/run.py`, `snapshot.json`, `report.md`, and interactive `report.html`;
   - Verified by independent adversarial proof verifier (`PASS`).
+- WF-07 Stage 6 Staged Order Generation & Broker Order Tickets completed (2026-09-27):
+  - Deterministic broker routing (`configs/portfolio_mapping.yaml`) mapping 47 instruments to `SMARTBROKER` or `ZERO`;
+  - Pure-numeric staged order engine (`ipos/portfolio/order_staging.py`) enforcing priority batching: Batch 1 (defensive capital releases TRIM/SELL) sorted descending by capital released; Batch 2 (rebalancing BUY) sorted descending by capital deployed;
+  - Whole-share rounding, limit prices with 0.5% buffers (downside floor for sells, upside cap for buys), GFD validity, and attached regime stop policies;
+  - Gated additions (`HOLD (GATED)`) strictly quarantined to `gated_holdings` with zero executable ticket emissions;
+  - Zero execution leak verified (strictly zero API keys, endpoints, sockets, or automated orders);
+  - Full weekly pipeline runner logging, snapshot schema validation, and rendering in `report.md` and `report.html`;
+  - Verified by independent adversarial proof verifier (`PASS`).
+
 - Commit `e5c073c` added E02 native-product proof material and retained E05 evidence.
 - Commit `ac7b660` aligned the controlled Wealthfolio acceptance fixture with Wealthfolio 3.8 semantics.
 - E01 evidence: `implementation-runs/E01/20260923-222414/VERIFICATION_REPORT.md`.
@@ -168,13 +180,14 @@ Advance to **Phase 3 Indicator Expansion (60/120 Indicators)**:
 
 ## Latest local verification
 
-Run on 2026-09-26:
+Run on 2026-09-27:
 
-- `uv run pytest` -> 259 passed, 0 failures across the test suite
-- `uv run pytest tests/test_macro_decision.py -v` -> 6 passed
+- `uv run pytest` -> 265 passed, 0 failures across the test suite
+- `uv run pytest tests/test_order_staging.py -v` -> 6 passed
 - `uv run python scripts/qa_repo.py` -> all required checks passed
-- `uv run python -m ipos.cli weekly --seed-offline --as-of 2026-09-25 --provider none` -> completed with `status=OK`
-- Independent adversarial proof verifier confirmed PASS for WF-07 Stage 4 / E08.
+- `uv run python -m ipos.cli weekly --seed-offline --as-of 2026-09-25 --provider none` -> completed with `status=OK` (17 staged orders, €31,638 capital release, €5,384 deployment, €+26,253 net cash impact)
+- Independent adversarial proof verifier confirmed PASS for WF-07 Stage 6 (zero execution leaks, zero facades).
+
 
 ## Required reporting format for the next chat
 

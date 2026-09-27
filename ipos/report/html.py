@@ -593,6 +593,157 @@ _TEMPLATE = """<!doctype html>
 {% endif %}
 {% endif %}
 
+{% if s.staged_orders and s.staged_orders.summary and s.staged_orders.summary.total_tickets_count > 0 %}
+{% set so = s.staged_orders %}
+<h2>Staged Broker Order Tickets (WF-07 Stage 6)</h2>
+<div class="sub" style="margin-bottom: 12px;">
+  Sovereign Manual Execution Gate · Total Executable Tickets: <strong>{{ so.summary.total_tickets_count }}</strong> · 
+  Capital Release (Batch 1): <strong>€{{ "%.0f"|format(so.summary.batch_1_estimated_release_eur) }}</strong> · 
+  Capital Deployment (Batch 2): <strong>€{{ "%.0f"|format(so.summary.batch_2_estimated_deploy_eur) }}</strong> · 
+  Net Cash Impact: <strong>€{{ "%+.0f"|format(so.summary.net_estimated_cash_change_eur) }}</strong>
+</div>
+
+<div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 10px 14px; margin-bottom: 16px; border-radius: 4px; font-size: 0.85rem; color: #1e40af;">
+  <strong>Sovereign Execution Notice:</strong> Orders are staged strictly for manual review and entry into broker web/app portals. Zero automated trade execution APIs.
+</div>
+
+{% if so.batch_1_tickets %}
+<div style="margin-top: 1.5rem; margin-bottom: 0.5rem; display: flex; align-items: baseline; justify-content: space-between;">
+  <h3 style="margin: 0; font-size: 1.1rem; color: #b91c1c;">Batch 1: Capital Release & Risk Reduction (Execute First)</h3>
+  <span class="sub">Defensive TRIM / SELL actions liberating €{{ "%.0f"|format(so.summary.batch_1_estimated_release_eur) }} cash</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 60px;">Priority</th>
+      <th>Broker</th>
+      <th style="text-align:center;">Action</th>
+      <th>Holding / Asset</th>
+      <th class="num">Shares</th>
+      <th class="num">Ref Price</th>
+      <th class="num">Limit Price (-{{ "%.1f"|format(so.summary.price_buffer_pct) }}%)</th>
+      <th class="num">Est. Value</th>
+      <th>Order Type</th>
+      <th>Stop Policy</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in so.batch_1_tickets %}
+    <tr>
+      <td><strong>#{{ t.priority }}</strong></td>
+      <td>
+        {% if t.broker == 'ZERO' %}
+          <span class="pill" style="background:#e0e7ff; color:#3730a3; font-weight:700;">finanzen.net zero</span>
+        {% else %}
+          <span class="pill" style="background:#fef3c7; color:#92400e; font-weight:700;">Smartbroker+</span>
+        {% endif %}
+      </td>
+      <td style="text-align:center;">
+        {% if t.action == 'SELL' %}
+          <span class="pill" style="background:#fee2e2; color:#b91c1c; font-weight:700;">SELL</span>
+        {% else %}
+          <span class="pill" style="background:#fef3c7; color:#b45309; font-weight:700;">TRIM</span>
+        {% endif %}
+      </td>
+      <td><strong>{{ t.name }}</strong><br><code class="sub" style="font-size:0.75rem;">{{ t.instrument }}</code></td>
+      <td class="num" style="font-weight:700;">{{ t.shares }}</td>
+      <td class="num">€{{ "%.2f"|format(t.reference_price_eur) }}</td>
+      <td class="num" style="font-weight:600; color:#b91c1c;">€{{ "%.4f"|format(t.limit_price_eur) }}</td>
+      <td class="num" style="font-weight:700;">€{{ "%.2f"|format(t.estimated_consideration_eur) }}</td>
+      <td><span class="pill" style="font-size:0.75rem;">{{ t.order_type }} ({{ t.time_in_force }})</span></td>
+      <td><code>{{ t.trailing_stop_policy }}</code></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if so.batch_2_tickets %}
+<div style="margin-top: 1.5rem; margin-bottom: 0.5rem; display: flex; align-items: baseline; justify-content: space-between;">
+  <h3 style="margin: 0; font-size: 1.1rem; color: #15803d;">Batch 2: Capital Deployment & Rebalancing (Execute Second)</h3>
+  <span class="sub">Rebalancing additions deploying €{{ "%.0f"|format(so.summary.batch_2_estimated_deploy_eur) }} cash</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th style="width: 60px;">Priority</th>
+      <th>Broker</th>
+      <th style="text-align:center;">Action</th>
+      <th>Holding / Asset</th>
+      <th class="num">Shares</th>
+      <th class="num">Ref Price</th>
+      <th class="num">Limit Price (+{{ "%.1f"|format(so.summary.price_buffer_pct) }}%)</th>
+      <th class="num">Est. Value</th>
+      <th>Order Type</th>
+      <th>Stop Policy</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for t in so.batch_2_tickets %}
+    <tr>
+      <td><strong>#{{ t.priority }}</strong></td>
+      <td>
+        {% if t.broker == 'ZERO' %}
+          <span class="pill" style="background:#e0e7ff; color:#3730a3; font-weight:700;">finanzen.net zero</span>
+        {% else %}
+          <span class="pill" style="background:#fef3c7; color:#92400e; font-weight:700;">Smartbroker+</span>
+        {% endif %}
+      </td>
+      <td style="text-align:center;">
+        <span class="pill" style="background:#dcfce7; color:#15803d; font-weight:700;">BUY</span>
+      </td>
+      <td><strong>{{ t.name }}</strong><br><code class="sub" style="font-size:0.75rem;">{{ t.instrument }}</code></td>
+      <td class="num" style="font-weight:700;">{{ t.shares }}</td>
+      <td class="num">€{{ "%.2f"|format(t.reference_price_eur) }}</td>
+      <td class="num" style="font-weight:600; color:#15803d;">€{{ "%.4f"|format(t.limit_price_eur) }}</td>
+      <td class="num" style="font-weight:700;">€{{ "%.2f"|format(t.estimated_consideration_eur) }}</td>
+      <td><span class="pill" style="font-size:0.75rem;">{{ t.order_type }} ({{ t.time_in_force }})</span></td>
+      <td><code>{{ t.trailing_stop_policy }}</code></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+
+{% if so.gated_holdings %}
+<div style="margin-top: 1.5rem; margin-bottom: 0.5rem; display: flex; align-items: baseline; justify-content: space-between;">
+  <h3 style="margin: 0; font-size: 1.1rem; color: #854d0e;">Gated Additions (No Orders Placed)</h3>
+  <span class="sub">Additions restricted by macro policy in caution regimes</span>
+</div>
+<table>
+  <thead>
+    <tr>
+      <th>Broker</th>
+      <th>Holding / Asset</th>
+      <th>Sector</th>
+      <th class="num">Current Value</th>
+      <th class="num">Target Delta</th>
+      <th>Gating Rationale</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for g in so.gated_holdings %}
+    <tr>
+      <td>
+        {% if g.broker == 'ZERO' %}
+          <span class="pill" style="background:#e0e7ff; color:#3730a3; font-size:0.75rem;">finanzen.net zero</span>
+        {% else %}
+          <span class="pill" style="background:#fef3c7; color:#92400e; font-size:0.75rem;">Smartbroker+</span>
+        {% endif %}
+      </td>
+      <td><strong>{{ g.name }}</strong><br><code class="sub" style="font-size:0.75rem;">{{ g.instrument }}</code></td>
+      <td><span class="pill" style="font-size:0.75rem;">{{ g.sector_name }}</span></td>
+      <td class="num">€{{ "%.0f"|format(g.current_value_eur) }}</td>
+      <td class="num" style="font-weight:600; color:#854d0e;">€{{ "%+.0f"|format(g.delta_value_eur) }} ({{ "%+.1f"|format(g.delta_weight_pct) }}%)</td>
+      <td class="sub">{{ g.notes }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endif %}
+{% endif %}
+
+
 {% if s.action_watch_register and (s.action_watch_register.active_watches or s.action_watch_register.active_actions) %}
 <h2>{{ concept_tt("action_watch_register", "Active Research Theses & Watch Register")|safe }}</h2>
 <div class="sub">Tracked qualitative macro hypotheses & falsifiable triggers (WF-07 Stage 3 / E05 & E06)</div>
