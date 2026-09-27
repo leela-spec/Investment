@@ -76,6 +76,7 @@ A **local-first, weekly Investment Process OS** on Windows/WSL: ~60 free-source 
 | Path | What it is |
 |---|---|
 | `HANDOVER.md` | **First read for a brand-new AI agent** — entry contract, rules of engagement |
+| `HANDOVER_INITIAL_PLAN_CONTROL.md` | **Initial Plan Control & Audit** — comprehensive cross-check of implementation vs initial master plan |
 | `PROJECT_STATE.md` | **This file — the living index. Start here.** |
 | `AGENTS.md` | Root project context, authority routing, and invariants |
 | `05_blueprint/00_MASTER_PLAN.md` | Macro plan: vision, constraints, principles, architecture, feature ranking |
