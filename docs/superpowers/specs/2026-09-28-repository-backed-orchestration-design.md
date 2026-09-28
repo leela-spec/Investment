@@ -4,6 +4,12 @@
 **Date:** 2026-09-28
 **Scope:** Investment Process OS (IPOS) planning and execution coordination
 
+This control-layer specification does not replace the product plan. The canonical process, value
+map, RI-01–RI-07 sequence, source fixtures, and architecture corrections remain in
+[`HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`](../../../HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md). The
+authoritative behavioral requirements remain in the existing
+[`IPOS user stories`](../../../05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md).
+
 ## 1. Purpose
 
 Create a product-first orchestration model in which chats are disposable execution surfaces and the
