@@ -275,11 +275,44 @@ def cmd_ingest_evidence(argv: list[str] | None = None) -> int:
     return 0
 
 
+def cmd_fixture_acceptance(argv: list[str] | None = None) -> int:
+    """Run the pinned offline fixture acceptance path."""
+    p = argparse.ArgumentParser(
+        prog="ipos fixture-acceptance",
+        description="Validate pinned research and portfolio fixtures offline.",
+    )
+    p.add_argument(
+        "--manifest",
+        default="configs/fixture_acceptance.yaml",
+        help="Pinned fixture manifest",
+    )
+    p.add_argument(
+        "--output",
+        help="New output directory (default: timestamped implementation-runs path)",
+    )
+    args = p.parse_args(argv)
+    from ipos.config.load import REPO_ROOT
+    from ipos.fixture_acceptance import FixtureAcceptanceError, run_fixture_acceptance
+
+    if args.output:
+        output = Path(args.output)
+    else:
+        stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
+        output = REPO_ROOT / "implementation-runs" / "fixture-acceptance" / stamp
+    try:
+        result = run_fixture_acceptance(Path(args.manifest), output)
+    except FixtureAcceptanceError as exc:
+        print(f"ipos fixture-acceptance: FAIL: {exc}", file=sys.stderr)
+        return 1
+    print(f"ipos fixture-acceptance: {result['status']} — {output}")
+    return 0
+
+
 def main(argv: list[str] | None = None) -> int:
     argv = list(sys.argv[1:] if argv is None else argv)
     p = argparse.ArgumentParser(prog="ipos", description="Investment Process OS CLI.")
     sub = p.add_subparsers(dest="cmd", required=True)
-    for name in ("init", "pull", "score", "weekly", "doctor", "backfill", "replay", "ingest-evidence"):
+    for name in ("init", "pull", "score", "weekly", "doctor", "backfill", "replay", "ingest-evidence", "fixture-acceptance"):
         sub.add_parser(name, add_help=False)
     if not argv:
         p.print_help()
@@ -289,6 +322,7 @@ def main(argv: list[str] | None = None) -> int:
         "init": cmd_init, "pull": cmd_pull, "score": cmd_score,
         "weekly": cmd_weekly, "doctor": cmd_doctor, "backfill": cmd_backfill,
         "replay": cmd_replay, "ingest-evidence": cmd_ingest_evidence,
+        "fixture-acceptance": cmd_fixture_acceptance,
     }
     if cmd not in dispatch:
         p.print_help()
@@ -298,4 +332,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

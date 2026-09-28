@@ -30,6 +30,7 @@ ipos-weekly = "ipos.cli:cmd_weekly"
 ipos-doctor = "ipos.cli:cmd_doctor"
 ipos-backfill = "ipos.cli:cmd_backfill"
 ipos-replay = "ipos.cli:cmd_replay"
+ipos-fixture-acceptance = "ipos.cli:cmd_fixture_acceptance"
 
 [build-system]
 requires = ["hatchling"]
