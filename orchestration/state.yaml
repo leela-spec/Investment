@@ -1,7 +1,7 @@
 schema_version: 1
 program: IPOS Research Intake and Evidence Operations
-phase: research-intake-ri-01-to-ri-07
-status: ready_for_orchestrator
+phase: research-intake-ri-01-to-ri-10
+status: ready_for_execution
 updated_at: 2026-09-28
 
 value_target: >-
@@ -17,7 +17,7 @@ operating_model:
 start_here:
   - PROJECT_STATE.md
   - orchestration/state.yaml
-  - orchestration/work/RI-01.yaml
+  - orchestration/work/RI-10.yaml
 
 authority:
   product_process: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
@@ -67,12 +67,12 @@ required_preflight:
   command: uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
   expected: 5 PASSED, 0 FAILED
 
-active_packet: RI-01
+active_packet: RI-10
 
 work:
   RI-01:
     title: Confirm source mandate and fixture pack
-    status: ready_for_operator_intake
+    status: stopped_pending_operator_source_mandate
     packet: orchestration/work/RI-01.yaml
     dependencies: []
   RI-02:
@@ -105,6 +105,11 @@ work:
     status: blocked
     packet: null
     dependencies: [RI-04, RI-05, RI-06]
+  RI-10:
+    title: Replay existing research and portfolio fixtures
+    status: ready_for_execution
+    packet: orchestration/work/RI-10.yaml
+    dependencies: []
 
 first_vertical_slice:
   source: implementation-runs/E05/20260923-230911/
@@ -122,5 +127,6 @@ openproject:
   work_packages_created: false
 
 next_action: >-
-  Start the orchestrator chat with this file, run the required preflight, and execute RI-01 by
-  collecting the operator's approved source identifiers and representative samples without secrets.
+  Execute RI-10 through ipos fixture-acceptance using only the pinned local fixtures. RI-01 remains
+  stopped pending the separate operator source mandate; live Gmail, WEB.DE, Karakeep, and
+  Activepieces activation are not prerequisites for RI-10.

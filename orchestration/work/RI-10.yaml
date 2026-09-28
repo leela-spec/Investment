@@ -1,0 +1,61 @@
+schema_version: 1
+id: RI-10
+title: Replay existing research and portfolio fixtures
+status: ready_for_execution
+
+product_value: >-
+  Prove the existing research-to-portfolio path against pinned local evidence without depending on
+  live services, changing production state, or crossing the manual broker boundary.
+
+executor_instruction: >-
+  Run the existing transcript, research-PDF, Smartbroker, ZERO, and macro fixtures through
+  ipos fixture-acceptance. Do not deploy services, request credentials, modify source fixtures,
+  or execute broker orders. Stop when the acceptance receipt reports PASS or a fixture-integrity
+  failure occurs.
+
+dependencies: []
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+    - uv run ipos fixture-acceptance
+
+allowed_paths:
+  - configs/fixture_acceptance.yaml
+  - ipos/evidence/ttk_adapter.py
+  - ipos/evidence/document_adapter.py
+  - ipos/fixture_acceptance.py
+  - ipos/cli.py
+  - pyproject.toml
+  - uv.lock
+  - tests/test_fixture_acceptance_manifest.py
+  - tests/test_ttk_adapter.py
+  - tests/test_document_adapter.py
+  - tests/test_fixture_portfolio_replay.py
+  - tests/test_fixture_acceptance.py
+  - tests/test_fixture_acceptance_cli.py
+  - implementation-runs/fixture-acceptance/
+  - orchestration/work/RI-10.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+forbidden_scope:
+  - Live Gmail, WEB.DE, Karakeep, Activepieces, or broker portal access
+  - Modifying source fixtures, broker exports, the live action/watch register, or warehouse
+  - Automated broker execution
+  - Claiming RI-01 or any live-source activation packet is complete
+
+acceptance:
+  - The reality battery reports 5 PASSED and 0 FAILED.
+  - Focused and complete repository test suites pass.
+  - ipos fixture-acceptance exits successfully.
+  - A timestamped PASS receipt exists under implementation-runs/fixture-acceptance/.
+  - Protected source fixtures and live data files remain unchanged.
+
+stop_when:
+  - A fixture is missing or hash-mismatched.
+  - A protected source or manual-execution boundary changes.
+  - A genuine technical blocker leaves no safe in-scope path.
