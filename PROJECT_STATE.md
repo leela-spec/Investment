@@ -10,8 +10,8 @@
 > **Active execution frontier:** read
 > [`HANDOVER_STAGE_IMPLEMENTATION.md`](HANDOVER_STAGE_IMPLEMENTATION.md) and [`06_modular_pipeline_alignment/00_INDEX.md`](06_modular_pipeline_alignment/00_INDEX.md).
 > Cross-stack architecture aligned: World 1 (Rebuild), World 2 (Consolidated WSL2 Apex engine & shared Postgres), and World 3 (Legacy Master Plan IP).
-> Active frontier: read [`HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`](HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md). Reuse the existing M04/M05/M07/M08/M09/M19 plans and prior media/TTK fixtures; first establish source mandate and live custody/routing before completing Karakeep REST sync. Mission 2 Telegram and Mission 3 indicator graduation remain in scope but do not imply that Karakeep or Activepieces are already deployed.
-> Orchestrator start: read the [`approved orchestration design`](docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md), then [`orchestration/state.yaml`](orchestration/state.yaml), then only the active work packet referenced there.
+> Active product map: [`HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`](HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md). Reuse the existing M04/M05/M07/M08/M09/M19 plans and prior media/TTK fixtures; first establish source mandate and live custody/routing before completing Karakeep REST sync. Mission 2 Telegram and Mission 3 indicator graduation remain in scope but do not imply that Karakeep or Activepieces are already deployed.
+> Orchestrator start: read [`orchestration/state.yaml`](orchestration/state.yaml), then only the active work packet referenced there.
 
 
 
@@ -81,7 +81,6 @@ A **local-first, weekly Investment Process OS** on Windows/WSL: ~60 free-source 
 | `HANDOVER_INITIAL_PLAN_CONTROL.md` | **Initial Plan Control & Audit** — comprehensive cross-check of implementation vs initial master plan |
 | `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md` | **Operator-facing intake handover** — reuses M04/M05/M07/M08/M09/M19, reconciles current architecture, names existing acceptance fixtures, and defines practitioner value and OpenProject placement |
 | `06_modular_pipeline_alignment/00_INDEX.md` | **Consolidated Pipeline & Cross-Stack Alignment** — definitive 3-world integration hub, network matrix, US-01..US-12 stories |
-| `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md` | **Approved orchestration contract** — authority split, bounded work packets, continuity, product-first and anti-drift gates |
 | `orchestration/state.yaml` | **Machine-readable orchestration entrypoint** — current phase, active packet, dependencies, authority router, and OpenProject projection state |
 | `orchestration/work/RI-01.yaml` | **Active bounded packet** — collect and approve the source mandate and existing fixture pack without deploying services or changing product code |
 | `PROJECT_STATE.md` | **This file — the living index. Start here.** |

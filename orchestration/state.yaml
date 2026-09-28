@@ -8,16 +8,19 @@ value_target: >-
   Turn approved real research sources into evidence-linked NO_IMPACT, WATCH, REVIEW, or
   HIGH_PRIORITY_REVIEW outcomes without automatic trading or LLM arithmetic.
 
+operating_model:
+  authority: Repository files are canonical; chat memory is disposable.
+  orchestrator: Select and sequence bounded outcomes, then accept or reject evidence; do not implement product changes.
+  executor: Deliver one independently verifiable outcome within the active packet.
+  openproject: Show ownership and status with repository links; do not duplicate technical context.
+
 start_here:
   - PROJECT_STATE.md
-  - HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
-  - docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md
   - orchestration/state.yaml
   - orchestration/work/RI-01.yaml
 
 authority:
   product_process: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
-  orchestration_contract: docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md
   current_architecture: 06_modular_pipeline_alignment/00_INDEX.md
   detailed_user_stories: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
   operational_stage_contract: HANDOVER_STAGE_IMPLEMENTATION.md

@@ -15,7 +15,6 @@
 - Initial Plan Control Handover: `HANDOVER_INITIAL_PLAN_CONTROL.md`
 - Stage Implementation Handover: `HANDOVER_STAGE_IMPLEMENTATION.md`
 - Active Research Intake Product Handover: `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`
-- Approved Orchestration Design: `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md`
 - Machine Orchestration State: `orchestration/state.yaml` (then read only its active packet)
 - OpenProject API Skill: `.agents/skills/openproject/SKILL.md` (private API v3 only; never browser automation)
 

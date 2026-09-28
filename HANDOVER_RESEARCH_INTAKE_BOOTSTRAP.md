@@ -14,16 +14,14 @@ This handover does not replace the existing plans. It converts them into one
 operator-facing execution slice and resolves environment drift between the
 August plans and the ratified September architecture.
 
-An orchestrator starts with only:
+An orchestrator does not read this whole handover at startup. It starts with only:
 
 1. `PROJECT_STATE.md`
-2. this handover
-3. `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md`
-4. `orchestration/state.yaml`
-5. the single active packet referenced by `orchestration/state.yaml`
+2. `orchestration/state.yaml`
+3. the single active packet referenced by `orchestration/state.yaml`
 
-An executor reads only its bounded packet and the exact authority sections cited there. The files
-below are an authority catalog, not a mandatory bulk-reading list:
+The active packet cites the exact sections of this handover and other authorities needed for its
+outcome. The files below are an authority catalog, not a mandatory bulk-reading list:
 
 | Authority | Load only when resolving |
 |---|---|
@@ -176,9 +174,8 @@ Status interpretation:
 
 Authoritative detail remains in the existing
 [`user stories`](05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md),
-the stage descriptions below, and the cited M04–M19 plans. The
-[`orchestration design`](docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md)
-defines how bounded chats execute this flow without losing context or inventing parallel plans.
+the stage descriptions below, and the cited M04–M19 plans. `orchestration/state.yaml` names the
+single active bounded packet so chats can execute this flow without inventing parallel plans.
 
 ## 4. The Process, Its Outputs, and Practitioner Value
 
@@ -590,10 +587,10 @@ which contracts describe reality?” Both must point to the same frontier.
 
 ```text
 Work in C:\GitDev\Investment on main. Read PROJECT_STATE.md,
-HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md, the approved repository-backed orchestration design,
-orchestration/state.yaml, and only the active packet named there. Load larger authority files only
-when the packet cites them. Do not reuse stale branch, runtime, port, database, or Docker assumptions
-from older handovers. Verify the reality battery before changes.
+orchestration/state.yaml, and only the active packet named there. Read only the exact authority
+sections cited by that packet. Do not bulk-read the full handover, historical plans, or `.agents/`
+transcripts. Do not reuse stale branch, runtime, port, database, or Docker assumptions. Verify the
+reality battery before changes.
 
 Start with RI-01 only. Do not create or dispatch an RI-02 packet until RI-01 is accepted and
 `orchestration/state.yaml` releases that dependency. Reuse the committed IMF E05 fixture and the
