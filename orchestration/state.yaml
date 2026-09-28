@@ -38,6 +38,19 @@ context_policy:
     - .agents/orchestrator_1/
     - C:/GitDev/apexai-os-meta/apex-meta/AI-Snippets/Inbetween_Delete/Chathistory.md
 
+worktree_policy:
+  observed_dirty: true
+  rule: Preserve every path outside the active packet's allowed_paths; do not treat uncommitted work as accepted truth.
+  unreviewed_existing_work:
+    - path: ipos/etl/karakeep.py
+      disposition: Preserve; reconcile only in a future Karakeep implementation packet.
+    - path: ipos/export/telegram.py
+      disposition: Preserve; reconcile only in a future Telegram implementation packet.
+    - path: implementation-runs/WF07-KARAKEEP-TELEGRAM/
+      disposition: Preserve as unreviewed execution evidence until a bounded review packet accepts or rejects it.
+    - path: .env.example
+      disposition: Preserve the existing modification; RI-01 must not alter it.
+
 invariants:
   - Code computes every numeric value; LLMs only classify or narrate.
   - Core Python and DuckDB run natively on Windows 11 NTFS.
