@@ -114,7 +114,7 @@ first_vertical_slice:
 
 openproject:
   role: Thin management projection only; repository state is authoritative.
-  skill: .agents/skills/openproject/SKILL.md
+  skill: C:/GitDev/agent-skills/skills/openproject/SKILL.md
   target_instance: http://127.0.0.1:8083
   proposed_project: Investment / IPOS
   project_identifier: investment-ipos
