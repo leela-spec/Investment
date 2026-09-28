@@ -1,0 +1,110 @@
+schema_version: 1
+program: IPOS Research Intake and Evidence Operations
+phase: research-intake-ri-01-to-ri-07
+status: ready_for_orchestrator
+updated_at: 2026-09-28
+
+value_target: >-
+  Turn approved real research sources into evidence-linked NO_IMPACT, WATCH, REVIEW, or
+  HIGH_PRIORITY_REVIEW outcomes without automatic trading or LLM arithmetic.
+
+start_here:
+  - PROJECT_STATE.md
+  - HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+  - docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md
+  - orchestration/state.yaml
+  - orchestration/work/RI-01.yaml
+
+authority:
+  product_process: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+  orchestration_contract: docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md
+  current_architecture: 06_modular_pipeline_alignment/00_INDEX.md
+  detailed_user_stories: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+  operational_stage_contract: HANDOVER_STAGE_IMPLEMENTATION.md
+  decision_flow: 00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md
+  component_plans:
+    activepieces_platform: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M04_ACTIVEPIECES_PLATFORM.yaml
+    email_events: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M05_ACTIVEPIECES_EMAIL_EVENT_FLOWS.yaml
+    karakeep: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M07_KARAKEEP.yaml
+    media: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml
+    knowledge: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml
+    acceptance: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M19_END_TO_END_ACCEPTANCE.yaml
+
+context_policy:
+  load_all_authorities: false
+  rule: Read only the active packet and authority paths explicitly cited by it.
+  checkpoint_rule: Persist decisions, evidence, deviations, and next actions; never persist chat transcripts or internal reasoning.
+  history_only:
+    - .agents/orchestrator_1/
+    - C:/GitDev/apexai-os-meta/apex-meta/AI-Snippets/Inbetween_Delete/Chathistory.md
+
+invariants:
+  - Code computes every numeric value; LLMs only classify or narrate.
+  - Core Python and DuckDB run natively on Windows 11 NTFS.
+  - Supporting containers use the single Apex WSL2 Docker engine and native ext4 storage.
+  - Wealthfolio remains a Windows desktop GUI with manual CSV synchronization.
+  - Broker execution remains manual and operator-controlled.
+  - No new framework, unrelated refactor, or additional documentation unless required by the active packet.
+  - Stop when the packet acceptance criteria pass.
+
+required_preflight:
+  command: uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  expected: 5 PASSED, 0 FAILED
+
+active_packet: RI-01
+
+work:
+  RI-01:
+    title: Confirm source mandate and fixture pack
+    status: ready_for_operator_intake
+    packet: orchestration/work/RI-01.yaml
+    dependencies: []
+  RI-02:
+    title: Deploy and prove Karakeep custody
+    status: blocked
+    packet: null
+    dependencies: [RI-01]
+  RI-03:
+    title: Deploy and prove Activepieces routing
+    status: blocked
+    packet: null
+    dependencies: [RI-01]
+  RI-04:
+    title: Configure Web.de and Gmail
+    status: blocked
+    packet: null
+    dependencies: [RI-01, RI-02, RI-03]
+  RI-05:
+    title: Configure YouTube and website discovery
+    status: blocked
+    packet: null
+    dependencies: [RI-01, RI-02]
+  RI-06:
+    title: Wire Karakeep export to IPOS evidence intake
+    status: blocked
+    packet: null
+    dependencies: [RI-02]
+  RI-07:
+    title: End-to-end practitioner acceptance
+    status: blocked
+    packet: null
+    dependencies: [RI-04, RI-05, RI-06]
+
+first_vertical_slice:
+  source: implementation-runs/E05/20260923-230911/
+  identity: IMF WEO July 2026 video vzZpKJlpqKo
+  route: Karakeep custody to IPOS evidence to practitioner review output
+  second_media_case: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/
+
+openproject:
+  role: Thin management projection only; repository state is authoritative.
+  skill: .agents/skills/openproject/SKILL.md
+  target_instance: http://127.0.0.1:8083
+  proposed_project: Investment / IPOS
+  project_identifier: investment-ipos
+  creation_status: pending_operator_confirmation_after_preview
+  work_packages_created: false
+
+next_action: >-
+  Start the orchestrator chat with this file, run the required preflight, and execute RI-01 by
+  collecting the operator's approved source identifiers and representative samples without secrets.

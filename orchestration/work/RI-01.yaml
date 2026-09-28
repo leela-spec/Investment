@@ -1,0 +1,133 @@
+schema_version: 1
+id: RI-01
+title: Confirm source mandate and fixture pack
+status: ready_for_operator_intake
+
+product_value: >-
+  Define exactly which research deserves attention so later automation creates a focused investment
+  queue rather than scanning whole mailboxes or the public web.
+
+practitioner_output: >-
+  One approved, machine-readable source registry with a reason for inclusion, priority, lookback,
+  detection method, and representative positive and negative samples for each source class.
+
+authority_refs:
+  - path: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+    sections:
+      - 3. What the Operator Ultimately Receives
+      - 4. The Process, Its Outputs, and Practitioner Value / Stage A
+      - 5. Reuse the Existing Proven Sources as Acceptance Fixtures
+      - 6. Minimal Initial Source Mandate for the Operator
+      - 7. Execution Order and Acceptance Value / RI-01
+  - path: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+    sections:
+      - US-EMAIL-01
+      - US-EMAIL-02
+      - US-EMAIL-03
+      - US-VIDEO-01
+      - US-EVIDENCE-01
+      - US-HEALTH-01
+
+operator_inputs:
+  web_de:
+    required:
+      - approved senders or domains
+      - target folder name
+      - one relevant EML example or stable local path
+      - one irrelevant EML example or stable local path
+  gmail:
+    required:
+      - approved senders or domains
+      - target label name
+      - one relevant message example or stable reference
+      - one duplicate or forwarded-message example or stable reference
+  youtube:
+    required:
+      - three to five channel URLs
+      - optional playlists
+      - topic or keyword filters
+      - approved lookback period
+  websites:
+    required:
+      - three to five public sites or section URLs
+      - RSS or Atom URL when known
+      - login or paywall status
+  manual:
+    required:
+      - one or two representative PDFs with publisher or source URL
+      - one or two one-off article bookmarks
+
+existing_fixture_pack:
+  - name: IMF WEO July 2026
+    identity: vzZpKJlpqKo
+    path: implementation-runs/E05/20260923-230911/
+    role: First custody and timestamp-grounding slice
+  - name: Markus Koch - Tech unter Druck
+    identity: vFTuLylvYnA
+    path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/
+    role: German investment-research and numerical-preservation case
+  - name: Elliott Prechter - Teaching a Machine to Count Elliott Waves
+    identity: CygwqaNg2PY
+    path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/
+    role: English technical-market case
+  - name: Market Cycles Report 2026-08-17
+    identity: oZIsMX6WgFs
+    path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/
+    role: WATCH-condition extraction case
+  - name: Ralph Adolphs emotions lecture
+    identity: P-h5WSQG1Sw
+    path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/
+    role: Non-investment control case
+
+outputs:
+  source_registry: configs/research_sources.yaml
+  updated_packet: orchestration/work/RI-01.yaml
+  updated_state: orchestration/state.yaml
+
+allowed_paths:
+  - configs/research_sources.yaml
+  - orchestration/work/RI-01.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+forbidden_scope:
+  - Deploying or configuring Karakeep
+  - Deploying or configuring Activepieces
+  - Connecting email credentials
+  - Implementing Karakeep or Telegram code
+  - Reading whole mailboxes or unrestricted websites
+  - Adding a new framework, database, dashboard, or generalized test harness
+  - Changing portfolio arithmetic, scoring, allocation, or order logic
+
+acceptance:
+  - Every approved source has an owner, source class, stable identifier, reason, topics, priority, lookback, and detection method.
+  - Email sources identify bounded folders or labels rather than whole-mailbox scanning.
+  - Every source class has a positive sample and a negative, duplicate, or irrelevant sample where applicable.
+  - The five existing media fixtures are verified by stable path and remain read-only.
+  - No password, OAuth token, API key, bot token, or mailbox credential is written to Git or chat.
+  - The registry is valid YAML and contains no unresolved placeholders.
+
+stop_when:
+  - The operator has not yet selected or approved a source.
+  - A requested source requires paywall bypassing, unrestricted mailbox access, or prohibited scraping.
+  - A fixture path is missing or its identity contradicts the committed evidence.
+  - Completing the packet would require service deployment or product-code changes.
+
+checkpoint_policy:
+  record:
+    - approved decisions
+    - stable sample paths or external identifiers
+    - validation evidence
+    - deviations and next action
+  omit:
+    - chat transcript
+    - internal reasoning
+    - routine command logs
+    - speculative future sources
+
+result:
+  state: pending_operator_inputs
+  source_registry: null
+  verified_fixtures: []
+  deviations: []
+  next_action: Ask the operator for the bounded source information listed in operator_inputs; do not request secrets.

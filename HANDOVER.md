@@ -1,5 +1,13 @@
 # HANDOVER — For the next AI agent continuing IPOS
 
+> **Current execution notice (2026-09-28):** The historical body below remains useful background but
+> is not the current execution route. In particular, its statements that no implementation exists and
+> that no orchestrator is needed are superseded. Start with `PROJECT_STATE.md`. For the active Research
+> Intake phase, follow `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`, then
+> `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md`,
+> `orchestration/state.yaml`, and only the active packet named there. Do not load every historical plan
+> or `.agents/` transcript. The packet cites the exact authority sections required for its outcome.
+
 > **Current execution notice (2026-09-24):** Read
 > [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md)
 > before following the historical next-step text below. E01 is complete and E02

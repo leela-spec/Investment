@@ -9,9 +9,15 @@
 - Playbook Rules: `04_playbook/modules/`
 - Extraction Runbook: `00_runbook/extraction_process.md`
 - Infrastructure Architecture Handover: `HANDOVER_INFRASTRUCTURE_ARCHITECTURE.okf.md`
+- Consolidated Pipeline & Cross-Stack Alignment: `06_modular_pipeline_alignment/00_INDEX.md`
 - Research-to-Portfolio Decision Flow: `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md`
 - Pipeline Audit Contract: `HANDOVER_RESEARCH_TO_PORTFOLIO_AUDIT.md`
 - Initial Plan Control Handover: `HANDOVER_INITIAL_PLAN_CONTROL.md`
+- Stage Implementation Handover: `HANDOVER_STAGE_IMPLEMENTATION.md`
+- Active Research Intake Product Handover: `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`
+- Approved Orchestration Design: `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md`
+- Machine Orchestration State: `orchestration/state.yaml` (then read only its active packet)
+- OpenProject API Skill: `.agents/skills/openproject/SKILL.md` (private API v3 only; never browser automation)
 
 ## Codebase Modules
 - Pipeline & Core Engine: `ipos/`

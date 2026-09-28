@@ -5,12 +5,13 @@
 > It answers: What is this? Where are we? Which plan is active? What happens next? Where is everything?
 > **Hard rule:** update this file at the end of every working session (checklist at the bottom). It supersedes `For next chat.md` (old handover, kept for history).
 
-**Last updated:** 2026-09-27 · **Updated by:** Automated Evidence Ingestion (WF-07 Stages 1–3) · **Branch of record:** `main` (direct commits only — no long-lived work branches)
+**Last updated:** 2026-09-28 · **Updated by:** Repository-Backed Orchestration Bootstrap · **Branch of record:** `main` (direct commits only — no long-lived work branches)
 
 > **Active execution frontier:** read
-> [`HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md`](HANDOVER_TARGET_PRODUCT_EXECUTION_2026-09-24.md).
-> E01, E03, E04, E05/E06, E07, E08, E09, E10, WF-07 Stage 6, and WF-07 Stages 1–3 are complete and verified. E02 partial product proof is accepted with non-blocking gaps.
-> Active frontier: Phase 3 indicator expansion (60-indicator breadth).
+> [`HANDOVER_STAGE_IMPLEMENTATION.md`](HANDOVER_STAGE_IMPLEMENTATION.md) and [`06_modular_pipeline_alignment/00_INDEX.md`](06_modular_pipeline_alignment/00_INDEX.md).
+> Cross-stack architecture aligned: World 1 (Rebuild), World 2 (Consolidated WSL2 Apex engine & shared Postgres), and World 3 (Legacy Master Plan IP).
+> Active frontier: read [`HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`](HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md). Reuse the existing M04/M05/M07/M08/M09/M19 plans and prior media/TTK fixtures; first establish source mandate and live custody/routing before completing Karakeep REST sync. Mission 2 Telegram and Mission 3 indicator graduation remain in scope but do not imply that Karakeep or Activepieces are already deployed.
+> Orchestrator start: read the [`approved orchestration design`](docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md), then [`orchestration/state.yaml`](orchestration/state.yaml), then only the active work packet referenced there.
 
 
 
@@ -41,6 +42,7 @@ A **local-first, weekly Investment Process OS** on Windows/WSL: ~60 free-source 
 | **A / E08 — Macro-to-Portfolio Decision Connection & Systematic Gating (`ipos/portfolio/decision.py`)** | ✅ **DONE (2026-09-26)** — WF-07 Stage 4 / US-06: Macro-to-Portfolio Decision Connection Engine. 6 sector clusters mapped (`configs/portfolio_mapping.yaml`), deterministic sector tilt multipliers bounded in [0.20, 1.80], active thesis-invalidation penalties (0.80x) integrated from `data/action_watch_register.json`, asymmetric rebalancing gating (Confidence Gate < 50% or UNCERTAIN regime converts additions to `HOLD (GATED)` while preserving `TRIM` and `SELL`), Riskfolio-Lib Hierarchical Risk Parity (`rp.HCPortfolio`) cluster allocations, and dual-format decision reporting rendered in `report.md` and `report.html`. Verified by independent adversarial proof verifier (PASS). |
 | **A / WF-07 Stage 6 — Staged Order Generation & Broker Order Tickets (`ipos/portfolio/order_staging.py`)** | ✅ **DONE (2026-09-27)** — Full WF-07 Stage 6 Operator Execution Gate. Deterministic broker routing (`configs/portfolio_mapping.yaml` for SMARTBROKER and ZERO), priority batching (Batch 1 capital releases TRIM/SELL execute before Batch 2 rebalance additions BUY), pure-numeric limit pricing with 0.5% buffers, estimated order considerations (€), GFD validity, regime stop attachment, gated isolation, and full snapshot & dual-format report rendering. Verified by independent adversarial proof verifier (PASS). |
 | **A / WF-07 Stages 1–3 — Automated Evidence Ingestion (`ipos/evidence/ingest.py`)** | ✅ **DONE (2026-09-27)** — WF-07 Stages 1–3 Automated Qualitative Evidence Ingestion. Inbox scanner (`data/inbox/research/` & `data/inbox/`), WhisperX transcript grounding verification down to word timestamps, prompt injection defensive sanitization/quarantining, 6-cluster canonical sector normalization, tamper-evident SHA-256 receipts (`.receipt.json`), and single-writer atomic register upserting (`data/action_watch_register.json`). Runs early in `ipos.run` weekly pipeline and CLI `ipos ingest-evidence`. Verified by independent adversarial proof verifier (PASS). |
+| **Research Intake Bootstrap — M04/M05/M07/M08/M09** | 📋 **PLANNED / REALITY-CHECKED (2026-09-28)** — Existing Activepieces email/event, Karakeep custody, media, and TTK plans are retained. Prior source proofs were located: Investment E05 IMF WhisperX/PySceneDetect fixture and the `apexai-os-meta` four-source TTK V2 regression/fresh bilingual runs. Current host check: Hermes and private OpenProject reachable; Karakeep `:3000` and Activepieces `:8080` not reachable. OpenProject API ownership scan found no existing IPOS/M01-M19 project; the proposed private destination is a new top-level `Investment / IPOS` project, pending the required two-phase operator approval. Next: RI-01 source mandate, RI-02 custody proof, RI-03 routing proof. See `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`. |
 
 
 ---
@@ -77,6 +79,11 @@ A **local-first, weekly Investment Process OS** on Windows/WSL: ~60 free-source 
 |---|---|
 | `HANDOVER.md` | **First read for a brand-new AI agent** — entry contract, rules of engagement |
 | `HANDOVER_INITIAL_PLAN_CONTROL.md` | **Initial Plan Control & Audit** — comprehensive cross-check of implementation vs initial master plan |
+| `HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md` | **Operator-facing intake handover** — reuses M04/M05/M07/M08/M09/M19, reconciles current architecture, names existing acceptance fixtures, and defines practitioner value and OpenProject placement |
+| `06_modular_pipeline_alignment/00_INDEX.md` | **Consolidated Pipeline & Cross-Stack Alignment** — definitive 3-world integration hub, network matrix, US-01..US-12 stories |
+| `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md` | **Approved orchestration contract** — authority split, bounded work packets, continuity, product-first and anti-drift gates |
+| `orchestration/state.yaml` | **Machine-readable orchestration entrypoint** — current phase, active packet, dependencies, authority router, and OpenProject projection state |
+| `orchestration/work/RI-01.yaml` | **Active bounded packet** — collect and approve the source mandate and existing fixture pack without deploying services or changing product code |
 | `PROJECT_STATE.md` | **This file — the living index. Start here.** |
 | `AGENTS.md` | Root project context, authority routing, and invariants |
 | `05_blueprint/00_MASTER_PLAN.md` | Macro plan: vision, constraints, principles, architecture, feature ranking |

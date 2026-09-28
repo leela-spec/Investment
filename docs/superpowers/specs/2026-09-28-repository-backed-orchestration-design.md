@@ -1,6 +1,6 @@
 # Repository-Backed Orchestration Design
 
-**Status:** Approved design; written specification awaiting operator review
+**Status:** Approved by the operator; linked for orchestration bootstrap
 **Date:** 2026-09-28
 **Scope:** Investment Process OS (IPOS) planning and execution coordination
 
@@ -9,6 +9,8 @@ map, RI-01–RI-07 sequence, source fixtures, and architecture corrections remai
 [`HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md`](../../../HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md). The
 authoritative behavioral requirements remain in the existing
 [`IPOS user stories`](../../../05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md).
+The current machine-readable entrypoint is [`orchestration/state.yaml`](../../../orchestration/state.yaml),
+which names the single active work packet and its bounded authority references.
 
 ## 1. Purpose
 

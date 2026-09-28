@@ -8,24 +8,35 @@
 > **Date:** 2026-09-28.
 > **Repository:** `C:\GitDev\Investment` on branch `main`.
 
-## 1. Read This Before Acting
+## 1. Authority Router — Do Not Load Every Plan
 
 This handover does not replace the existing plans. It converts them into one
 operator-facing execution slice and resolves environment drift between the
 August plans and the ratified September architecture.
 
-The implementing agent must read, in this order:
+An orchestrator starts with only:
 
-1. `HANDOVER_STAGE_IMPLEMENTATION.md`
-2. `06_modular_pipeline_alignment/00_INDEX.md`
-3. `05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md`
-4. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M04_ACTIVEPIECES_PLATFORM.yaml`
-5. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M05_ACTIVEPIECES_EMAIL_EVENT_FLOWS.yaml`
-6. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M07_KARAKEEP.yaml`
-7. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml`
-8. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml`
-9. `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M19_END_TO_END_ACCEPTANCE.yaml`
-10. `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md`
+1. `PROJECT_STATE.md`
+2. this handover
+3. `docs/superpowers/specs/2026-09-28-repository-backed-orchestration-design.md`
+4. `orchestration/state.yaml`
+5. the single active packet referenced by `orchestration/state.yaml`
+
+An executor reads only its bounded packet and the exact authority sections cited there. The files
+below are an authority catalog, not a mandatory bulk-reading list:
+
+| Authority | Load only when resolving |
+|---|---|
+| `HANDOVER_STAGE_IMPLEMENTATION.md` | Operational stage contracts or the two original delivery missions |
+| `06_modular_pipeline_alignment/00_INDEX.md` | Current Windows/WSL/Apex architecture, service boundaries, or compact US-01..US-12 mapping |
+| `05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md` | Detailed email, video, evidence, impact, action, review, or health behavior |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M04_ACTIVEPIECES_PLATFORM.yaml` | Activepieces deployment and platform proof |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M05_ACTIVEPIECES_EMAIL_EVENT_FLOWS.yaml` | Web.de/Gmail event routing |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M07_KARAKEEP.yaml` | Karakeep custody deployment and acceptance |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml` | Media acquisition, transcription, and frame evidence |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml` | Source-grounded knowledge transformation |
+| `05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M19_END_TO_END_ACCEPTANCE.yaml` | Cross-component practitioner acceptance |
+| `00_runbook/WF07_RESEARCH_TO_PORTFOLIO_DECISION_FLOW.md` | Promotion from evidence to portfolio decision stages |
 
 The existing user stories remain authoritative: `US-EMAIL-01..03`,
 `US-VIDEO-01..02`, `US-KB-01`, `US-EVIDENCE-01`, `US-IMPACT-01`,
@@ -578,16 +589,17 @@ which contracts describe reality?” Both must point to the same frontier.
 ## 10. Next-Agent Kickoff Prompt
 
 ```text
-Work in C:\GitDev\Investment on main. Read
-HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md completely, then read its ten required
-authority files in order. Do not reuse stale branch, runtime, port, database,
-or Docker assumptions from older handovers. Verify the reality battery before
-changes.
+Work in C:\GitDev\Investment on main. Read PROJECT_STATE.md,
+HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md, the approved repository-backed orchestration design,
+orchestration/state.yaml, and only the active packet named there. Load larger authority files only
+when the packet cites them. Do not reuse stale branch, runtime, port, database, or Docker assumptions
+from older handovers. Verify the reality battery before changes.
 
-Start with RI-01 and RI-02. Reuse the committed IMF E05 fixture and the four
-TTK V2 fixtures in C:\GitDev\apexai-os-meta; do not request a new video corpus
-until those acceptance fixtures have exercised custody, deduplication,
-provenance, and source-to-claim lineage. Use the authenticated private OpenProject 17.8 API. The
+Start with RI-01 only. Do not create or dispatch an RI-02 packet until RI-01 is accepted and
+`orchestration/state.yaml` releases that dependency. Reuse the committed IMF E05 fixture and the
+four TTK V2 fixtures in C:\GitDev\apexai-os-meta; do not request a new video corpus until those
+acceptance fixtures have exercised custody, deduplication, provenance, and source-to-claim lineage.
+Use the authenticated private OpenProject 17.8 API. The
 2026-09-28 ownership scan found no project containing IPOS or M01-M19 work packages, so request
 operator approval for the previewed `Investment / IPOS` project creation before adding the RI
 hierarchy. Never place IPOS work in the community instance or an unrelated private project.
