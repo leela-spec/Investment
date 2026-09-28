@@ -1,0 +1,72 @@
+schema_version: 1
+mode: offline_read_only
+transcripts:
+  - id: imf-weo-july-2026
+    identity: vzZpKJlpqKo
+    root: implementation-runs/E05/20260923-230911
+    evidence_file: implementation-runs/E05/20260923-230911/RESEARCH_ARTIFACT.yaml
+    transcript_file: implementation-runs/E05/20260923-230911/audio.json
+    sha256: 0f9fd85f8d340b065dae7ee5a5e8aeb7983a6b981407a7bebb383fc373e25d76
+    expected_outcome: WATCH
+  - id: markus-koch-tech-pressure
+    identity: vFTuLylvYnA
+    root: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA
+    evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/manifest.json
+    transcript_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/source/transcript.json
+    claims_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/ledger/evidence.json
+    validation_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/validation.json
+    sha256: fef5e25f25da395ec83418702a1e466f1e6fe0c97578e41bb5f53779916b1681
+    expected_outcome: WATCH
+  - id: elliott-wave-technical-market
+    identity: CygwqaNg2PY
+    root: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY
+    evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/manifest.json
+    transcript_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/source/transcript.json
+    claims_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/ledger/evidence.json
+    validation_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/validation.json
+    sha256: 2da160f244b74ed382d90d62bb358e714eb0f8cf842ebcacd13ec681e4f67f6d
+    expected_outcome: WATCH
+  - id: market-cycles-watch
+    identity: oZIsMX6WgFs
+    root: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs
+    evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/manifest.json
+    transcript_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/source/transcript.json
+    claims_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/ledger/evidence.json
+    validation_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/validation.json
+    sha256: cc50a79f8d889132c214705cd830f69ff49e92c1b50d88be3bc94188377ccb48
+    expected_outcome: WATCH
+  - id: emotions-non-investment-control
+    identity: P-h5WSQG1Sw
+    root: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw
+    evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/manifest.json
+    transcript_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/source/transcript.json
+    claims_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/ledger/evidence.json
+    validation_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/validation.json
+    sha256: d092cb2793595bd323b910defdb27ae70da862bc0af7a0a4938aac38dc19a0d4
+    expected_outcome: NO_IMPACT
+research_documents:
+  - id: elephant-room-research
+    evidence_file: Sources/GER Elephant in The Room Analysis.pdf
+    companion_text: Sources/GER Elephant in The Room Analysis.md
+    sha256: f2d4b8dab16222893ddef1b039b2cca7a7b8f3ec3aea0b0e63befd15dcf8e39e
+    expected_pages: 13
+    expected_outcome: REVIEW
+portfolios:
+  - id: smartbroker-activities
+    evidence_file: C:/Users/gehma/Downloads/3370191001-2026-09-24T09-02-24.190Z.csv
+    sha256: 4fd36847b400b0e011078f7aec290f5fdde705aaaf551fd709f9c51298d6927a
+    expected_activities: 332
+    expected_open_positions: 24
+  - id: smartbroker-statement
+    evidence_file: data/inbox/3370191001-2026-09-25T15-15-35.459Z.pdf
+    sha256: dcd3d05d542652fb09ba3c57ec48323db1b33c59fdf90deb42c996a401f30b2c
+    expected_open_positions: 24
+  - id: zero-positions
+    evidence_file: data/inbox/ZERO-pos-25.09.2026.csv
+    sha256: b329eb187e3c8a653599b7888d4b6df1209fbb2f0332403ad753fd459b04bd38
+    expected_open_positions: 8
+macro_snapshot:
+  id: macro-2026-09-25
+  evidence_file: data/exports/snapshots/2026-09-25/snapshot.json
+  sha256: 376fd5814a18e67bf365bbd18e186e9d11ee12cb5974dd6ac72532eb0bceaeba
+  expected_as_of: 2026-09-25
