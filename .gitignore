@@ -24,3 +24,6 @@ __pycache__/
 
 # --- logs ---
 logs/
+
+# --- locally installed third-party applications ---
+/external/TradingAgents/
