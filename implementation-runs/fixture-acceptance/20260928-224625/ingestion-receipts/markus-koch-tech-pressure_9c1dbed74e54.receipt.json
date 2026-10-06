@@ -1,0 +1,10 @@
+{
+  "drop_file": "C:\\GitDev\\Investment\\implementation-runs\\fixture-acceptance\\20260928-224625\\drops\\markus-koch-tech-pressure.json",
+  "source_id": "vFTuLylvYnA",
+  "file_sha256": "9c1dbed74e54a513ed3c760c8a6b310ae07713e36f5a2b924f1910c2bfab569d",
+  "transcript_sha256": "d02f4568345cbe5e65d589b5a0478bead5459d327f94332fa51d7e8eed2b7fdf",
+  "claims_processed": [
+    "CLM-TTK-vFTuLylvYnA-004"
+  ],
+  "ingested_at": "2026-09-28T20:46:25.351393+00:00"
+}

@@ -145,10 +145,12 @@ _Additions restricted by macro policy to preserve capital in caution regimes._
 ## Active Research Theses & Watch Register
 _Tracked qualitative macro hypotheses & falsifiable triggers (WF-07 Stage 3)_
 
-| Item ID | Class | Topic / Instrument | Action / Invalidation Trigger | Status | Rationale |
-|---|---|---|---|---|---|
-{% for w in action_watch_register.active_watches %}| `{{ w.item_id }}` | **{{ w.item_class }}** | `{{ w.instrument_or_topic }}` | {{ w.action_or_condition }} | `{{ w.status }}` | {{ w.reason_short }} |
-{% endfor %}{% for a in action_watch_register.active_actions %}| `{{ a.item_id }}` | **{{ a.item_class }}** | `{{ a.instrument_or_topic }}` | {{ a.action_or_condition }} | `{{ a.status }}` | {{ a.reason_short }} |
+> **Decision boundary:** WATCH items are monitoring-only. They do not change target weights or create staged orders; only an operator-approved open ACTION can affect portfolio policy.
+
+| Item ID | Class | Topic / Instrument | Action / Invalidation Trigger | Status | Rationale | Evidence |
+|---|---|---|---|---|---|---|
+{% for w in action_watch_register.active_watches %}| `{{ w.item_id }}` | **{{ w.item_class }}** | `{{ w.instrument_or_topic }}` | {{ w.action_or_condition }} | `{{ w.status }}` | {{ w.reason_short }} | {{ w.evidence_refs|join(", ") }} |
+{% endfor %}{% for a in action_watch_register.active_actions %}| `{{ a.item_id }}` | **{{ a.item_class }}** | `{{ a.instrument_or_topic }}` | {{ a.action_or_condition }} | `{{ a.status }}` | {{ a.reason_short }} | {{ a.evidence_refs|join(", ") }} |
 {% endfor %}
 {% endif %}
 

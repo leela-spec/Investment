@@ -1,0 +1,1400 @@
+{
+  "schema_version": "1.0",
+  "source_id": "oZIsMX6WgFs",
+  "transcript_sha256": "52961f77c4eeb1b76eb754dee5f696d545ae63f3d2b696617f63f8a5c1389a52",
+  "segments": [
+    {
+      "id": 0,
+      "start": 0.43,
+      "end": 10.369,
+      "text": "Hello, cycle nerds. Thanks for joining today. Let's do a cycles market that jam. So let's review some asset classes across",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 1,
+      "start": 10.369,
+      "end": 16.39,
+      "text": "different spectrums. Let's just have a live view of where the cycles are.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 2,
+      "start": 17.149,
+      "end": 24.489,
+      "text": "In those assets and then let's recap what we see from a cycle analysis perspective.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 3,
+      "start": 24.489,
+      "end": 42.829,
+      "text": "From the mind of Lars Fartinen, the most advanced cycle analysis, hot off the press.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 4,
+      "start": 45.359,
+      "end": 51.179,
+      "text": "Yeah, thanks for joining again. We are live another episode of the cycles TV. And as you are aware,",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 5,
+      "start": 51.42,
+      "end": 61.38,
+      "text": "we review different asset classes, charts in the financial area. We apply our cycle analysis techniques from the foundation",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 6,
+      "start": 61.38,
+      "end": 69.54,
+      "text": "just to learn how the situation of different cycles shapes, which does not mean this is not a forecast,",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 7,
+      "start": 69.78,
+      "end": 78.9,
+      "text": "this is not a prediction, this is no advice at all. It is just trying to learn something if we apply cycle analysis to financial markets.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 8,
+      "start": 79.64,
+      "end": 91.01,
+      "text": "And we will eat our own dog food. So we will use it by the application which is available to all members to learn, discuss and see what we see.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 9,
+      "start": 91.93,
+      "end": 99.09,
+      "text": "So let's get into it. As I said, some markets I have prepared basic US markets for today.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 10,
+      "start": 99.65,
+      "end": 111.349,
+      "text": "So let's start with a very broad view of the US stock markets as a whole. And for that I will use the geometric value line index,",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 11,
+      "start": 111.73,
+      "end": 120.709,
+      "text": "which consists of around 5,000 traded stocks across the US. And it's equal weighted.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 12,
+      "start": 120.709,
+      "end": 133.65,
+      "text": "So it gives a good idea about the whole situation in the stock market overall before we focus on different asset classes or different areas in specific.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 13,
+      "start": 134.8,
+      "end": 143.4,
+      "text": "So let's do the basic work and I will walk you through the basic principles again, how to read a spectrum, how to pick a cycle,",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 14,
+      "start": 143.4,
+      "end": 156.74,
+      "text": "which is the basic knowledge we are here applying to cycle analysis to get some ideas. And it's important to recap how we are doing that here, at least if you are new to cycle analysis.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 15,
+      "start": 157.08,
+      "end": 167.879,
+      "text": "So what we see here on the chart is the geometric value line stock market index, which we see here at the bottom.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 16,
+      "start": 167.879,
+      "end": 184.849,
+      "text": "We see the spectrum perspective, so which reveals the spectrum analysis of possible cycles in that spectrum, which means each peak in that spectrum represents possible theoretical cycle.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 17,
+      "start": 185.21,
+      "end": 193.21,
+      "text": "So this is pure digital signal processing, which is then revealed by each peak in that spectrum.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 18,
+      "start": 193.21,
+      "end": 215.65,
+      "text": "The better the better the better the peak looks also from its shape. I mean a sharp peak is can be seen here as we approach that cycle length with 120 days, which is a quite high amplitude in the very sharp peak in regards to the left and right shoulder of that peak.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 19,
+      "start": 215.65,
+      "end": 230.83,
+      "text": "And it even drops down to the bottom of the spectrum bottom here at zero, which from the shape from the visual shape of that peak qualifies for very high qualified cycles similar to those here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 20,
+      "start": 231.569,
+      "end": 237.59,
+      "text": "So that's that's the way how you can differentiate good or bad cycles in the spectrum.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 21,
+      "start": 237.59,
+      "end": 251.53,
+      "text": "We see the similar perspective in the upper right table view so that table gives us those peaks, you have seen the spectrum just listed in numbers.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 22,
+      "start": 252.78,
+      "end": 265.399,
+      "text": "So the length of the cycle is what we see here as peak. So if we talk about the 120 day cycle, we will find it here in the table as second listed cycle length.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 23,
+      "start": 266.25,
+      "end": 286.18,
+      "text": "How to read that table, just a quick primaries, you see the length information, the color coding indicates the current face of that cycle. So red color coding means that cycle is in its downward face, green coloring would indicate in its upward face.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 24,
+      "start": 287.339,
+      "end": 306.56,
+      "text": "Then we need to take care of the ranking the ranking is an information about the visual shape. So what I expressed just in verbal terms, how good shape looks like is here given by numbers in the ranking, which goes one is the best ranking.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 25,
+      "start": 306.56,
+      "end": 325.579,
+      "text": "So the 122, I just explained why that shape looks good. So you can also see it based on numbers. So you don't need, you don't must read the spectrum on your own. So if you are not fully aware how to read it, the ranking will give you that information.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 26,
+      "start": 325.579,
+      "end": 341.959,
+      "text": "One is the best and then it's sorted. The stability score is another very important metric when we deal with cycles, the stability score gives us an indication about the variability of that given cycle.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 27,
+      "start": 341.959,
+      "end": 359.579,
+      "text": "And we want to have cycles which are with a high stability score or the other way around with a low variability. So the higher the stability, which means that that cycle was very, as the name suggests, very stable.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 28,
+      "start": 359.579,
+      "end": 383.67,
+      "text": "So it has not wobbled around cycles in real nature and also as in financial markets are not that stable are not that theoretical clean as a sine wave looks like. So therefore we need a quality measurement on how good that real cyclic behavior of that cycle in the price series comes close to a perfect sine wave.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 29,
+      "start": 383.67,
+      "end": 399.85,
+      "text": "Think about if the stability would get close to one which would mean it would be a perfect sine wave which you will never see in real data because of the sine wave is not only the simplest way to visualize that.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 30,
+      "start": 399.85,
+      "end": 426.769,
+      "text": "So stability above 0.5 is what we need. So ignore all cycles with stability lower than 0.5. Everything above 0.5. So everything close to .7 is a real good stability over the past. So ranking stability are two different metrics and then strength gives you an indication in relative terms to the other cycles.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 31,
+      "start": 426.769,
+      "end": 449.67,
+      "text": "How they impact price movement over time for us a cycle which is there but has not impacted price movement per day or per bar is interesting from a scientific perspective but not if we are interested in maybe prediction of future price movements.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 32,
+      "start": 449.67,
+      "end": 468.029,
+      "text": "So we need to look out for cycles with the high strength so this is just very quick very brief for everyone who might be new to cycle analysis these are the basics we always use so we stick to that procedure which makes it quite objective.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 33,
+      "start": 468.029,
+      "end": 496.81,
+      "text": "So it's always the same procedure how you can make sure you select those cycles which give you the most chance that they seem to repeat also in the future. There's no guarantee at all that they will repeat in that way but at least it improves your chances so that you get a better probability if you start to think about where is the current situation or so.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 34,
+      "start": 496.81,
+      "end": 506.47,
+      "text": "So long story short so based on that information we are now we need now to make a decision which cycles we think would make the most sense.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 35,
+      "start": 507.839,
+      "end": 527.129,
+      "text": "So in that case I mentioned that already so the one the cycle with links of 122 and I would then also include maybe those two cycles here in addition to get at least a projection out of those which brings us",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 36,
+      "start": 527.129,
+      "end": 545.7,
+      "text": "to this composite cycle this is what we're looking for never try to choose more than three cycles because then we are trying to overfit the historical price data with just cycles which could be there but overfitting will not help at all.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 37,
+      "start": 545.7,
+      "end": 558.86,
+      "text": "So try to limit your cycle selection to not more than three dominant cycles which we did I try to explain you why to choose those cycles here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 38,
+      "start": 558.86,
+      "end": 585.779,
+      "text": "Then always important yeah make a quick recap of the previous changes in trend for that price series you are analyzing here because what you are looking for and this is why we do cycle analysis we do cycle analysis to identify points in time points in time now listen carefully points in time not price.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 39,
+      "start": 586.779,
+      "end": 605.259,
+      "text": "So we are looking for on the time axis yeah when those turns at least according to the cycles might occur and this is what you can have a quick look if the cycles you selected based on the cycle analysis",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 40,
+      "start": 605.259,
+      "end": 619.57,
+      "text": "will give you an approximate indication when to expect the price trend to change at that given point in time.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 41,
+      "start": 620.389,
+      "end": 634.74,
+      "text": "So to make that easy to spot from a visual perspective you can then at least this helped me a lot to understand what cycles are and how to make use of them",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 42,
+      "start": 634.74,
+      "end": 651.679,
+      "text": "is trying to plot that kind of zigzag line between the price at the points in time when the cycle suggested those turning points.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 43,
+      "start": 652.539,
+      "end": 661.759,
+      "text": "So the red line very roughly drawn here on the chart gives you the indication of the turning points of those cycles from past behavior.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 44,
+      "start": 661.759,
+      "end": 671.639,
+      "text": "Always keep that in mind this is the past behavior where we detected those cycles so we can now roll forward.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 45,
+      "start": 672.299,
+      "end": 688.639,
+      "text": "So what is important now when reading such kind of cycle analysis to things keep in mind you could easily fall into the trap now to plot that cycle and less into the future.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 46,
+      "start": 689.32,
+      "end": 700.12,
+      "text": "It's pure math so no one will block us will log you now to plot this composite for the next one to three years into the future.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 47,
+      "start": 700.279,
+      "end": 707.84,
+      "text": "It's pure math everyone could do that so now the trap is for sure those cycles are not stable.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 48,
+      "start": 707.84,
+      "end": 727.58,
+      "text": "We talked about the stability score so those cycles wobble they have a variability so which means we pick three cycles so each cycle the very around length amplitude phase see this as an error rate and now we add up three cycles which will change over time.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 49,
+      "start": 727.58,
+      "end": 738.169,
+      "text": "So the error rate the more you go into the future the higher the error rate of that projection will be just pure pure matter of fact.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 50,
+      "start": 738.809,
+      "end": 753.549,
+      "text": "So therefore the only two points which are interesting if you do this kind of cycle analysis is where are we now today I call it now cast in that cycle which is which is here where the dot is.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 51,
+      "start": 753.549,
+      "end": 769.049,
+      "text": "So this is where we are today and what is the next projected turning point of that current composite which is here which gives you the next window of opportunity.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 52,
+      "start": 770.49,
+      "end": 783.96,
+      "text": "So this is where we're looking for so reading that cycle composite now on this chart is the cycle has turned the composite cycle out of those three most dominant cycles.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 53,
+      "start": 783.96,
+      "end": 802.419,
+      "text": "So let's turn down lesson on message one so since since July so since July about a month ago that cycle turned over price did not turn over I mean for sure we see that we're talking about cycles here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 54,
+      "start": 803.58,
+      "end": 829.33,
+      "text": "And second we would expect possible low or that cycle downward headwind to the market call it cyclic headwind for those markets to last until end of September yeah so for the next four to six weeks from a cyclic perspective we have had wind in that market which is not positive.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 55,
+      "start": 830.179,
+      "end": 849.47,
+      "text": "From a time based cycle analysis in that market so okay so but this was the value line so the broad market might be overdue for correction this is the main principles yeah how to read cycle analysis I was very quick with those rules.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 56,
+      "start": 850.21,
+      "end": 868.73,
+      "text": "I assume most of you are familiar with those rules sets also but now if we go over those other markets and asset classes I will not repeat the procedure but maybe you can follow me for the reasoning why I pick certain cycles and maybe certain cycles are not selected for that.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 57,
+      "start": 868.73,
+      "end": 895.37,
+      "text": "All right broader market now to zoom into now different areas let's go to the NASDAQ maybe the tech area where most media attention always is in the US so here we see the closer look into the market situation for the NASDAQ stock market.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 58,
+      "start": 896.11,
+      "end": 919.429,
+      "text": "Here so same principle as always two cycles are picked here 190 which is this peak here below in the spectrum I know sorry this peak here 189 and the second cycle with the length of 120 you might remember that cycle links which is this peak here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 59,
+      "start": 919.429,
+      "end": 946.85,
+      "text": "And they clearly clarify at least if you look at the other cycles which then would come into play which have a much lower amplitude for those cycles here so that's the way how to derive them we have a look at the stability score which is quite nice so good stability scores ranking visual shape is fine and the strength values are fine right so these are our criteria.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 60,
+      "start": 946.85,
+      "end": 966.309,
+      "text": "Why to choose certain cycle again you could zoom in in the historical behavior of that cycle again it's not about price targets it is about the points in time when price turns according to that composite plot.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 61,
+      "start": 966.309,
+      "end": 992.46,
+      "text": "Yeah and if you zoom in now we have here the up turn and here again the top and here then the next up swing so this is how to read the timing of those cycles you can I think clearly identify that those cycles can explain most of the market behavior just based on those two cycles.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 62,
+      "start": 992.46,
+      "end": 1013.46,
+      "text": "Again if it will repeat in the future nobody knows also that mathematical model will not give you any 100% certainty that it will repeat but at least if those cycles exist and continue with that stability this is what we would expect.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 63,
+      "start": 1013.46,
+      "end": 1040.96,
+      "text": "So here similar message and this is now when the cycle analysis becomes more and more important I mean never rely on just one single cycle analysis on one asset classes but if you see similar patterns or similar analysis result stacking up to more or less the similar message then you get more and more confidence on those cycles.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 64,
+      "start": 1040.96,
+      "end": 1070.45,
+      "text": "So back to the picture here and here we are quite running on rails if you see that we have the similar situation so that by end of June that cycle for the tech index turned down it was predicted upfront already and here it looks like I mean if you zoom in price seemed to follow like on rails which is how I call it and now it needs to be proven.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 65,
+      "start": 1070.45,
+      "end": 1092.22,
+      "text": "There is more time to go here into the again and of September beginning of October period so even though a different market sector we are analyzing here with more or less the similar projection as we have seen on even the geometric value line index.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 66,
+      "start": 1092.22,
+      "end": 1106.339,
+      "text": "So we need to see how the latest up push here will work out if we then add the technical indicators which is the next step maybe we don't have the time to reveal all those details here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 67,
+      "start": 1110.019,
+      "end": 1129.7,
+      "text": "Let me put in this one here so while we see that was just a technical reaction which has to be expected at that point so from a cyclic perspective that swing has not ended yet to say that way or let's zoom in a little bit here.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 68,
+      "start": 1129.7,
+      "end": 1146.71,
+      "text": "So from a cyclic perspective the cycle has still more time on the downward pressure or give more headwind to that asset class from a technical perspective a reaction here would quite be to be expected from a technical point of view.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 69,
+      "start": 1147.009,
+      "end": 1157.529,
+      "text": "We've seen here how that window played out what would be quite interesting so if you would ask me so how to monitor that situation is.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 70,
+      "start": 1158.349,
+      "end": 1185.609,
+      "text": "Price has not made in all time high again but if this works out to become more and more important divergence here between the price action and the relative strength this is even more possible indication for bounce back into another possible downturn needs to be seen out and we see similar picture here on the momentum.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 71,
+      "start": 1185.609,
+      "end": 1216.39,
+      "text": "So momentum is already turning down while price keeps to move up which is an early indication when momentum is decreasing and price is still increasing we have a divergence here so they are quite early science from the technical point of view which could confirm a possible continuation of the projected cycles.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 72,
+      "start": 1216.39,
+      "end": 1235.93,
+      "text": "Next window of opportunity which is due here in September October so that's how we read the Nasdaq by the way the picture without going into every detail looks quite similar on the semi conductors.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 73,
+      "start": 1236.089,
+      "end": 1258.19,
+      "text": "So therefore I will not reveal the full similar analysis but you can see from the cycle selected here 180 190 120 the same two short term cycles on the daily chart which will make up the most important cycles here 120 180.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 74,
+      "start": 1261.069,
+      "end": 1292.46,
+      "text": "And by the way here's just an interesting observation as we are here for cycle analysis I'm just seeing this cycle here with the links of 380 which if I would just have seen that cycle on its own 380 days I would not pick that due to this I mean the left shoulder is more more than perfect we don't see the full right shoulder here it's it's a client.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 75,
+      "start": 1292.64,
+      "end": 1323.029,
+      "text": "This is kind of plateau however if you see the harmonic relation so 380 in relation to 180 this is more harmonic relation of two which is an important harmonic ratio so those two cycles belong more or less to similar family they have a harmonic relation to each other so it would make sense now if we assume the 180 to 190 day cycle is important.",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 76,
+      "start": 1323.049,
+      "end": 1355.269,
+      "text": "We could also activate the 380 cycles on top of that and that's another very important observation here so maybe you think what happened by doing that the overall shape of the most important two points which I told you are important to have a look on is I told you that the current point in time so where are we today",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 77,
+      "start": 1355.269,
+      "end": 1386.519,
+      "text": "and the next upcoming turning point here and if I now activate or deactivate the 380 day cycle those windows we are interested in do not change at all so that's the key which more confirms even it looks like a secondary cycle but it's quite in sync in regards to the key top and the key bottoms of that cycle it synchronizes",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 78,
+      "start": 1387.48,
+      "end": 1409.19,
+      "text": "the key low here at that point so we could monitor this if we just only select those two cycles let's clean up the chart a little bit here so and we see here when those cycles are not in sync which is when they form those different bottoms or different tops here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 79,
+      "start": 1409.19,
+      "end": 1438.0,
+      "text": "and when they come into those where we have the high amplitude situations like here and here this is when those two cycles synchronize their face and their tops and bottoms in that case so then you need to monitor what price did at that point in time but it's just an interesting observation from a cycle analysis point of view",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 80,
+      "start": 1438.7,
+      "end": 1459.849,
+      "text": "yeah so that's let's pause here for the broader stock markets so it's not an easy picture on the overall markets but short term cycles from the daily point of view more suggest that the downward cycle headwind still continues into September October",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 81,
+      "start": 1459.849,
+      "end": 1480.16,
+      "text": "I've shown you the technical situation let's continue or let's move on for the next asset class on X sector I have at least prepared which is Bitcoin for sure everyone wants to talk about Bitcoin I hope you are aware of my long term pattern analysis",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 82,
+      "start": 1480.16,
+      "end": 1504.349,
+      "text": "yes yeah fly me to the moon and the road to hell you might aware of the song so we have a nominal cycle always important in the Bitcoin crypto area which is the nominal 200 day cycle plus or minus and we have five repetitions to a key top in those markets and we have three repetitions for a final bottom",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 83,
+      "start": 1504.349,
+      "end": 1533.309,
+      "text": "this is the longer term pattern which worked out over the full history of Bitcoin I reveal the tier on the channel on and on and now we can zoom in with a more detailed on top daily analysis where are we with the situation right now so this is the picture again same procedure as usual yeah we pick the most valuable cycle which is in that case",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 84,
+      "start": 1533.309,
+      "end": 1554.089,
+      "text": "it's just the 270 and the 110 yeah according to our rule set I will not repeat that again and then if we look and zoom in again you see how nicely those two cycles revealed the previous changes in trend of the price series",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 85,
+      "start": 1556.16,
+      "end": 1584.93,
+      "text": "and by the way the key top here we have seen with reaching 120k in Bitcoin in October 2025 this was and if you follow my work you are aware of that that was 0.5 of the fifth repetition of that nominal 200 day cycle here so which means we now would expect three cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 86,
+      "start": 1584.93,
+      "end": 1606.759,
+      "text": "to the downward situation until we reach a final bottom just keep that in mind so what this period here was the first iteration of this let's say nominal on average 200 day cycle yeah which lead to that one here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 87,
+      "start": 1606.759,
+      "end": 1630.0,
+      "text": "and by having in mind that this will not be a major bottom by the way this was 50% correction so a 50% correction just on time it is to be expected that we see a correction to the upside but as we have been aware of that there is a second and third cycle due to the downside",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 88,
+      "start": 1630.0,
+      "end": 1648.5,
+      "text": "under this pattern completes again which means we should not have expected much to the upside which by the way exactly this is what happened and again on the technical part you would easily be able to identify this point in time when we reached the bottom",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 89,
+      "start": 1648.5,
+      "end": 1678.359,
+      "text": "and also to conclude not just based on that cycle here also based on the price pattern here that this more or less seems to be the end of that correction here from 60 to 80k then the next downstream peat in and now again what I always tell you where we are today we are here and what is the next upcoming window of opportunity we are looking here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 90,
+      "start": 1678.359,
+      "end": 1700.549,
+      "text": "so November let's say November roughly here is the next window of opportunity which still needs what is needed to complete that downward phase of that full to composite cycles or the second iteration of the nominal 200 day cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 91,
+      "start": 1700.549,
+      "end": 1720.5,
+      "text": "so the upward correction ended and what always is to be expected that the downward correction is much sharper and deeper than the upward path here as we are in the longer term pattern of Bitcoin",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 92,
+      "start": 1720.5,
+      "end": 1748.49,
+      "text": "so for me that cyclic situation even paired with the technical situation does not give me any positive confidence on the Bitcoin price we need to wait longer and I would assume even into 2027 to see a final bottom so even if I know we have corrected 50% from the previous top which is already a lot",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 93,
+      "start": 1748.49,
+      "end": 1770.019,
+      "text": "but always keep in mind the Bitcoin corrections after those iterations to the point of 5 have shown up with 70 to 80% in the past so therefore it would not be even a surprise if we see a similar completion of that pattern which still gives room to the bottom also from the time cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 94,
+      "start": 1770.019,
+      "end": 1796.049,
+      "text": "so that's why I wanted to bring the Bitcoin cycles here again cycles jam let's just jam on the next asset class is for sure the metals like gold and silver and no cycles jam would be complete if not looking at the metals like silver gold or anium",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 95,
+      "start": 1796.18,
+      "end": 1825.349,
+      "text": "here the picture is a little bit or is on the positive side yeah so for the stock market Bitcoin cycles do not reveal a positive story to tell that's that's the jamming so we had a negative jam on stock market and Bitcoin if we don't look now at the metals the sentiment shifts let's start with gold",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 96,
+      "start": 1826.24,
+      "end": 1851.74,
+      "text": "so here we have the gold futures so the price series is the gold futures and we have been monitoring this already here no I think also on the channel at least in some messages here so we reached a point according to the cycles I mean maybe too many cycles are selected here for that picture so let's clean that up now",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 97,
+      "start": 1852.819,
+      "end": 1880.339,
+      "text": "mainly to start with a fresh perspective here so the most important long term cycle and it has reached two important points in the past I mean I would recommend you need to monitor those markets for a longer time so not never switch to a financial chart turn on the cycle analysis and then try to trust whatever you see",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 98,
+      "start": 1880.339,
+      "end": 1899.819,
+      "text": "you need to have confidence in why you're choosing a specific cycle you need to have reasoning and good arguments why you the analyst it's not the computer it's you sitting in front of the screen making the decision to choose its cycle for your individual interpretation of that data series",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 99,
+      "start": 1899.819,
+      "end": 1928.17,
+      "text": "and you only gain that knowledge if you observe that specific asset class here called over a longer time then you get a feeling and knowledge about which cycles repeat which cycles show up more often so I mean it's like stability but it's stability proven through the eyes of the analyst in the real another world",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 100,
+      "start": 1928.17,
+      "end": 1946.109,
+      "text": "not just in the digital domain so long story short what I want to tell is about that the situation here reaching a possible topping condition was seen since November to be honest I mean for a pricing perspective",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 101,
+      "start": 1946.109,
+      "end": 1970.329,
+      "text": "it's it's a tough tough call call going here from 4,400 even up to 5,000 yes I agree with that but the topping window here was shown up even in November late late 2025 so expecting prices to come down from here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 102,
+      "start": 1970.329,
+      "end": 1989.619,
+      "text": "let's say it's between 4,000 and 5,000 was from the dominant long term cycle to be expected so said that we now reached a point in that key dominant cycle where the tide has shifted again",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 103,
+      "start": 1989.68,
+      "end": 2013.799,
+      "text": "so since July this year June July this year this long term cycle which I mean you can you can see it both ways which first gave us an indication about the timing of a possible upswing start so in early 2025 I indicated that at this point here which then really started that up",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 104,
+      "start": 2013.799,
+      "end": 2033.92,
+      "text": "brought that to an end end of 2025 and is now turning again so confirmed by the technical situation here and by the way that's the beauty of these kind of indicators here's more picture perfect example",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 105,
+      "start": 2033.92,
+      "end": 2053.659,
+      "text": "I mean the cell signals as I said started out to be here in late 2025 first and then even early 2026 there was two points here and then there was no signal so you see the technical drop down it dropped below the lower band",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 106,
+      "start": 2053.659,
+      "end": 2081.619,
+      "text": "and it never really crossed above the lower band again until just recently until end of July so two weeks ago so that's the beauty we really want to look out for when the timing information of the most dominant cycle lines up with the technical condition which is often best measured",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 107,
+      "start": 2081.619,
+      "end": 2101.8,
+      "text": "with like the cyclic RSI which is included here and seeing that kind of technical confirmation exactly at that point here of the indicator low is a picture perfect combination of cycle analysis and technical analysis and here now coming to an end that's why the sentiment shifts",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 108,
+      "start": 2102.409,
+      "end": 2117.92,
+      "text": "we have way to go again remember what I said in the beginning we always look at the situation where are we now we are in the early upswing of that expected upswing cycle phase",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 109,
+      "start": 2117.92,
+      "end": 2147.789,
+      "text": "and the next window of opportunity shows up early 2027 late 2026 so here we have time to go from a time based cycle perspective so here we could say we have strong tailwinds so the cyclic condition is now supportive for even higher gold prices moving into end of this year tailwind",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 110,
+      "start": 2147.789,
+      "end": 2177.65,
+      "text": "if the cycle will repeat you are aware of that nobody even I we as a foundation can never confirm that so similar picture on silver that's when you gain confidence let's look at silver not exactly the same but a similar situation I mean pre selected are some more cycles here but let's look in what you see here is again the same or the similar cycle with links of 244 days",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 111,
+      "start": 2177.65,
+      "end": 2197.309,
+      "text": "yeah seeing here a cycle which is now turning positive you see this by that yellow background with the green dot yeah which means this cycle is now just turning up and if you pair that cycle which we have seen on gold just a moment ago",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 112,
+      "start": 2197.309,
+      "end": 2226.09,
+      "text": "with the other stable and highly ranked cycles so with this 341 and then maybe there are two other cycles here but let's let's deactivate those two cycles here let's just stay on those two very dominant cycles here you see where we are heading I mean this is the silver futures where we're just arriving at that situation",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 113,
+      "start": 2226.09,
+      "end": 2253.82,
+      "text": "here so and as I said and and by the way this is the synchrony of cycles that's also a very interesting observation here I mean we are here to study cycles right so let's just look at the cycles here because this is a beautiful example this looks like one cycle right it even looks like a picture perfect plotting of one sine wave cycle given to one length",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 114,
+      "start": 2253.82,
+      "end": 2278.179,
+      "text": "but it is not these are two cycles overlaid on each other with two different length right you might remember that we selected two cycles but if those two cycles synchronize their current tops or bottoms at the same point of time then it looks like it is one single cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 115,
+      "start": 2279.329,
+      "end": 2306.15,
+      "text": "which means top top or low synchronizes their timing window at the same point of time which then if you just look at that single repetition it looks like it would be one cycle I mean if you then zoom out you see it here at those points there are two tops one is the top of the shorter cycle and the other top here these two points is the top of the longer cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 116,
+      "start": 2306.15,
+      "end": 2336.659,
+      "text": "but when they line up then you see the synchrony of those tops and bottoms showing at at a similar point just as we are here for the cycles yeah so gold silver very similar picture here if we move on radium and that as it class over the metals has a similar very interesting shape and conditions if we talk about that here again",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 117,
+      "start": 2336.659,
+      "end": 2363.75,
+      "text": "we see different length here so it is not the same rhythm as in gold and silver that needs to be taken into account but from a timing point it is quite similar to have those points lining up here in that situation with again room to go and the whole face is trying to look more to the upside",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 118,
+      "start": 2363.75,
+      "end": 2383.989,
+      "text": "another interesting example is here we have a divergence between price and what happened on the cyclic RSI indicator exactly by touching the lower band so again here a picture perfect combination what we would like to see",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 119,
+      "start": 2383.989,
+      "end": 2410.61,
+      "text": "and you see in the past it did not work out with this perfect window here so we touched and crossed we touched and crossed below the lower band but just in the running downward face of that cycle so both conditions have not been an alignment here so from a technical condition",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 120,
+      "start": 2410.61,
+      "end": 2426.71,
+      "text": "and I mean from a technical point those have been short pullbacks to the upside but it always reserved reversed then to the downside and I would account the cycle downward or the headwind of the composite cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 121,
+      "start": 2426.71,
+      "end": 2445.75,
+      "text": "was against those technical signals but when both have been an agreement so here now the cycle turns up we have a divergence so one is time one is the second is divergence three is the signal now showing up here on the CRSI",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 122,
+      "start": 2445.75,
+      "end": 2462.699,
+      "text": "this is then what not a picture perfect I don't want to repeat the team the term but this is what we are looking out for those conditions when you are stacking up you are confirmation of signals time cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 123,
+      "start": 2467.98,
+      "end": 2490.389,
+      "text": "so this is how we combine that and then even looking at different asset classes so Uranium and last but not least I mean we have those geopolitical crisis around the world what's going on with the oil price what do time cycles tell us on oil here we have the oil price",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 124,
+      "start": 2491.11,
+      "end": 2514.559,
+      "text": "the oil futures again here I mean I don't want to reveal or go go too much into the past but and I discuss this here with a lot of colleagues so the upcoming bottom in the oil price early 2026",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 125,
+      "start": 2514.559,
+      "end": 2536.349,
+      "text": "even before we had the crisis with the showing up here was an indication at 60 at that point in time early 2021 that we would like to expect now a positive cyclic upswing synchronization of two important cycles here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 126,
+      "start": 2536.349,
+      "end": 2554.349,
+      "text": "this was then accelerated by the geopolitical crisis and the war which started then in March April this pushed and this was an event in the direction of the dominant cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 127,
+      "start": 2554.349,
+      "end": 2573.329,
+      "text": "so you could argue for sure I mean it was induced by the war but if those events happen in the direction of the underlying dominant cyclic trend so the tailwind was positive since early 2026 on the oil price",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 128,
+      "start": 2573.329,
+      "end": 2599.55,
+      "text": "so then this accelerates the the price in that direction the I mean you could argue the geopolitical tension softened here in May so the conflict was trying to but it was the same from the cyclic perspective so here again we have a running on way rails situation",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 129,
+      "start": 2599.55,
+      "end": 2616.409,
+      "text": "and I mean believe me or not but that cycle showed up even before everything started and we now have completed the downward phase of that cyclic headwind which was then here from April into July",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 130,
+      "start": 2616.409,
+      "end": 2639.19,
+      "text": "and we are now looking for a more positive situation for the gold price I mean positive needs to be set into context positive just for the price the futures price of oil even looking into October so if again events unfold into this dominant cycle condition",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 131,
+      "start": 2639.19,
+      "end": 2648.11,
+      "text": "you could assume in which direction the acceleration of price would be expected during that phase until October year",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 132,
+      "start": 2649.78,
+      "end": 2667.84,
+      "text": "yeah that's it this was my cycles jam quick run through over different effort as it classes but as always it was important for me to show you the basic principle how to choose a specific cycle",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 133,
+      "start": 2667.84,
+      "end": 2688.59,
+      "text": "I took a little bit more time in the beginning to reveal or to repeat the procedures which is quite objective which is quite important because detecting cycles in today's world is easy everyone can do that I mean throw whatever software you would like to on a data set and it will show you some cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 134,
+      "start": 2688.59,
+      "end": 2708.92,
+      "text": "what is really important is the reasoning and the decision making why then using or choosing one two or three cycles out of that mix in trying to find an answer on where we are today and maybe what would be the next important change in trend according to time cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 135,
+      "start": 2708.92,
+      "end": 2731.34,
+      "text": "because this is the information we want to derive of that and it's up to the analyst in this case me just trying to interpret that data so there's not always the computer automating that it always requires the decision making of view in front of your data and information",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 136,
+      "start": 2731.34,
+      "end": 2758.78,
+      "text": "then making a decision to pick a cycle not so that's why we're here as the foundation for the study of cycles so we want to give you the tools to make it as easy as possible as reliable as possible but however those tools are not there to trade or make you successful in trading this then that competence belongs to you to make use of that information for your individual risk management trade management decision management",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 137,
+      "start": 2758.78,
+      "end": 2779.469,
+      "text": "and whatever there's much more in being successful in financial markets than just cycle analysis that's just one part of the picture yeah not sure if I was too quick today I just rushed through it so I see you all in the chat so moin moin",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 138,
+      "start": 2781.26,
+      "end": 2789.78,
+      "text": "to colon again done the thanks for joining florida greetings san francisco",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 139,
+      "start": 2791.429,
+      "end": 2805.92,
+      "text": "Dale thanks for joining so we are across the globe here so what settings are we using so the settings I was using today maybe that's an important question",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 140,
+      "start": 2805.92,
+      "end": 2832.409,
+      "text": "is just the standard settings out of the box which is pre configured in the analyzer juice box boy so in specific so the scanner uses the the average cycle phase so the average cycle phase over the past you could fine tune there then with the current cycle phase",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 141,
+      "start": 2832.409,
+      "end": 2847.329,
+      "text": "or switch between those two parameters and see how the current and the next turning point might change so juice box boy this this would be a topic which I have not done today so this was just based on the average cycles",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 142,
+      "start": 2847.329,
+      "end": 2856.409,
+      "text": "if you then switch to the current phase look out for if the next possible turning point or the current condition of that cycle would switch",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 143,
+      "start": 2856.409,
+      "end": 2873.55,
+      "text": "I would not take care if future turning points more far in the future will change or even in the past so the switch to the current phase is just then interesting to check if the current in the here and now that will change the conditions",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 144,
+      "start": 2877.489,
+      "end": 2903.079,
+      "text": "maybe you have seen that in the lower right we have a cycle consensus index which what is the cycle consensus and the cycle consensus index try to compress all the reasoning which I try to explain in this episode why choosing a cycle what is stability what is ranking in one simple way for the person sitting in front of the screen so for me",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 145,
+      "start": 2903.079,
+      "end": 2917.26,
+      "text": "so I don't have to go through all those questions again and again over each asset asset class so the cycle consensus index makes that objective procedure more simple in mathematical terms",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 146,
+      "start": 2917.26,
+      "end": 2931.17,
+      "text": "we introduce this at the New York conference and you're right we have not rolled it out to all members so we have not defined final date",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 147,
+      "start": 2931.17,
+      "end": 2946.34,
+      "text": "but for sure it will be rolled out in the second half of this year so and more sooner than later dancing Shiva that's what I could say",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 148,
+      "start": 2946.34,
+      "end": 2962.69,
+      "text": "I could not promise a specific date but now talking about we have August I would latest in October so I mean don't claim me on that topic",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 149,
+      "start": 2962.69,
+      "end": 2973.63,
+      "text": "but during the next four to eight weeks we were rolled it out at least to the pro members we have so dancing Shiva I hope that helps a little bit",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 150,
+      "start": 2974.61,
+      "end": 2977.17,
+      "text": "Arun nice to see you",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 151,
+      "start": 2977.55,
+      "end": 2998.94,
+      "text": "Alexander greetings to California Spain all best to Europe here thank you Yuan so and maybe just to end",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 152,
+      "start": 2999.929,
+      "end": 3011.929,
+      "text": "then the maybe going back just as you are part of that episode here the cycle with links of silver let's go back to silver for a second",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 153,
+      "start": 3012.75,
+      "end": 3026.409,
+      "text": "when the 341 and to 44 cycles in civil synchronized does this mean that the envelopes and bands you spoke about what's okay okay now you're referring to what we showed you last week",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 154,
+      "start": 3030.429,
+      "end": 3038.59,
+      "text": "yes yes I mean this would be now a good example to switch which I cannot do because it's not activated that engine right now",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 155,
+      "start": 3038.59,
+      "end": 3055.489,
+      "text": "and the so the cycle links synchronizes in terms of their top and low comes more or less at the same point in time which is what we talked",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 156,
+      "start": 3055.489,
+      "end": 3066.349,
+      "text": "about here and looks like one cycle so now bringing that back to the to the bands idea it's yes it goes in the in this direction",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 157,
+      "start": 3067.63,
+      "end": 3082.73,
+      "text": "however there's a slight but because the bands which would be calculated based on those two links here will take into account the real price action",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 158,
+      "start": 3084.429,
+      "end": 3095.21,
+      "text": "according to those two bands here what we show here in the cycle and analyzer is the theoretical time based perspective of those two",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 159,
+      "start": 3095.21,
+      "end": 3109.03,
+      "text": "cycles according to the perfect sine wave behavior of those cycles so they they do not need to come close to a point at that point just",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 160,
+      "start": 3109.03,
+      "end": 3123.53,
+      "text": "because the time cycles synchronize does not mean they must also the bands need now to get closer because the bands are calculated based on the real price action",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 161,
+      "start": 3123.53,
+      "end": 3133.929,
+      "text": "this is what makes those two different kinds of analysis which both depend on the dominant cycle makes it so interesting to bring it together",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 162,
+      "start": 3133.929,
+      "end": 3143.429,
+      "text": "because the envelopes will show more than where the price action of the three four one and the two four cycle is in agreement",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 163,
+      "start": 3143.429,
+      "end": 3154.07,
+      "text": "what happens in price with the theoretical cycle from from the price action not the time based action so maybe not to go into the depth here",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 164,
+      "start": 3154.07,
+      "end": 3165.429,
+      "text": "I would keep it as a good example to follow up to bring the time based cycle analysis into the picture of those price cyclic envelopes",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 165,
+      "start": 3165.429,
+      "end": 3178.369,
+      "text": "because the envelopes are focused on price according to the cycles while the time cycles are focused on time based changes but then it's exactly the right point to now focus on",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 166,
+      "start": 3180.13,
+      "end": 3190.65,
+      "text": "yeah I know you have lots lots more ideas on different cycles but please allow me we are now close to running one hour",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 167,
+      "start": 3190.65,
+      "end": 3199.809,
+      "text": "I tried at least to answer some of your questions to repeat the procedure to give you a market perspective which is just education",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 168,
+      "start": 3199.809,
+      "end": 3208.21,
+      "text": "so don't derive any decision on just what I showed here in that short amount of time because the purpose here is education on cycle analysis",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 169,
+      "start": 3208.21,
+      "end": 3218.07,
+      "text": "I hope you liked that cycles jam how I called it just rushing through the asset classes next week same time same procedure",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 170,
+      "start": 3218.07,
+      "end": 3225.61,
+      "text": "drop me a note leave me a comment join next week to have a joint session here also with some live interaction",
+      "words": [],
+      "avg_logprob": null
+    },
+    {
+      "id": 171,
+      "start": 3225.61,
+      "end": 3229.67,
+      "text": "again see you soon right bye thank you",
+      "words": [],
+      "avg_logprob": null
+    }
+  ],
+  "claims": [
+    {
+      "claim_id": "CLM-TTK-oZIsMX6WgFs-009",
+      "item_id": "WATCH-TTK-oZIsMX6WgFs-009",
+      "item_class": "WATCH",
+      "theme": "RESEARCH_FIXTURE",
+      "instrument_or_topic": "MARKET_CYCLES",
+      "assertion": "It's pure math everyone could do that so now the trap is for sure those cycles are not stable.",
+      "invalidation_condition": "Reassess against newer verified evidence",
+      "quote_exact": "It's pure math everyone could do that so now the trap is for sure those cycles are not stable.",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Validated transcript candidate claim",
+      "source_segment_ids": [
+        "seg-000048"
+      ]
+    }
+  ]
+}

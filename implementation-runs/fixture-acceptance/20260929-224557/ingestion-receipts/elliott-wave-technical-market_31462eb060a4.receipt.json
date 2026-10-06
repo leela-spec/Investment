@@ -1,0 +1,10 @@
+{
+  "drop_file": "C:\\GitDev\\Investment\\implementation-runs\\fixture-acceptance\\20260929-224557\\drops\\elliott-wave-technical-market.json",
+  "source_id": "CygwqaNg2PY",
+  "file_sha256": "31462eb060a47e3388845dd1e49beeb1e3869f04dae01a800ac3100eeddc80f5",
+  "transcript_sha256": "7c077486e79feb8adabc27fc60336ae6ed42b4ac1bd66dd68911b71f7b84bd8f",
+  "claims_processed": [
+    "CLM-TTK-CygwqaNg2PY-018"
+  ],
+  "ingested_at": "2026-09-29T20:45:58.150365+00:00"
+}

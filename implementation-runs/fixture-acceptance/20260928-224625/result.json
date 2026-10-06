@@ -1,0 +1,59 @@
+{
+  "decision_boundary": {
+    "baseline_open_actions": 0,
+    "non_target_leaks": 0,
+    "simulated_action_id": "SIMULATED-OPERATOR-APPROVAL-WATCH-TTK-vFTuLylvYnA-004",
+    "target_multiplier_ratio": 0.8,
+    "target_sector": "TECHNOLOGY_AI"
+  },
+  "documents": {
+    "grounded_page": 1,
+    "pages": 13,
+    "passed": 1
+  },
+  "fixture_hashes": {
+    "elephant-room-research": "f2d4b8dab16222893ddef1b039b2cca7a7b8f3ec3aea0b0e63befd15dcf8e39e",
+    "elliott-wave-technical-market": "2da160f244b74ed382d90d62bb358e714eb0f8cf842ebcacd13ec681e4f67f6d",
+    "emotions-non-investment-control": "d092cb2793595bd323b910defdb27ae70da862bc0af7a0a4938aac38dc19a0d4",
+    "imf-weo-july-2026": "0f9fd85f8d340b065dae7ee5a5e8aeb7983a6b981407a7bebb383fc373e25d76",
+    "macro-2026-09-25": "376fd5814a18e67bf365bbd18e186e9d11ee12cb5974dd6ac72532eb0bceaeba",
+    "market-cycles-watch": "cc50a79f8d889132c214705cd830f69ff49e92c1b50d88be3bc94188377ccb48",
+    "markus-koch-tech-pressure": "fef5e25f25da395ec83418702a1e466f1e6fe0c97578e41bb5f53779916b1681",
+    "smartbroker-activities": "4fd36847b400b0e011078f7aec290f5fdde705aaaf551fd709f9c51298d6927a",
+    "smartbroker-statement": "dcd3d05d542652fb09ba3c57ec48323db1b33c59fdf90deb42c996a401f30b2c",
+    "zero-positions": "b329eb187e3c8a653599b7888d4b6df1209fbb2f0332403ad753fd459b04bd38"
+  },
+  "idempotency": {
+    "duplicate_register_items": 0,
+    "receipts_skipped": 4
+  },
+  "manifest": "C:\\GitDev\\Investment\\configs\\fixture_acceptance.yaml",
+  "manual_execution_only": true,
+  "orders": {
+    "order_type": "LIMIT",
+    "routes": [
+      "SMARTBROKER",
+      "ZERO"
+    ],
+    "tickets": 11
+  },
+  "portfolio": {
+    "activities": 332,
+    "holdings": 32,
+    "ledger_cost_value_eur": 41508.65,
+    "quantity_discrepancies": 0,
+    "reconciliation": "MATCH",
+    "smartbroker_market_value_eur": 36411.09,
+    "smartbroker_positions": 24,
+    "zero_market_value_eur": 3837.21,
+    "zero_positions": 8
+  },
+  "protected_inputs_unchanged": true,
+  "run_at": "2026-09-28T20:46:25.778282+00:00",
+  "status": "PASS",
+  "transcripts": {
+    "no_impact": 1,
+    "passed": 5,
+    "watches": 4
+  }
+}

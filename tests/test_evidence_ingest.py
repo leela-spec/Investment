@@ -62,6 +62,8 @@ def test_02_whisperx_claim_card_ingestion(tmp_path: Path) -> None:
     drop_content = {
         "schema_version": "1.0",
         "source_id": "imf-weo-2026-07",
+        "url": "https://www.youtube.com/watch?v=vzZpKJlpqKo",
+        "custody_url": "http://127.0.0.1:3000/dashboard/preview/bookmark-1",
         "transcript_path": "audio.json",
         "claims": [
             {
@@ -111,7 +113,9 @@ def test_02_whisperx_claim_card_ingestion(tmp_path: Path) -> None:
     assert action_item.instrument_or_topic == "TECHNOLOGY_AI"  # Verified mapped to canonical sector cluster!
     assert action_item.action_or_condition == "TRIM_EQUITY_RISK_POSTURE"
     assert len(action_item.evidence_refs) == 1
-    assert "t=" in action_item.evidence_refs[0]
+    assert action_item.evidence_refs[0].startswith(
+        "http://127.0.0.1:3000/dashboard/preview/bookmark-1#t="
+    )
 
 
 def test_03_prompt_injection_quarantine(tmp_path: Path) -> None:
@@ -261,4 +265,3 @@ def test_06_weekly_pipeline_end_to_end(tmp_path: Path) -> None:
     assert "ACTION-ALERT-TECH-01" in tech_alloc.active_register_items
     assert "Active research alert penalty" in tech_alloc.rationale
     assert tech_alloc.macro_tilt_multiplier < 1.0
-

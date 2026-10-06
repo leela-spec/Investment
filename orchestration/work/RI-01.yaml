@@ -1,7 +1,7 @@
 schema_version: 1
 id: RI-01
 title: Confirm source mandate and fixture pack
-status: ready_for_operator_intake
+status: stopped_pending_operator_source_mandate
 
 product_value: >-
   Define exactly which research deserves attention so later automation creates a focused investment
@@ -126,8 +126,60 @@ checkpoint_policy:
     - speculative future sources
 
 result:
-  state: pending_operator_inputs
+  state: stopped_pending_operator_source_mandate
   source_registry: null
-  verified_fixtures: []
-  deviations: []
-  next_action: Ask the operator for the bounded source information listed in operator_inputs; do not request secrets.
+  verified_fixtures:
+    - identity: vzZpKJlpqKo
+      path: implementation-runs/E05/20260923-230911/
+      evidence_file: implementation-runs/E05/20260923-230911/RESEARCH_ARTIFACT.yaml
+      evidence_sha256: 0f9fd85f8d340b065dae7ee5a5e8aeb7983a6b981407a7bebb383fc373e25d76
+    - identity: vFTuLylvYnA
+      path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/
+      evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/manifest.json
+      evidence_sha256: fef5e25f25da395ec83418702a1e466f1e6fe0c97578e41bb5f53779916b1681
+    - identity: CygwqaNg2PY
+      path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/
+      evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/manifest.json
+      evidence_sha256: 2da160f244b74ed382d90d62bb358e714eb0f8cf842ebcacd13ec681e4f67f6d
+    - identity: oZIsMX6WgFs
+      path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/
+      evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/manifest.json
+      evidence_sha256: cc50a79f8d889132c214705cd830f69ff49e92c1b50d88be3bc94188377ccb48
+    - identity: P-h5WSQG1Sw
+      path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/
+      evidence_file: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/manifest.json
+      evidence_sha256: d092cb2793595bd323b910defdb27ae70da862bc0af7a0a4938aac38dc19a0d4
+  bounded_defaults:
+    web_de_folder: IPOS Research
+    gmail_label: IPOS/Research
+    youtube_lookback: 30 days plus new items
+  recovered_samples:
+    media_positive:
+      - vzZpKJlpqKo
+      - vFTuLylvYnA
+      - CygwqaNg2PY
+      - oZIsMX6WgFs
+    media_negative: P-h5WSQG1Sw
+    email: []
+    pdf: []
+    article: []
+  deviations:
+    - >-
+      The explicitly authorized fixture paths contain no EML, PDF, or saved article sample; no
+      substitute was invented or searched outside those paths.
+    - >-
+      The four TTK fixture directories prove stable video identities but do not contain approved
+      YouTube channel URLs; only the IMF fixture contains a publisher and source URL.
+  validation:
+    reality_battery: 5 PASSED, 0 FAILED
+    fixture_identity_checks: 5 PASSED, 0 FAILED
+    registry_written: false
+    acceptance: STOPPED
+  stop_condition: >-
+    The operator has not yet approved the actual email senders/domains, YouTube channels, public
+    sites, or representative email/PDF/article samples needed for a complete source mandate.
+  next_action: >-
+    Operator: provide one bounded initial source list containing the WEB.DE and Gmail
+    senders/domains to allow, three to five YouTube channel URLs, three to five public site or feed
+    URLs, and local paths or public URLs for the representative email, PDF, and article samples.
+    Do not provide credentials.

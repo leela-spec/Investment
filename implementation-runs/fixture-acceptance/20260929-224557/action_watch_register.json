@@ -1,0 +1,91 @@
+{
+  "schema_version": "1.0",
+  "updated_at": "2026-09-29T20:45:58.288518+00:00",
+  "items": [
+    {
+      "item_id": "WATCH-TTK-vFTuLylvYnA-004",
+      "item_class": "WATCH",
+      "instrument_or_topic": "TECHNOLOGY_AI",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Validated transcript candidate claim",
+      "linked_claim_ids": [
+        "CLM-TTK-vFTuLylvYnA-004"
+      ],
+      "evidence_refs": [
+        "vFTuLylvYnA#t=15.0"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-29T20:45:58.141763+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    },
+    {
+      "item_id": "WATCH-TTK-CygwqaNg2PY-018",
+      "item_class": "WATCH",
+      "instrument_or_topic": "MARKET_TECHNICALS",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Validated transcript candidate claim",
+      "linked_claim_ids": [
+        "CLM-TTK-CygwqaNg2PY-018"
+      ],
+      "evidence_refs": [
+        "CygwqaNg2PY#t=825.9"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-29T20:45:58.147246+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    },
+    {
+      "item_id": "WATCH-TTK-oZIsMX6WgFs-009",
+      "item_class": "WATCH",
+      "instrument_or_topic": "MARKET_CYCLES",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Validated transcript candidate claim",
+      "linked_claim_ids": [
+        "CLM-TTK-oZIsMX6WgFs-009"
+      ],
+      "evidence_refs": [
+        "oZIsMX6WgFs#t=700.3"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-29T20:45:58.150365+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    },
+    {
+      "item_id": "WATCH-FIXTURE-IMF-WATCH",
+      "item_class": "WATCH",
+      "instrument_or_topic": "TRADE_GEOPOLITICS",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Verified IMF downside-risk evidence",
+      "linked_claim_ids": [
+        "CLM-FIXTURE-IMF-WATCH"
+      ],
+      "evidence_refs": [
+        "vzZpKJlpqKo#t=67.5"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-29T20:45:58.156995+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    },
+    {
+      "item_id": "SIMULATED-OPERATOR-APPROVAL-WATCH-TTK-vFTuLylvYnA-004",
+      "item_class": "ACTION",
+      "instrument_or_topic": "TECHNOLOGY_AI",
+      "action_or_condition": "Monitor only; operator review required",
+      "reason_short": "Validated transcript candidate claim",
+      "linked_claim_ids": [
+        "CLM-TTK-vFTuLylvYnA-004"
+      ],
+      "evidence_refs": [
+        "vFTuLylvYnA#t=15.0"
+      ],
+      "status": "OPEN",
+      "created_at": "2026-09-29T20:45:58.287367+00:00",
+      "invalidation_metric": null,
+      "target_threshold": null
+    }
+  ]
+}

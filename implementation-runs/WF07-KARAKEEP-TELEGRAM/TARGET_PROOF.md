@@ -1,0 +1,6 @@
+target_product: "Karakeep v0.33.2 & Telegram Bot API v7.0+"
+expected_version: "Karakeep v0.33.2 (REST API /api/v1/bookmarks) & Telegram Bot API sendMessage"
+official_interface_to_use: "Karakeep REST API (Bearer auth, GET /api/v1/bookmarks, GET /api/v1/bookmarks/{id}/content, GET /api/v1/assets/{id}) & Telegram Bot API HTTPS POST /bot<token>/sendMessage"
+proof_action: "Poll Karakeep REST endpoint for 'macro' tagged research, download attachments/transcripts to data/inbox/research preserving source_urn='karakeep:entries:<id>', ingest into ActionWatchRegister; parse pre-computed weekly report.md into concise (<4,000 char) executive digest and dispatch via Telegram Bot API with zero LLM arithmetic."
+independent_oracle: "Real HTTP wire transactions matching Karakeep OpenAPI schema and Telegram Bot API JSON schemas; mock-denial assertions proving fail-closed behavior on HTTP 401/500/malformed payload/connection errors; character count validation (< 4000 chars); verbatim match of pre-computed report.md figures."
+facade_failure_example: "A dummy script returning hardcoded bookmark lists or dummy dicts that passes tests even when the network schema is mutated or credentials are invalid; or an LLM re-calculating risk budgets or limit prices during notification formatting."

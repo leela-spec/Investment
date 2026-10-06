@@ -1,0 +1,99 @@
+schema_version: 1
+id: RI-05
+title: Automate approved YouTube discovery and media handoff
+status: blocked
+
+product_value: >-
+  Detect new research from approved YouTube sources without browsing arbitrary channels, preserve
+  each source once, and hand relevant media to the already proven transcript and evidence workflow.
+
+practitioner_output: >-
+  A bounded YouTube source configuration with deterministic discovery, deduplication, custody,
+  media-pipeline handoff, and a reviewable transcript/evidence receipt for the accepted fixture.
+
+executor_instruction: >-
+  Configure and prove only approved YouTube channel or playlist discovery and its handoff to the
+  existing M08/M09 workflow. Reuse the committed IMF and four-source fixtures; do not rebuild the
+  downloader, transcription system, or transcript-to-knowledge architecture. Do not bypass private,
+  paid, age-restricted, or otherwise unsupported access controls.
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  read_first:
+    - PROJECT_STATE.md
+    - orchestration/state.yaml
+    - orchestration/work/RI-05.yaml
+  then_read_only:
+    - path: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+      sections:
+        - 5. Reuse the Existing Proven Sources as Acceptance Fixtures
+        - 6. Minimal Initial Source Mandate for the Operator / YOUTUBE
+        - 7. Execution Order and Acceptance Value / RI-05
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M08_MEDIA_PIPELINE.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M09_TRANSCRIPT_TO_KNOWLEDGE.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+      sections: [US-VIDEO-01, US-VIDEO-02, US-KB-01, US-HEALTH-01]
+  dependency_gate: >-
+    Confirm RI-01 and RI-02 are accepted. Confirm the five fixture paths exist and remain read-only.
+    Stop if an identity conflicts with committed evidence.
+  execution_start: >-
+    Register one approved public channel feed or playlist source in Karakeep, prove one discovery and
+    one duplicate suppression, then hand the existing IMF fixture through the accepted M08/M09 boundary.
+
+dependencies: [RI-01, RI-02]
+
+existing_fixture_pack:
+  - {identity: vzZpKJlpqKo, path: implementation-runs/E05/20260923-230911/, role: primary custody and timestamp fixture}
+  - {identity: vFTuLylvYnA, path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/vFTuLylvYnA/, role: German investment fixture}
+  - {identity: CygwqaNg2PY, path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/CygwqaNg2PY/, role: English technical-market fixture}
+  - {identity: oZIsMX6WgFs, path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/oZIsMX6WgFs/, role: WATCH extraction fixture}
+  - {identity: P-h5WSQG1Sw, path: C:/GitDev/apexai-os-meta/artifacts/transcript_pipeline_v2/corrective-run/raw/p20-four-source/P-h5WSQG1Sw/, role: non-investment control}
+
+allowed_repo_paths:
+  - implementation-runs/RI-05/
+  - orchestration/work/RI-05.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+allowed_external_changes:
+  - Approved YouTube RSS or playlist discovery configuration in Karakeep
+  - Karakeep test records for approved public fixtures
+  - Non-secret execution receipts and flow exports
+
+forbidden_scope:
+  - Arbitrary YouTube search or unrestricted channel crawling
+  - Rewriting M08 or M09
+  - Modifying or duplicating source-of-record fixture directories
+  - Access-control bypass, cookie theft, or private-source downloading
+  - Treating ASR output as verified numeric fact
+  - Autonomous portfolio or broker action
+
+acceptance:
+  - Required preflight reports 5 PASSED and 0 FAILED.
+  - Discovery is limited to approved channel or playlist identifiers and approved lookback.
+  - One new public item creates exactly one stable Karakeep record.
+  - Reprocessing the same item creates no second canonical record.
+  - The IMF fixture retains source identity, hashes, timestamps, and raw ASR limitations.
+  - M08 handoff produces or references an evidence-ready transcript and frame manifest.
+  - M09 handoff preserves quote-to-timestamp traceability without architecture changes.
+  - The non-investment fixture can resolve to NO_IMPACT without forced portfolio relevance.
+  - Unsupported or private media produces an explicit SYSTEM failure and no bypass attempt.
+
+stop_when:
+  - A dependency is incomplete.
+  - No approved public channel or playlist is recorded in the source registry.
+  - A fixture path is missing or its identity conflicts with committed evidence.
+  - Current official media-tool behavior materially contradicts M08.
+  - Completion would require rebuilding the media or knowledge pipeline.
+
+result:
+  state: blocked_on_dependencies
+  evidence_path: null
+  deviations: []
+  next_action: Complete RI-01 and RI-02, then execute this packet.

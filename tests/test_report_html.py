@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 
 from ipos.export.snapshot import build_snapshot
+from ipos.export.report import render_report
 from ipos.report.charts import pctile_strip_svg
 from ipos.report.html import render_html
 from ipos.warehouse.db import connect
@@ -84,7 +85,7 @@ def test_html_every_heading_and_column_is_explained(populated_db, as_of):
         "Module", "Dimension", "ID", "Value", "Trend", "Now", "Date", "When",
         "Event", "Category", "Indicator", "Read", "Your weight", "Suggested tilt",
         "vs 1m", "52w score", "26w path", "26w",
-        "Item ID", "Class", "Topic / Instrument", "Action / Invalidation Trigger", "Status", "Rationale",
+        "Item ID", "Class", "Topic / Instrument", "Action / Invalidation Trigger", "Status", "Rationale", "Evidence",
     }
 
     def _text(fragment: str) -> str:
@@ -176,6 +177,35 @@ def test_html_surfaces_fx_warnings(populated_db, as_of):
         html = render_html(con, snap, as_of)
     assert "no EURJPY series" in html
     assert "excluded from every weight" in html.lower()
+
+
+def test_reports_link_research_items_to_local_custody(populated_db, as_of):
+    db, reg = populated_db
+    custody_url = "http://127.0.0.1:3000/dashboard/preview/bookmark-1#t=67.5"
+    with connect(db, read_only=True) as con:
+        snap = build_snapshot(con, reg, as_of)
+        snap["action_watch_register"] = {
+            "active_watches": [
+                {
+                    "item_id": "WATCH-1",
+                    "item_class": "WATCH",
+                    "instrument_or_topic": "TRADE_GEOPOLITICS",
+                    "action_or_condition": "Monitor only",
+                    "status": "OPEN",
+                    "reason_short": "Verified IMF downside-risk evidence",
+                    "evidence_refs": [custody_url],
+                }
+            ],
+            "active_actions": [],
+        }
+        html = render_html(con, snap, as_of)
+
+    markdown = render_report(snap)
+
+    assert f'href="{custody_url}"' in html
+    assert custody_url in markdown
+    assert "WATCH items are monitoring-only" in html
+    assert "WATCH items are monitoring-only" in markdown
 
 
 def test_html_is_self_contained(populated_db, as_of):

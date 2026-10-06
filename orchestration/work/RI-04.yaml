@@ -1,0 +1,107 @@
+schema_version: 1
+id: RI-04
+title: Automate bounded WEB.DE and Gmail research intake
+status: blocked
+
+product_value: >-
+  Deliver approved research email exactly once to evidence custody and the shared event boundary,
+  without scanning whole mailboxes or turning an analyst recommendation into an automatic trade.
+
+practitioner_output: >-
+  Two restart-safe Activepieces flows, one for WEB.DE IMAP and one for Gmail labels, that emit the
+  same normalized event, preserve the source in Karakeep, suppress duplicates and irrelevant mail,
+  and report material failures visibly.
+
+executor_instruction: >-
+  Configure and prove only the WEB.DE and Gmail research-intake flows described by this packet.
+  Reuse M04 and M05; do not build a mail server, custom orchestration framework, portfolio analysis,
+  or broker integration. Keep credentials only in the provider or Activepieces connection store.
+  Stop as soon as the acceptance criteria pass or a stop condition occurs.
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  read_first:
+    - PROJECT_STATE.md
+    - orchestration/state.yaml
+    - orchestration/work/RI-04.yaml
+  then_read_only:
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M04_ACTIVEPIECES_PLATFORM.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M05_ACTIVEPIECES_EMAIL_EVENT_FLOWS.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+      sections: [US-EMAIL-01, US-EMAIL-02, US-EMAIL-03, US-HEALTH-01]
+  dependency_gate: >-
+    Confirm RI-01, RI-02 and RI-03 are accepted in orchestration/state.yaml. If any dependency is
+    incomplete, record the blocker without connecting an account or changing a service.
+  execution_start: >-
+    Export or snapshot the empty target flows, then configure WEB.DE against the approved bounded
+    folder and Gmail against the approved bounded label using supported Activepieces pieces.
+
+dependencies: [RI-01, RI-02, RI-03]
+
+source_contract:
+  registry: configs/research_sources.yaml
+  web_de_scope: approved folder plus approved sender/domain allowlist
+  gmail_scope: approved label plus approved sender/domain allowlist
+  normalized_event_fields:
+    - event_id
+    - source
+    - source_message_id
+    - sender
+    - subject
+    - received_at
+    - body_ref
+    - attachment_refs
+    - urls
+    - classification_hint
+    - ingested_at
+  idempotency_key: provider plus stable source_message_id
+
+allowed_repo_paths:
+  - implementation-runs/RI-04/
+  - orchestration/work/RI-04.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+allowed_external_changes:
+  - Activepieces WEB.DE IMAP connection and bounded flow
+  - Activepieces Gmail OAuth connection and bounded label flow
+  - Non-secret Activepieces flow exports
+  - Karakeep test records created from approved fixtures
+
+forbidden_scope:
+  - Whole-mailbox semantic scanning
+  - Credentials, OAuth tokens, cookies, or connection secrets in Git, logs, or chat
+  - Custom mail server or parser platform
+  - LLM portfolio arithmetic or autonomous trade creation
+  - Changes to portfolio scoring, allocation, or order staging
+
+acceptance:
+  - Required preflight reports 5 PASSED and 0 FAILED.
+  - WEB.DE consumes only the approved folder and approved sender/domain allowlist.
+  - Gmail consumes only the approved label and approved sender/domain allowlist.
+  - Both flows emit the same normalized event contract.
+  - Relevant email, attachment, video link, analyst action, duplicate, and irrelevant fixtures are exercised.
+  - Duplicate delivery creates no second event or action.
+  - Original evidence has a stable Karakeep identifier or an explicit custody failure.
+  - Authentication or custody failure creates a safe-retry SYSTEM record.
+  - No secret is present in repository changes or evidence artifacts.
+  - No broker action is sent or executed.
+
+stop_when:
+  - A dependency is incomplete or its evidence is not accepted.
+  - Approved folder, label, sender allowlist, or fixture messages are absent.
+  - A provider requires unrestricted mailbox access.
+  - Activepieces or Karakeep is unavailable after one bounded health check.
+  - Completion would require product-code changes or a new framework.
+
+result:
+  state: blocked_on_dependencies
+  evidence_path: null
+  deviations: []
+  next_action: Complete RI-01, RI-02 and RI-03, then execute this packet.

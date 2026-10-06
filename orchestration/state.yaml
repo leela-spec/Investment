@@ -1,8 +1,8 @@
 schema_version: 1
 program: IPOS Research Intake and Evidence Operations
-phase: research-intake-ri-01-to-ri-10
-status: ready_for_execution
-updated_at: 2026-09-28
+phase: external-source-intelligence-tool-selection
+status: high_priority_research_ready
+updated_at: 2026-09-30
 
 value_target: >-
   Turn approved real research sources into evidence-linked NO_IMPACT, WATCH, REVIEW, or
@@ -17,7 +17,7 @@ operating_model:
 start_here:
   - PROJECT_STATE.md
   - orchestration/state.yaml
-  - orchestration/work/RI-10.yaml
+  - orchestration/work/RI-11.yaml
 
 authority:
   product_process: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
@@ -46,7 +46,7 @@ worktree_policy:
   rule: Preserve every path outside the active packet's allowed_paths; do not treat uncommitted work as accepted truth.
   unreviewed_existing_work:
     - path: ipos/etl/karakeep.py
-      disposition: Preserve; reconcile only in a future Karakeep implementation packet.
+      disposition: Preserve without extension; RI-11 decides whether Karakeep remains relevant.
     - path: ipos/export/telegram.py
       disposition: Preserve; reconcile only in a future Telegram implementation packet.
     - path: implementation-runs/WF07-KARAKEEP-TELEGRAM/
@@ -67,7 +67,16 @@ required_preflight:
   command: uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
   expected: 5 PASSED, 0 FAILED
 
-active_packet: RI-10
+component_dispositions:
+  karakeep:
+    status: most_likely_not_relevant
+    rationale: >-
+      Generic custody, archiving, search, tags, and summaries do not by themselves create
+      grounded investment statements or portfolio implications. RI-11 must determine whether
+      Karakeep has unique value in a proven external toolchain before any further integration.
+    implementation_gate: Do not extend or depend on Karakeep until RI-11 is accepted.
+
+active_packet: RI-11
 
 work:
   RI-01:
@@ -77,41 +86,58 @@ work:
     dependencies: []
   RI-02:
     title: Deploy and prove Karakeep custody
-    status: blocked
+    status: deprioritized_most_likely_not_relevant
     packet: null
-    dependencies: [RI-01]
+    dependencies: [RI-11]
   RI-03:
     title: Deploy and prove Activepieces routing
     status: blocked
     packet: null
     dependencies: [RI-01]
   RI-04:
-    title: Configure Web.de and Gmail
+    title: Automate bounded WEB.DE and Gmail research intake
     status: blocked
-    packet: null
+    packet: orchestration/work/RI-04.yaml
     dependencies: [RI-01, RI-02, RI-03]
   RI-05:
-    title: Configure YouTube and website discovery
+    title: Automate approved YouTube discovery and media handoff
     status: blocked
-    packet: null
+    packet: orchestration/work/RI-05.yaml
     dependencies: [RI-01, RI-02]
   RI-06:
     title: Wire Karakeep export to IPOS evidence intake
-    status: blocked
+    status: superseded_pending_ri_11
     packet: null
-    dependencies: [RI-02]
+    dependencies: [RI-11]
   RI-07:
     title: End-to-end practitioner acceptance
     status: blocked
     packet: null
-    dependencies: [RI-04, RI-05, RI-06]
+    dependencies: [RI-04, RI-05, RI-06, RI-08, RI-09]
+  RI-08:
+    title: Configure approved website feed intake
+    status: blocked
+    packet: orchestration/work/RI-08.yaml
+    dependencies: [RI-01, RI-02]
+  RI-09:
+    title: Prove manual PDF and article-bookmark intake
+    status: blocked
+    packet: orchestration/work/RI-09.yaml
+    dependencies: [RI-01, RI-02]
   RI-10:
     title: Replay existing research and portfolio fixtures
     status: ready_for_execution
     packet: orchestration/work/RI-10.yaml
     dependencies: []
+  RI-11:
+    title: Select a proven source-to-investment-claim toolchain
+    priority: high
+    status: ready_for_research
+    packet: orchestration/work/RI-11.yaml
+    dependencies: []
 
-first_vertical_slice:
+prior_vertical_slice:
+  status: non_authoritative_input_to_ri_11
   source: implementation-runs/E05/20260923-230911/
   identity: IMF WEO July 2026 video vzZpKJlpqKo
   route: Karakeep custody to IPOS evidence to practitioner review output
@@ -127,6 +153,6 @@ openproject:
   work_packages_created: false
 
 next_action: >-
-  Execute RI-10 through ipos fixture-acceptance using only the pinned local fixtures. RI-01 remains
-  stopped pending the separate operator source mandate; live Gmail, WEB.DE, Karakeep, and
-  Activepieces activation are not prerequisites for RI-10.
+  Execute RI-11 as a research-only comparison of battle-proven external software, deterministic
+  tools, and OpenRouter-compatible skills. Do not trust existing IPOS extraction outputs as proof,
+  do not implement candidates, and do not extend Karakeep unless the research justifies it.

@@ -1,0 +1,10 @@
+{
+  "drop_file": "C:\\GitDev\\Investment\\implementation-runs\\fixture-acceptance\\20260929-224557\\drops\\market-cycles-watch.json",
+  "source_id": "oZIsMX6WgFs",
+  "file_sha256": "e76ddee27b4876c3cf554a1b0ba5a145ac18d5575faae52fb9e47e393d2d1185",
+  "transcript_sha256": "167d5dd6a5449cfac977209e5399ce0c5ed28d202c6bbb9ab4eba4b1aa43853e",
+  "claims_processed": [
+    "CLM-TTK-oZIsMX6WgFs-009"
+  ],
+  "ingested_at": "2026-09-29T20:45:58.150365+00:00"
+}

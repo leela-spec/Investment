@@ -747,6 +747,7 @@ _TEMPLATE = """<!doctype html>
 {% if s.action_watch_register and (s.action_watch_register.active_watches or s.action_watch_register.active_actions) %}
 <h2>{{ concept_tt("action_watch_register", "Active Research Theses & Watch Register")|safe }}</h2>
 <div class="sub">Tracked qualitative macro hypotheses & falsifiable triggers (WF-07 Stage 3 / E05 & E06)</div>
+<div class="notice"><strong>Decision boundary:</strong> WATCH items are monitoring-only. They do not change target weights or create staged orders; only an operator-approved open ACTION can affect portfolio policy.</div>
 <table>
   <thead>
     <tr>
@@ -756,6 +757,7 @@ _TEMPLATE = """<!doctype html>
       <th>Action / Invalidation Trigger</th>
       <th>Status</th>
       <th>Rationale</th>
+      <th>Evidence</th>
     </tr>
   </thead>
   <tbody>
@@ -767,6 +769,7 @@ _TEMPLATE = """<!doctype html>
       <td>{{ w.action_or_condition }}</td>
       <td><span class="pill" style="background:{{ '#fef3c7; color:#b45309;' if w.status == 'TRIGGERED' else '#eaf6ec; color:#15803d;' }}">{{ w.status }}</span></td>
       <td class="sub">{{ w.reason_short }}</td>
+      <td class="sub">{% for ref in w.evidence_refs %}{% if ref.startswith("http://127.0.0.1:3000/") %}<a href="{{ ref|e }}">Karakeep source</a>{% else %}<code>{{ ref|e }}</code>{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</td>
     </tr>
     {% endfor %}
     {% for a in s.action_watch_register.active_actions %}
@@ -777,6 +780,7 @@ _TEMPLATE = """<!doctype html>
       <td>{{ a.action_or_condition }}</td>
       <td><span class="pill" style="background:{{ '#fef3c7; color:#b45309;' if a.status == 'TRIGGERED' else '#eaf6ec; color:#15803d;' }}">{{ a.status }}</span></td>
       <td class="sub">{{ a.reason_short }}</td>
+      <td class="sub">{% for ref in a.evidence_refs %}{% if ref.startswith("http://127.0.0.1:3000/") %}<a href="{{ ref|e }}">Karakeep source</a>{% else %}<code>{{ ref|e }}</code>{% endif %}{% if not loop.last %}, {% endif %}{% endfor %}</td>
     </tr>
     {% endfor %}
   </tbody>

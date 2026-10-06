@@ -1,0 +1,85 @@
+schema_version: 1
+id: RI-08
+title: Configure approved website feed intake
+status: blocked
+
+product_value: >-
+  Turn selected public research sites into a quiet, deduplicated evidence queue without unrestricted
+  crawling, scraping infrastructure, or repeated manual checking.
+
+practitioner_output: >-
+  Approved RSS or Atom feeds monitored by Karakeep with stable source identity, hourly discovery,
+  deterministic duplicate handling, and an explicit manual-bookmark fallback for sites without feeds.
+
+executor_instruction: >-
+  Configure and prove only the approved public website feeds in Karakeep. Prefer native RSS/Atom
+  consumption and deduplication. A site without a supported feed becomes a manual bookmark source;
+  do not build a crawler, browser automation, paywall bypass, or generalized scraping framework.
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  read_first:
+    - PROJECT_STATE.md
+    - orchestration/state.yaml
+    - orchestration/work/RI-08.yaml
+  then_read_only:
+    - path: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+      sections:
+        - 4. The Process, Its Outputs, and Practitioner Value / Stage A
+        - 6. Minimal Initial Source Mandate for the Operator / WEBSITES
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M07_KARAKEEP.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+      sections: [US-EVIDENCE-01, US-HEALTH-01]
+  dependency_gate: >-
+    Confirm RI-01 and RI-02 are accepted and each requested source is public or legitimately
+    accessible without bypassing a login or paywall.
+  execution_start: >-
+    Add one approved RSS or Atom feed to Karakeep, capture the initial bounded lookback, verify a new
+    entry and duplicate behavior, then classify one feed-less site as manual-bookmark-only.
+
+dependencies: [RI-01, RI-02]
+
+allowed_repo_paths:
+  - implementation-runs/RI-08/
+  - orchestration/work/RI-08.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+allowed_external_changes:
+  - Approved RSS or Atom feed definitions in Karakeep
+  - Karakeep test bookmarks and tags for approved public sources
+
+forbidden_scope:
+  - Public-web or whole-site crawling
+  - HTML scraping when a supported feed exists
+  - Login, paywall, robots, or access-control bypass
+  - New crawler, database, dashboard, or scheduling framework
+  - LLM arithmetic or autonomous portfolio action
+
+acceptance:
+  - Required preflight reports 5 PASSED and 0 FAILED.
+  - Every configured feed maps to an approved source-registry entry and bounded lookback.
+  - One new feed entry creates exactly one stable Karakeep bookmark.
+  - Duplicate delivery creates no second canonical bookmark.
+  - Source URL, publication time, feed identity, and custody time remain traceable.
+  - Feed categories may become tags but cannot silently broaden the source allowlist.
+  - A feed failure is visible and safe to retry.
+  - A site without RSS or Atom is recorded as manual-bookmark-only.
+
+stop_when:
+  - A dependency is incomplete.
+  - No approved site or feed URL exists in the source registry.
+  - Access requires bypassing authentication, a paywall, or published restrictions.
+  - Karakeep feed consumption or deduplication cannot be demonstrated.
+  - Completion would require a custom crawler or product-code change.
+
+result:
+  state: blocked_on_dependencies
+  evidence_path: null
+  deviations: []
+  next_action: Complete RI-01 and RI-02, then execute this packet.

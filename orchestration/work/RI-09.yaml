@@ -1,0 +1,99 @@
+schema_version: 1
+id: RI-09
+title: Prove manual PDF and article-bookmark intake
+status: blocked
+
+product_value: >-
+  Preserve high-value one-off research that does not arrive through email or feeds, with a stable
+  source record and a clean handoff to the common IPOS evidence boundary.
+
+practitioner_output: >-
+  One representative PDF and one public article bookmark stored, searchable, deduplicated, and
+  exportable from Karakeep with publisher, source URL, content hash or stable identity, and custody receipt.
+
+executor_instruction: >-
+  Prove only manual PDF upload and public article bookmarking through Karakeep and the documented
+  RI-06 handoff contract. Link existing samples and candidate code as evidence; do not treat the
+  unreviewed Karakeep adapter as accepted, and do not build a new document parser or extraction framework.
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  read_first:
+    - PROJECT_STATE.md
+    - orchestration/state.yaml
+    - orchestration/work/RI-09.yaml
+  then_read_only:
+    - path: HANDOVER_RESEARCH_INTAKE_BOOTSTRAP.md
+      sections:
+        - 4. The Process, Its Outputs, and Practitioner Value / Stage A
+        - 6. Minimal Initial Source Mandate for the Operator / PDF/MANUAL
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/implementation-plans/M07_KARAKEEP.yaml
+      sections: [entire bounded module plan]
+    - path: 05_blueprint/research/2026-08-28-modular-rebuild/08_USER_STORIES_AND_INTEGRATION_WORKFLOWS.md
+      sections: [US-EVIDENCE-01, US-HEALTH-01]
+  inspect_as_unreviewed_evidence_only:
+    - ipos/etl/karakeep.py
+    - implementation-runs/WF07-KARAKEEP-TELEGRAM/
+  dependency_gate: >-
+    Confirm RI-01 and RI-02 are accepted. Confirm the operator approved the representative PDF and
+    article and that neither requires unauthorized access or stores secrets.
+  execution_start: >-
+    Upload the approved PDF and save the approved public article in Karakeep, record stable identities,
+    prove search and duplicate behavior, and produce a non-secret handoff receipt for RI-06.
+
+dependencies: [RI-01, RI-02]
+
+existing_candidates:
+  pdf:
+    path: Sources/GER Elephant in The Room Analysis.pdf
+    status: candidate_only_pending_operator_approval
+  karakeep_adapter:
+    path: ipos/etl/karakeep.py
+    status: unreviewed_existing_work
+  prior_run:
+    path: implementation-runs/WF07-KARAKEEP-TELEGRAM/
+    status: unreviewed_execution_evidence
+
+allowed_repo_paths:
+  - implementation-runs/RI-09/
+  - orchestration/work/RI-09.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+allowed_external_changes:
+  - Approved PDF and article test records in Karakeep
+  - Non-secret custody and export receipts
+
+forbidden_scope:
+  - Modifying or accepting ipos/etl/karakeep.py without a separate bounded review packet
+  - General-purpose PDF parsing or website scraping framework
+  - Paywall, login, DRM, or access-control bypass
+  - Treating extracted text or OCR numbers as verified numeric authority
+  - Autonomous portfolio or broker action
+
+acceptance:
+  - Required preflight reports 5 PASSED and 0 FAILED.
+  - The operator-approved PDF is stored with publisher, source URL, stable ID, and content hash.
+  - The operator-approved article is stored with canonical URL, publisher, and stable Karakeep ID.
+  - Both items are searchable and retain their original source reference.
+  - Re-adding either item has deterministic, documented duplicate behavior.
+  - A non-secret receipt describes the RI-06 export contract without claiming downstream ingestion passed.
+  - Existing candidate code and prior runs remain unchanged and explicitly unreviewed.
+  - No secret or copyrighted full-text duplicate is written into Git evidence.
+
+stop_when:
+  - A dependency is incomplete.
+  - The operator has not approved the PDF or article sample.
+  - Provenance, publisher, or source URL is unavailable.
+  - Access requires bypassing a login, paywall, DRM, or other restriction.
+  - Completion requires modifying product code or accepting unreviewed code.
+
+result:
+  state: blocked_on_dependencies
+  evidence_path: null
+  deviations: []
+  next_action: Complete RI-01 and RI-02, approve one PDF and article sample, then execute this packet.

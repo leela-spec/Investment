@@ -1,0 +1,10 @@
+{
+  "drop_file": "C:\\GitDev\\Investment\\implementation-runs\\fixture-acceptance\\20260928-224625\\drops\\imf-weo-july-2026.json",
+  "source_id": "vzZpKJlpqKo",
+  "file_sha256": "197850946382583b9f443ba5478fc5a565a18c63287af283a7a99eabfcc3528c",
+  "transcript_sha256": "15873bc9cb8941ec9d682aea1b3458db6b4916e73bc97cb6089665d052b2ced6",
+  "claims_processed": [
+    "CLM-FIXTURE-IMF-WATCH"
+  ],
+  "ingested_at": "2026-09-28T20:46:25.390747+00:00"
+}

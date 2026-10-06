@@ -1,0 +1,164 @@
+schema_version: 1
+id: RI-11
+title: Select a proven source-to-investment-claim toolchain
+priority: high
+status: ready_for_research
+
+product_value: >-
+  Identify a free or very-cheap, externally established way to transform transcripts,
+  emails, articles, and research documents into evidence-linked investment statements
+  that deterministic portfolio software can consume. Do not treat existing IPOS code,
+  tests, reports, or architecture claims as proof that the approach works.
+
+decision_context:
+  karakeep_disposition: most_likely_not_relevant
+  karakeep_reason: >-
+    Karakeep is primarily source custody, archiving, organization, and search. Its optional
+    generic LLM summaries do not provide transcript extraction, investment-grade atomic
+    claims, source grounding, or portfolio comparison. Retain it only if this research
+    demonstrates unique value that justifies its operational cost.
+  preferred_solution_shape:
+    - Established deterministic parsers and extraction scripts.
+    - Reusable agent skills with structured output that can call low-cost OpenRouter models.
+    - A complete established software product, if one actually meets the requirements.
+  cost_policy: >-
+    Prefer zero-cost, open-source, locally runnable components. Consider only very-cheap
+    hosted or model usage where the low-volume cost is explicitly calculated and there is
+    no material mandatory subscription. Flag every unavoidable cost for operator approval.
+
+executor_instruction: >-
+  Research and compare externally established tools; do not implement or extend IPOS.
+  Use primary documentation, maintained repositories, release histories, published
+  benchmarks where available, and credible evidence of real-world adoption. Evaluate
+  complete products as well as composable deterministic tools and OpenRouter-compatible
+  skills. Produce a recommendation and a fixture-based evaluation design. Stop before
+  installation, integration, credential entry, service activation, or production changes.
+
+research_prompt: |
+  You are researching a replacement for an untrusted custom source-to-portfolio research
+  pipeline. Do not assume that any existing IPOS extraction, claim, mapping, test, or report
+  is correct. Existing IPOS artifacts may be used only as sample inputs and to identify the
+  desired output shape.
+
+  Find software, maintained scripts/libraries, or reusable agent skills that are already
+  known and used outside this project to transform the following source types into structured,
+  evidence-linked investment statements:
+
+  1. YouTube or local video/audio transcripts.
+  2. Gmail/WEB.DE-style research emails and attachments.
+  3. HTML articles and saved web research.
+  4. Text PDFs, scanned PDFs, tables, and research papers.
+
+  Prioritize deterministic acquisition and parsing. Where semantic interpretation genuinely
+  requires an LLM, prioritize structured-output skills or libraries that can use inexpensive
+  OpenRouter models. Code must calculate all numeric portfolio values. An LLM may classify,
+  normalize, or narrate text, but must not invent citations, calculate exposure, or execute trades.
+
+  Search for both:
+
+  - A complete established product that already performs most of the workflow.
+  - A minimal proven stack composed of established tools, if no complete product exists.
+
+  Treat the following as the target claim shape, not an all-fields rejection gate. A source
+  may legitimately omit fields that it does not support:
+
+  - Atomic statement or claim.
+  - Exact supporting quotation.
+  - Timestamp, page, paragraph, email part, or other stable source location.
+  - Stable source identity and retrieval date.
+  - Mentioned companies, instruments, industries, countries, and economic variables.
+  - Direction or sentiment when supported by the source.
+  - Time horizon when stated or safely classifiable.
+  - Claim type: fact, forecast, opinion, risk, catalyst, or recommendation.
+  - Extraction method and confidence/provenance.
+  - Supporting or contradicting statements.
+
+  The downstream objective is to let deterministic software compare these claims with actual
+  holdings and an investment thesis, identify affected holdings and factor/industry exposures,
+  and create evidence-linked WATCH or operator-review candidates. Broker execution must remain
+  manual.
+
+  A candidate is not battle-proven merely because it has a GitHub repository or an agent demo.
+  For each serious candidate, record:
+
+  - Maintainer or vendor and official URL.
+  - Current stable version and most recent release date.
+  - License and self-hosting availability.
+  - Evidence of production use, adoption, or credible independent evaluation.
+  - Supported source types.
+  - Exact output and citation/provenance capabilities.
+  - Deterministic versus model-dependent stages.
+  - OpenRouter compatibility or required model provider.
+  - Local-data/privacy implications.
+  - Low-volume cost estimate and mandatory subscription cost.
+  - Known limitations and failure behavior.
+
+  Reject generic summarizers without stable citations, abandoned experiments, proprietary
+  products with material recurring fees, agent demos without reproducible outputs, and systems
+  that cannot preserve source evidence. Do not recommend building a new framework.
+
+  Inspect the characteristics of the already available fixtures, especially the Markus Koch
+  transcript `vFTuLylvYnA` and the existing research PDF, only to assess documented candidate fit.
+  Do not run candidates, simulate their outputs, or claim empirical results. Define a later
+  operator-run evaluation protocol that would test whether extracted claims remain linked to exact
+  source locations and whether a separate deterministic mapper can identify affected portfolio
+  holdings. Do not use existing IPOS output as the expected answer.
+
+  Deliver:
+
+  1. A source-to-claim-to-portfolio process map.
+  2. A longlist and a short list with evidence-backed comparisons.
+  3. A clear answer on whether a suitable complete product exists.
+  4. A recommended zero-cost or very-cheap stack.
+  5. A fixture-based evaluation protocol with objective pass/fail criteria.
+  6. A retain/remove recommendation for Karakeep.
+  7. Explicit unknowns and required operator decisions.
+
+dependencies: []
+
+startup_instructions:
+  working_directory: C:/GitDev/Investment
+  commands:
+    - git branch --show-current
+    - git status --short
+    - uv run python 06_modular_pipeline_alignment/audit/verify_reality_battery.py
+  read_only_context:
+    - PROJECT_STATE.md
+    - orchestration/state.yaml
+    - orchestration/work/RI-11.yaml
+    - configs/fixture_acceptance.yaml
+  rules:
+    - Do not bulk-read historical plans, handovers, or agent transcripts.
+    - Read fixture source files only when required for the evaluation design.
+    - Browse current primary sources because versions, pricing, and maintenance status change.
+
+allowed_paths:
+  - implementation-runs/RI-11/
+  - orchestration/work/RI-11.yaml
+  - orchestration/state.yaml
+  - PROJECT_STATE.md
+
+forbidden_scope:
+  - Implementing or modifying the IPOS extraction or portfolio pipeline.
+  - Treating existing IPOS tests or generated reports as independent validation.
+  - Installing candidates, creating accounts, entering credentials, or activating services.
+  - Modifying source fixtures, the live action/watch register, portfolio files, or warehouse.
+  - Automated broker execution.
+  - Recommending a materially paid product without an explicit operator-approved exception.
+
+acceptance:
+  - The reality battery reports 5 PASSED and 0 FAILED before research begins.
+  - The research uses current primary sources for every shortlisted candidate.
+  - At least one complete-product category and one composable-toolchain category are evaluated.
+  - Every shortlisted option has maintenance, adoption, provenance, privacy, and cost evidence.
+  - The recommendation is zero-cost or very cheap and does not depend on custom IPOS extraction logic.
+  - The evaluation protocol uses the Markus Koch transcript and existing research PDF without trusting prior IPOS outputs.
+  - Claim provenance and deterministic portfolio arithmetic are explicit pass/fail gates.
+  - The output gives a clear retain/remove recommendation for Karakeep.
+  - No implementation, installation, account, credential, live-data, or broker state is changed.
+
+stop_when:
+  - Current authoritative evidence cannot establish that a candidate is maintained or usable.
+  - A required fixture is missing or cannot be read without altering it.
+  - All credible candidates violate the cost policy; report that result instead of weakening it.
+  - Research would require credentials, paid trials, installation, or production changes.

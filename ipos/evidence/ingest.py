@@ -224,6 +224,12 @@ def process_research_drop(
         return res
 
     source_id = str(data.get("source_id", drop_path.stem))
+    source_ref = str(
+        data.get("custody_url")
+        or data.get("url")
+        or data.get("source_urn")
+        or source_id
+    )
     claims_raw = data.get("claims") or []
     if not claims_raw and "quote_exact" in data:
         # Single claim card format
@@ -290,7 +296,7 @@ def process_research_drop(
             action_or_condition=action_or_cond,
             reason_short=reason,
             linked_claim_ids=[cid],
-            evidence_refs=[f"{source_id}#t={claim_obj.start_seconds:.1f}"],
+            evidence_refs=[f"{source_ref}#t={claim_obj.start_seconds:.1f}"],
             status="QUARANTINED" if claim_obj.is_malicious else "OPEN",
             invalidation_metric=metric,
             target_threshold=threshold,

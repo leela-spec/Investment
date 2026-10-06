@@ -68,5 +68,5 @@ portfolios:
 macro_snapshot:
   id: macro-2026-09-25
   evidence_file: data/exports/snapshots/2026-09-25/snapshot.json
-  sha256: 376fd5814a18e67bf365bbd18e186e9d11ee12cb5974dd6ac72532eb0bceaeba
+  sha256: 9a6fc06ec35d906aed9a11a08a62ba59b244d3274fe0c71e23c0acfbd5e3fb8b
   expected_as_of: 2026-09-25
